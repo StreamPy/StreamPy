@@ -60,7 +60,86 @@ class Stream(object):
     the clock stream has a new value, regardless of
     the value.
 
+    Parameters
+    ----------
+    name : str, optional
+          name of the stream. Though the name is optional
+          a named stream helps with debugging.
+          default : 'NoName'
+    proc_name : str, optional
+          The name of the process in which this agent
+          executes.
+          default: 'UnknownProcess'
+    initial_value : list or array, optional
+          The list (or array) of initial values in the
+          stream.
+          default : []
+    stream_size: int, optional
+          stream_size must be a positive integer.
+          It is the largest number of the most recent
+          elements in the stream that are in main memory.
+          default : DEFAULT_STREAM_SIZE
+                    where DEFAULT_STREAM_SIZE is
+                    specified in SystemParameters.py
+    buffer_size : int, optional
+           buffer_size must be a positive integer.
+           An exception may be thrown if an agent reads an
+           element with index i in the stream where i is
+           less than the length of the stream - buffer_size.
+           default : DEFAULT_BUFFER_SIZE_FOR_STREAM
+                     specified in SystemParameters.py
 
+    Attributes
+    ----------
+    recent : list
+          A list of the most recent values of the stream.
+          recent is a NumPy array if specified.
+    stop : int
+          index into the list recent.
+          s.recent[:s.stop] contains the s.stop most recent
+          values of stream s.
+          s.recent[s.stop:] contains padded values.
+    offset: int
+          index into the stream used to map the location of
+          an element in the entire stream with the location
+          of the same element in s.recent, which only
+          contains the most recent elements of the stream.
+          For a stream s:
+                   s.recent[i] = s[i + s.offset]
+                      for i in range(s.stop)
+    start : dict of readers.
+            key = reader
+            value = start index of the reader
+            Reader r can read the slice:
+                      s.recent[s.start[r] : s.stop ]
+            in s.recent which is equivalent to the following
+            slice in the entire stream:
+                    s[s.start[r]+s.offset: s.stop+s.offset]
+    subscribers_set: set
+             the set of subscribers for this stream.
+             Subscribers are agents to be notified when an
+             element is added to the stream.
+    closed: boolean
+             True if and only if the stream is closed.
+             An exception is thrown if a value is appended to
+             a closed stream.
+    _buffer_size: int
+            Invariant:
+            For every reader r of stream s:
+                 s.stop - s.start[r] < s._buffer_size
+            A reader can only access _buffer_size number of
+            consecutive, most recent, elements in the stream.
+    _begin : int
+            index into the list, recent
+            recent[:_begin] is not being accessed by any reader;
+            therefore recent[:_begin] can be deleted from main
+            memory.
+            Invariant:
+                    for all readers r:
+                          _begin <= min(start[r])
+
+    Notes
+    -----
     1. AGENTS SUBSCRIBING TO A STREAM
 
     An agent is a state-transition automaton and
@@ -289,85 +368,6 @@ class Stream(object):
     s.stop - buffer_size. Now
        s.stop = 2
        s.offset = 4
-
-    Parameters
-    ----------
-    name : str, optional
-          name of the stream. Though the name is optional
-          a named stream helps with debugging.
-          default : 'NoName'
-    proc_name : str, optional
-          The name of the process in which this agent
-          executes.
-          default: 'UnknownProcess'
-    initial_value : list or array, optional
-          The list (or array) of initial values in the
-          stream.
-          default : []
-    stream_size: int, optional
-          stream_size must be a positive integer.
-          It is the largest number of the most recent
-          elements in the stream that are in main memory.
-          default : DEFAULT_STREAM_SIZE
-                    where DEFAULT_STREAM_SIZE is
-                    specified in SystemParameters.py
-    buffer_size : int, optional
-           buffer_size must be a positive integer.
-           An exception may be thrown if an agent reads an
-           element with index i in the stream where i is
-           less than the length of the stream - buffer_size.
-           default : DEFAULT_BUFFER_SIZE_FOR_STREAM
-                     specified in SystemParameters.py
-
-    Attributes
-    ----------
-    recent : list
-          A list of the most recent values of the stream.
-          recent is a NumPy array if specified.
-    stop : int
-          index into the list recent.
-          s.recent[:s.stop] contains the s.stop most recent
-          values of stream s.
-          s.recent[s.stop:] contains padded values.
-    offset: int
-          index into the stream used to map the location of
-          an element in the entire stream with the location
-          of the same element in s.recent, which only
-          contains the most recent elements of the stream.
-          For a stream s:
-                   s.recent[i] = s[i + s.offset]
-                      for i in range(s.stop)
-    start : dict of readers.
-            key = reader
-            value = start index of the reader
-            Reader r can read the slice:
-                      s.recent[s.start[r] : s.stop ]
-            in s.recent which is equivalent to the following
-            slice in the entire stream:
-                    s[s.start[r]+s.offset: s.stop+s.offset]
-    subscribers_set: set
-             the set of subscribers for this stream.
-             Subscribers are agents to be notified when an
-             element is added to the stream.
-    closed: boolean
-             True if and only if the stream is closed.
-             An exception is thrown if a value is appended to
-             a closed stream.
-    _buffer_size: int
-            Invariant:
-            For every reader r of stream s:
-                 s.stop - s.start[r] < s._buffer_size
-            A reader can only access _buffer_size number of
-            consecutive, most recent, elements in the stream.
-    _begin : int
-            index into the list, recent
-            recent[:_begin] is not being accessed by any reader;
-            therefore recent[:_begin] can be deleted from main
-            memory.
-            Invariant:
-                    for all readers r:
-                          _begin <= min(start[r])
-
 
     """
     def __init__(self, name="NoName", proc_name="UnknownProcess",
