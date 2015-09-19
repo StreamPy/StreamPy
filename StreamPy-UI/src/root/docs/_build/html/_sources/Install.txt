@@ -1,0 +1,27 @@
+Install tool
+============
+
+Requirements: Python 2.7
+
+#. Open your terminal or command line program.
+
+#. Check that you have Python 2.7 installed by entering in:
+	``python``	
+
+   It should say something like this:
+	``Python 2.7.10 (default, Jul 13 2015, 12:05:58) 
+	[GCC 4.2.1 Compatible Apple LLVM 6.1.0 (clang-602.0.53)] on darwin
+	Type "help", "copyright", "credits" or "license" for more information.``
+
+   Get out of the Python shell by typing in
+	``quit()``
+
+#. Type in the following line to download the files:
+	``git clone https://github.com/klyap/PStreams-UI.git``
+
+#. Navigate to the folder with the code in it by typing in terminal/command line:
+	``cd src/root/nested``
+
+#. Run the tool by typing in:
+	``python run.py FILENAMEHERE.json``
+   where ``FILENAMEHERE`` is the name of a JSON file downloaded from flowhub.com or one that is in the special format for this tool.

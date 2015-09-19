@@ -1,0 +1,184 @@
+{
+    "properties": {
+        "name": "multiplyparam",
+        "project": "agentdemo",
+        "id": "agentdemo/multiplyparam",
+        "environment": {
+            "type": "noflo-browser"
+        },
+        "changed": true
+    },
+    "inports": {},
+    "outports": {},
+    "groups": [],
+    "processes": {
+        "agentdemo/generate_stream_of_random_integers_yr0l2": {
+            "component": "agentdemo/generate_stream_of_random_integers",
+            "metadata": {
+                "label": "agentdemo/generate_stream_of_random_integers",
+                "x": 252,
+                "y": 216,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "agentdemo/multiply_elements_stream_3s6ur": {
+            "component": "agentdemo/multiply_elements_stream",
+            "metadata": {
+                "label": "agentdemo/multiply_elements_stream",
+                "x": 504,
+                "y": 108,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "agentdemo/print_value_stream_91gao": {
+            "component": "agentdemo/print_value_stream",
+            "metadata": {
+                "label": "agentdemo/print_value_stream",
+                "x": 756,
+                "y": 144,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "agentdemo/print_value_stream_of7eo": {
+            "component": "agentdemo/print_value_stream",
+            "metadata": {
+                "label": "agentdemo/print_value_stream",
+                "x": 576,
+                "y": 360,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "connections": [
+        {
+            "src": {
+                "process": "agentdemo/generate_stream_of_random_integers_yr0l2",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "agentdemo/print_value_stream_of7eo",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "agentdemo/generate_stream_of_random_integers_yr0l2",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "agentdemo/multiply_elements_stream_3s6ur",
+                "port": "multiplier"
+            },
+            "metadata": {
+                "route": 0
+            }
+        },
+        {
+            "src": {
+                "process": "agentdemo/multiply_elements_stream_3s6ur",
+                "port": "product"
+            },
+            "tgt": {
+                "process": "agentdemo/print_value_stream_91gao",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "data": "generate_of_random_integers",
+            "tgt": {
+                "process": "agentdemo/generate_stream_of_random_integers_yr0l2",
+                "port": "func"
+            }
+        },
+        {
+            "data": "element",
+            "tgt": {
+                "process": "agentdemo/generate_stream_of_random_integers_yr0l2",
+                "port": "type"
+            }
+        },
+        {
+            "data": "None",
+            "tgt": {
+                "process": "agentdemo/generate_stream_of_random_integers_yr0l2",
+                "port": "state"
+            }
+        },
+        {
+            "data": "multiply_elements",
+            "tgt": {
+                "process": "agentdemo/multiply_elements_stream_3s6ur",
+                "port": "func"
+            }
+        },
+        {
+            "data": "element",
+            "tgt": {
+                "process": "agentdemo/multiply_elements_stream_3s6ur",
+                "port": "type"
+            }
+        },
+        {
+            "data": "None",
+            "tgt": {
+                "process": "agentdemo/multiply_elements_stream_3s6ur",
+                "port": "state"
+            }
+        },
+        {
+            "data": "2",
+            "tgt": {
+                "process": "agentdemo/multiply_elements_stream_3s6ur",
+                "port": "multiplier"
+            }
+        },
+        {
+            "data": "print_value",
+            "tgt": {
+                "process": "agentdemo/print_value_stream_91gao",
+                "port": "func"
+            }
+        },
+        {
+            "data": "element",
+            "tgt": {
+                "process": "agentdemo/print_value_stream_91gao",
+                "port": "type"
+            }
+        },
+        {
+            "data": "0",
+            "tgt": {
+                "process": "agentdemo/print_value_stream_91gao",
+                "port": "state"
+            }
+        },
+        {
+            "data": "print_value",
+            "tgt": {
+                "process": "agentdemo/print_value_stream_of7eo",
+                "port": "func"
+            }
+        },
+        {
+            "data": "element",
+            "tgt": {
+                "process": "agentdemo/print_value_stream_of7eo",
+                "port": "type"
+            }
+        },
+        {
+            "data": "0",
+            "tgt": {
+                "process": "agentdemo/print_value_stream_of7eo",
+                "port": "state"
+            }
+        }
+    ]
+}
