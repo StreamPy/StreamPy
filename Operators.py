@@ -115,21 +115,73 @@ def remove_novalue_and_open_multivalue(l):
 
 
 """PART 1 OF MODULE
-Functions that convert operations on non-streaming data structures
-to operations on streams. The data structures and corresponding functions are:
-  (a) lists: list_func
-  (b) single elements of list: element_func
-  (c) moving windows: window_func
-  (d) timed windows: timed_func
-Each of these functions has the following parameters:
-f, inputs, num_outputs, state, call_streams
-where:
-  f is a Python function on non-streaming data structures.
-   for list_func, f: list of lists, state -> list of lists, state
-   for element_funct, f: list, state -> list, state
-   for window_func, f: list, state -> element, state
-   for timed_func, f: timed list, state -> timed element, state
-     where a timed element has a time field and a value field.
+This part consists of functions that convert operations
+on conventional data structures to operations on streams.
+The functions are of two types:
+(1) functions that return agents
+      e.g., list_agent, element_agent, window_agent,
+            dynamic_window_agent, timed_agent
+(2) functions that return streams
+      e.g., list_func, element_func, window_func,
+           dynamic_window_func, timed_func
+
+Functions that return agents have the following parameters:
+f, inputs, num_outputs, state, call_streams, window_size,
+step_size.
+
+Parameters
+----------
+inputs : list of streams
+        The streams read by this agent.
+        inputs may be an empty list. (For example a data
+        source may not read any stream.)
+        inputs corresponds to parameter in_streams of agent.
+outputs : list of streams.
+        The streams written by this agent.
+        outputs may be an empty list.
+        outputs corresponds to parameter out_streams of agent.
+state : object
+        The state of the agent
+call_streams : list of streams
+        See call_streams in agent
+window_size : positive integer or None
+        For moving window operations, this is the size of
+        the window. The size is the number of elements in
+        the window.
+        window_size is None for operations that are not on
+        windows. For example, if the operation is on a single
+        element of a stream then window_size should be None
+        rather than 1 even though a window_size of 1 would work.
+step_size : positive integer or None
+        step_size is the distance that a window is moved on
+        each step.
+f : function
+        The function executed in a state transition.
+        Inputs to the function:
+         (1) A list of objects where the length of the list
+             is the number of input streams of the agent,
+             and where the object depends on the type of
+             wrapper used to convert f to a function on
+             streams. The objects are either elements of
+             the stream or windows into the stream.
+         (2) The state of the agent before a state transition.
+        Outputs of the function:
+         (1) A list of objects where the length of the list
+             is the number of output streams of the agent.
+             The j-th object in the list is appended to the
+             j-th output stream of the agent.
+         (2) The state of the agent after the transition.
+
+Notes
+-----
+The structure of each of these functions is as follows:
+The functions element_agent, window_agent, timed_agent
+create agents. The functions element_func, window_func,
+timed_func call element_agent, window_agent, timed_agent
+(respectively) to create agents and also to create their
+output streams. The functions element_func, window_func,
+and timed_func are syntactic sugar; they are convenient
+for functional composition.
 
 """
 
@@ -139,7 +191,6 @@ where:
 
 def list_agent(f, inputs, outputs, state, call_streams,
               window_size, step_size):
-    # f: list of lists, state -> list of lists, state
     assert_is_list_of_streams_or_None(call_streams)
 
     def transition(in_lists, state):
@@ -695,8 +746,13 @@ def asynch_element_func(
 """
 PART 2 OF MODULE.
 Functions that map the general case of an arbitrary
-number of input streams and output streams to the special cases
-of merge, split, op, source and sink.
+number of input streams and an arbitrary number of output streams
+to the following special cases:
+  (1) merge: multiple input streams, single output stream
+  (2) split: single input stream, multiple output streams
+  (3) op: single input stream, single output stream
+  (4) source: no input stream, single output stream
+  (5) sink: single input stream, no output streams.
 
 Each of these functions has the following parameters:
 f, h, in_streams, window_size, step_size, state, call_streams.
@@ -715,15 +771,16 @@ state: The state of the computation.
 call_streams: A list of streams. When a value is appended to any
       stream in this list, the function is executed.
 
-merge: list of input streams, single output stream
-split: single input stream, list of output streams
-op: single input and single output stream
-source: no input
-f, in_streams, state, call_streams, window_size, step_size)
 """
 
 
 def h(f_type, *args):
+    """ Calls the appropriate wrapper function given
+    the name of the wrapper. The wrapper functions are
+    list_func, element_func, window_func, ... for
+    wrapper names 'list', 'element', 'window',..
+
+    """
     if f_type is 'list':
         return list_func(*args)
     elif f_type is 'element':
@@ -739,6 +796,12 @@ def h(f_type, *args):
 
 
 def h_agent(f_type, *args):
+    """ Calls the appropriate wrapper function given
+    the name of the wrapper.  The wrapper functions are
+    list_agent, element_agent, window_agent, ... for
+    wrapper names 'list', 'element', 'window',..
+
+    """
     if f_type is 'list':
         return list_agent(*args)
     elif f_type is 'element':
@@ -759,7 +822,7 @@ def many_to_many(f_type, f, in_streams, num_outputs, state,
         if state is None: return f(x)
         else:
             output, new_state = f(x, state)
-            return (output, new_state)
+        return (output, new_state)
 
     out_streams = h(f_type, g, in_streams, num_outputs, state,
                     call_streams, window_size, step_size)
