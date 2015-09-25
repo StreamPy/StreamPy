@@ -1,0 +1,48 @@
+{
+"agent_descriptor_dict":
+{
+    "generate_stream_of_random_integers": [
+        [],
+        [
+            "generate_stream_of_random_integers_PORT_out"
+        ],
+        "generate_of_random_integers",
+        "element",
+        null,
+        null
+    ],
+    "multiply_elements": [
+        [
+            "generate_stream_of_random_integers_PORT_out"
+        ],
+        [
+            "multiply_elements_PORT_product"
+        ],
+        "multiply_elements",
+        "element",
+        [
+            1000.0
+        ],
+        null
+    ],
+    "print_value_stream": [
+        [
+            "multiply_elements_PORT_product"
+        ],
+        [],
+        "print_value",
+        "element",
+        null,
+        0.0
+    ]
+},
+"stream_names_tuple":
+[
+    "generate_stream_of_random_integers_PORT_out",
+    "multiply_elements_PORT_product"
+],
+"inports":
+{},
+"outports":
+{}
+}

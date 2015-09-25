@@ -1,0 +1,121 @@
+{
+    "properties": {
+        "name": "makenetwork",
+        "project": "demo",
+        "id": "demo/makenetwork",
+        "environment": {
+            "type": "noflo-browser"
+        },
+        "changed": true
+    },
+    "inports": {},
+    "outports": {},
+    "groups": [],
+    "processes": {
+        "demo/split_stream_29xsv": {
+            "component": "demo/split_stream",
+            "metadata": {
+                "label": "demo/split_stream",
+                "x": 324,
+                "y": 108,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "demo/generate_stream_of_random_integers_3rh2y": {
+            "component": "demo/generate_stream_of_random_integers",
+            "metadata": {
+                "label": "demo/generate_stream_of_random_integers",
+                "x": 180,
+                "y": 144,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "demo/print_value_stream_455bo": {
+            "component": "demo/print_value_stream",
+            "metadata": {
+                "label": "demo/print_value_stream",
+                "x": 504,
+                "y": 72,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "demo/print_value_stream_p0ykj": {
+            "component": "demo/print_value_stream",
+            "metadata": {
+                "label": "demo/print_value_stream",
+                "x": 540,
+                "y": 216,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "demo/print_value_stream_vyz18": {
+            "component": "demo/print_value_stream",
+            "metadata": {
+                "label": "demo/print_value_stream",
+                "x": 396,
+                "y": 288,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "connections": [
+        {
+            "src": {
+                "process": "demo/generate_stream_of_random_integers_3rh2y",
+                "port": "output"
+            },
+            "tgt": {
+                "process": "demo/split_stream_29xsv",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "demo/split_stream_29xsv",
+                "port": "multiples"
+            },
+            "tgt": {
+                "process": "demo/print_value_stream_455bo",
+                "port": "input"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "demo/split_stream_29xsv",
+                "port": "nonmultiples"
+            },
+            "tgt": {
+                "process": "demo/print_value_stream_p0ykj",
+                "port": "input"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "demo/generate_stream_of_random_integers_3rh2y",
+                "port": "output"
+            },
+            "tgt": {
+                "process": "demo/print_value_stream_vyz18",
+                "port": "input"
+            },
+            "metadata": {
+                "route": 0
+            }
+        },
+        {
+            "data": "2",
+            "tgt": {
+                "process": "demo/split_stream_29xsv",
+                "port": "param"
+            }
+        }
+    ]
+}

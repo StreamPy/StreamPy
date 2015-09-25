@@ -1,0 +1,11 @@
+if __name__ == '__main__':
+    if __package__ is None:
+        import sys
+        from os import path
+        sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+
+from Stream import Stream
+from Operators import stream_func
+from components_test import *
+#from components import *
+

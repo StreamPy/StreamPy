@@ -1,0 +1,5 @@
+# Compiled files
+*.pyc
+
+# OS X Metadata
+.DS_Store

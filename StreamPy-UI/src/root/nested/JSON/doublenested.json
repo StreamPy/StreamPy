@@ -1,0 +1,92 @@
+{
+    "properties": {
+        "name": "main",
+        "id": "noflo-customname/main",
+        "project": "noflo-customname",
+        "environment": {
+            "type": "noflo-browser",
+            "content": ""
+        },
+        "changed": true,
+        "icon": ""
+    },
+    "inports": {},
+    "outports": {},
+    "groups": [],
+    "processes": {
+        "customname/subgraph_g9h6i": {
+            "component": "customname/subgraph",
+            "metadata": {
+                "label": "customname/subgraph",
+                "x": 612,
+                "y": 288,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "customname/print_value_stream_7zeq0": {
+            "component": "customname/print_value_stream",
+            "metadata": {
+                "label": "customname/print_value_stream",
+                "x": 828,
+                "y": 252,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "customname/generate_stream_of_random_integers_m5s8h": {
+            "component": "customname/generate_stream_of_random_integers",
+            "metadata": {
+                "label": "customname/generate_stream_of_random_integers",
+                "x": 396,
+                "y": 288,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "connections": [
+        {
+            "src": {
+                "process": "customname/subgraph_g9h6i",
+                "port": "out1"
+            },
+            "tgt": {
+                "process": "customname/print_value_stream_7zeq0",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "customname/generate_stream_of_random_integers_m5s8h",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "customname/subgraph_g9h6i",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "customname/generate_stream_of_random_integers_m5s8h",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "customname/subgraph_g9h6i",
+                "port": "in1"
+            },
+            "metadata": {
+                "route": 0
+            }
+        },
+        {
+            "data": "0",
+            "tgt": {
+                "process": "customname/print_value_stream_7zeq0",
+                "port": "state"
+            }
+        }
+    ]
+}

@@ -1,0 +1,169 @@
+{
+    "properties": {
+        "name": "simplegroups",
+        "project": "agentdemo",
+        "id": "agentdemo/simplegroups",
+        "environment": {
+            "type": "noflo-browser"
+        },
+        "changed": true
+    },
+    "inports": {},
+    "outports": {},
+    "groups": [
+        {
+            "name": "split_and_multiply",
+            "nodes": [
+                "agentdemo/multiply_elements_stream_brc4z",
+                "agentdemo/multiply_elements_stream_rms3",
+                "agentdemo/split_into_even_odd_stream_yi3ux"
+            ],
+            "metadata": {
+                "description": ""
+            }
+        },
+        {
+            "name": "print",
+            "nodes": [
+                "agentdemo/print_value_stream_g7jev",
+                "agentdemo/print_value_stream_x9vfa"
+            ],
+            "metadata": {
+                "description": ""
+            }
+        }
+    ],
+    "processes": {
+        "agentdemo/generate_stream_of_random_integers_dvb0": {
+            "component": "agentdemo/generate_stream_of_random_integers",
+            "metadata": {
+                "label": "agentdemo/generate_stream_of_random_integers",
+                "x": 252,
+                "y": 180,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "agentdemo/split_into_even_odd_stream_yi3ux": {
+            "component": "agentdemo/split_into_even_odd_stream",
+            "metadata": {
+                "label": "agentdemo/split_into_even_odd_stream",
+                "x": 360,
+                "y": 108,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "agentdemo/multiply_elements_stream_brc4z": {
+            "component": "agentdemo/multiply_elements_stream",
+            "metadata": {
+                "label": "agentdemo/multiply_elements_stream",
+                "x": 576,
+                "y": 108,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "agentdemo/multiply_elements_stream_rms3": {
+            "component": "agentdemo/multiply_elements_stream",
+            "metadata": {
+                "label": "agentdemo/multiply_elements_stream",
+                "x": 576,
+                "y": 216,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "agentdemo/print_value_stream_x9vfa": {
+            "component": "agentdemo/print_value_stream",
+            "metadata": {
+                "label": "agentdemo/print_value_stream",
+                "x": 720,
+                "y": 72,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "agentdemo/print_value_stream_g7jev": {
+            "component": "agentdemo/print_value_stream",
+            "metadata": {
+                "label": "agentdemo/print_value_stream",
+                "x": 756,
+                "y": 216,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "connections": [
+        {
+            "src": {
+                "process": "agentdemo/generate_stream_of_random_integers_dvb0",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "agentdemo/split_into_even_odd_stream_yi3ux",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "agentdemo/split_into_even_odd_stream_yi3ux",
+                "port": "even"
+            },
+            "tgt": {
+                "process": "agentdemo/multiply_elements_stream_brc4z",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "agentdemo/split_into_even_odd_stream_yi3ux",
+                "port": "odd"
+            },
+            "tgt": {
+                "process": "agentdemo/multiply_elements_stream_rms3",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "agentdemo/multiply_elements_stream_brc4z",
+                "port": "product"
+            },
+            "tgt": {
+                "process": "agentdemo/print_value_stream_x9vfa",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "agentdemo/multiply_elements_stream_rms3",
+                "port": "product"
+            },
+            "tgt": {
+                "process": "agentdemo/print_value_stream_g7jev",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "data": "2",
+            "tgt": {
+                "process": "agentdemo/multiply_elements_stream_brc4z",
+                "port": "multiplier"
+            }
+        },
+        {
+            "data": "3",
+            "tgt": {
+                "process": "agentdemo/multiply_elements_stream_rms3",
+                "port": "multiplier"
+            }
+        }
+    ]
+}

@@ -1,0 +1,7 @@
+def MODULE_NAME (IN_STREAM, OUT_STREAM):
+    ## TODO: Insert your code here
+    print('OUT_STREAM')
+    return OUT_STREAM
+
+MODULE_NAME_in_stream = partial(stream_func, f_type='element', f= MODULE_NAME, num_outputs= NUM_OUT)
+
