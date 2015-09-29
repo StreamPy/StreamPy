@@ -239,7 +239,9 @@ def element_agent(f, inputs, outputs, state, call_streams,
         #list_of_output_list[i] will be set to the output value
         # corresponding to the i-th value in each of the input
         # streams
-        list_of_output_list = [[]]*len(input_lists)
+        list_of_output_list = list()
+        for _ in range(len(input_lists)):
+            list_of_output_list.append(list())
         for i,input_list in enumerate(input_lists):
             if state is None:
                 output_list = f(input_list)
@@ -959,7 +961,7 @@ def many_outputs_source(f_type, f, num_outputs, state, call_streams,
 def sink(f_type, f, in_stream, state, call_streams, window_size, step_size):
     def g(x, state=None):
         if state is None: return f(x[0])
-        else: return f(x[0], state)
+        else: return ([], f(x[0], state))
 
     out_streams = h(f_type, g, [in_stream], 0, state, call_streams,
                     window_size, step_size)
