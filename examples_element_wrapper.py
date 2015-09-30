@@ -702,9 +702,9 @@ def file_to_stream(filename, stream, T):
     T: int or float, positive
 
     """
-    with open('filename.txt') as fp:
+    with open('filename') as fp:
         for line in fp:
-            s.append(line)
+            stream.append(line)
             time.sleep(T)
 
 
