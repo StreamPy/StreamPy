@@ -32,8 +32,9 @@ if __name__ == '__main__':
         from os import path
         sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
-from Stream import Stream, _no_value
+from Stream import Stream, _no_value, _multivalue
 from Operators import stream_func
+import json
 
 #######################################################
 #            PART 1
@@ -42,6 +43,7 @@ from Operators import stream_func
 
 #______________________________________________________
 # PART 1A: Stateless
+#______________________________________________________
 # Single input, single output, stateless functions
 
 # Inputs to the functions:
@@ -131,22 +133,22 @@ def double_stream(stream):
 
 # We could also have obtained the desired stream z1
 # using stream_func directly,
-z1 = stream_func(
-    inputs=x, f_type='element', f=double, num_outputs=1)
+# z1 = stream_func(
+#    inputs=x, f_type='element', f=double, num_outputs=1)
 
 
 
 #          EXAMPLE 3
 # Example of function composition.
-# Generate a stream w that doubles the squares of the elements
+# Generate a stream w1 that doubles the squares of the elements
 # of stream x
-w = double_stream(square_stream(x))
+# w1 = double_stream(square_stream(x))
 # If x is a stream [1, 3, 5, ...] then
-# w is a stream [2, 18, 50, ...]
+# w1 is a stream [2, 18, 50, ...]
 #
 # Generate a stream w2 that squares twice the elements
 # of stream x
-w2 = square_stream(double_stream(x))
+# w2 = square_stream(double_stream(x))
 # If x is a stream [1, 3, 5, ...] then
 # w2 is a stream [4, 36, 100, ...]
 
@@ -256,7 +258,7 @@ def evens_and_halves_3(stream):
 # If t = evens_and_halves_3(x)
 # and x is a stream [1, 2, 3, 4, 5, 6, ..] then
 # t is the stream [[2, 1], [4, 2], [6, 3],  .....] which is
-# different fro [2, 1, 4, 2, 6, 3, ...]
+# different from [2, 1, 4, 2, 6, 3, ...]
 
 
 
@@ -346,6 +348,7 @@ def boolean_of_values_greater_than_threshold(stream, threshold):
 
 #______________________________________________________
 # PART 1B
+#______________________________________________________
 # Single input, single output, stateful functions
 
 # Inputs to the functions:
@@ -364,7 +367,8 @@ def boolean_of_values_greater_than_threshold(stream, threshold):
 #     inputs=stream, # The name of the input stream
 #     f_type='element',
 #     f=g, # The name of the function that is wrapped
-#     num_outputs=1 # The number of outputs
+#     num_outputs=1, # The number of outputs
+#     state=initial_state # specifies the initial state
 #     )
 
 #______________________________________________________
@@ -606,6 +610,46 @@ def print_stream(stream):
         state=0)
 
 
+#          EXAMPLE 3
+
+# SPECIFICATION:
+# Write a function stream_to_file that has two
+# parameters, a single input stream and a filename.
+# The function returns None. The function
+# appends the json representations of the values
+# of its input stream into the file with name filename.
+
+# If the input stream has initial values [3, 5, ...]
+# and file is initially empty then the file should
+# have the json representations of 3 and 5, each on a
+# separate line.
+# (Note that if the file is not initially empty, then
+# the stream values are appended to the end of the
+# nonempty file.)
+
+# HOW TO DEVELOP THE STREAMING PROGRAM.
+
+# First step:
+# Write a function write_value_to_file(v) that
+# appends the json representation of v to the
+# file with name filename with each append on
+# a new line.
+
+# Second step:
+# Wrap the function, write_value_to_file, to
+# obtain the desired function, stream_to_file.
+# Define write_value_to_file inside the definition
+# of stream_to_file so that stream_to_file can
+# access the parameter, filename.
+
+def stream_to_file(stream, filename):
+    def write_value_to_file(v):
+        with open(filename, 'a') as input_file:
+            input_file.write(json.dumps(v) + '\n')
+    return stream_func(
+        inputs=stream, f_type='element',
+        f=write_value_to_file, num_outputs=0)
+
 
 
 #######################################################
@@ -625,87 +669,105 @@ def print_stream(stream):
 
 # SPECIFICATION:
 # Write a function, timer, with three parameters:
-# s, N and T where s is a stream, N is a
-# positive integer and T is a positive
-# number.
+# output_stream, num_outputs and time_period where
+# stream is a Stream, num_outputs is a positive integer
+#  and time_period is a positive number.
+# 
 # The function generates a stream consisting
-# of the values [0, 1,..., N-1]. An integer
-# is output to the stream every T seconds.
+# of the values [0, 1,..., num_outputs-1]. An integer
+# is output to the stream every time_period seconds.
 
 # THE STREAMING PROGRAM.
-# Illustrates that s.append(i) is analogous
-# to l.append(i) where s is a stream and l
+# Illustrates that stream.append(i) is analogous
+# to l.append(i) where stream is a Stream and l
 # is a list.
 import time
-def timer(s, N, T):
+def timer(output_stream, num_outputs, time_period):
     """
     Parameters
     ----------
-    s: Stream
-    N: int, positive
-    T: int or float, positive
+    stream: Stream
+    num_outputs: int, positive
+    time_period: int or float, positive
 
     """
-    for i in range(N):
-        s.append(i)
-        time.sleep(T)
+    for i in range(num_outputs):
+        output_stream.append(i)
+        time.sleep(time_period)
 
         
 
 #          EXAMPLE 2
 
 # SPECIFICATION:
-# Write a function, rand, with
-# three parameters: s, N and T where
-# s is a stream, N is a positive integer
-# and T is a positive number.
+# Write a function, rand, with three parameters:
+# output_stream, num_outputs, time_period.
+# where output_stream is a stream, num_outputs is
+# a nonnegative number and time_period is an
+# optional positive number. 
 # The function generates a stream of
-# N random numbers. A random number
-# is appended to the stream every T seconds.
+# num_outputs random numbers. If time_period
+# is provided, a random number is appended
+# to the stream periodically with the period
+# time_period. If time_period is not provided
+# random numbers are appended to the stream
+# continuously.
 
 # THE STREAMING PROGRAM.
 import time
 import random
-def rand(s, N, T):
+def rand(output_stream, num_outputs, time_period=0):
     """
     Parameters
     ----------
-    s: Stream
-    N: int, positive
-    T: int or float, positive
+    output_stream: Stream
+    num_outputs: int, positive
+    time_period: int or float, positive
 
     """
-    for _ in range(N):
-        s.append(random.random())
-        time.sleep(T)
+    if not time_period:
+        for _ in range(num_outputs):
+            output_stream.append(random.random())
+    else:
+        for _ in range(num_outputs):
+            output_stream.append(random.random())
+            time.sleep(time_period)
 
 
 #          EXAMPLE 3
 
 # SPECIFICATION:
 # Write a function, file_to_stream, with
-# three parameters: filename, a stream
-# and a time interval.
-# The function has access to a file:
-# filename.txt
-# The function outputs a line of the
-# file to the stream every T seconds.
+# three parameters: filename, output_stream
+# and time_period (optional)
+# The function reads a file called filename.
+# The file has json representations of objects,
+# with one or more representations per line.
+# The function appends the objects in the file,
+# to the stream. Objects from one line of the file
+# are appended the stream every time_period seconds
+# if time_period is specified. If time_period
+# is not specified, the function appends objects
+# from the file to the stream continuously.
+
 
 # THE STREAMING PROGRAM.
 import time
-def file_to_stream(filename, stream, T):
+def file_to_stream(filename, output_stream, time_period=0):
     """
     Parameters
     ----------
     filename: str
-    stream: Stream
-    T: int or float, positive
+    output_stream: Stream
+    time_period: int or float, nonnegative
 
     """
-    with open('filename') as fp:
-        for line in fp:
-            stream.append(line)
-            time.sleep(T)
+    with open(filename, 'r') as output_file:
+        for line in output_file:
+            values = [json.loads(v) for v in line.split()]
+            output_stream.extend(values)
+            if time_period:
+                time.sleep(time_period)
 
 
 #          EXAMPLE 4
@@ -713,17 +775,10 @@ def file_to_stream(filename, stream, T):
 # Illustrates the use of call_streams
 
 # SPECIFICATION:
-# Write a function, random_stream, analogous
-# to the function in example 2 (rand) except that
-# a step is taken (i.e. a value is appended to the
-# output stream) when a timer_stream is
-# modified. The timer_stream is specified outside
-# the function random_stream. random_stream returns
-# a stream: the stream of random numbers.
-# Note that in function, rand, the stream is passed
-# to rand as a parameter; by contrast, the stream
-# is not passed to the function, random_stream, 
-# which creates and returns the stream.
+# Write a function, single_stream_of_random_numbers,
+# that returns a single stream of random numbers.
+# A random number is appended to the output stream
+# when the parameter timer_stream is modified.
 
 # Note that in the wrapper, stream_func, the
 # parameter call_streams is a LIST of streams, and
@@ -742,6 +797,304 @@ def single_stream_of_random_numbers(timer_stream):
         call_streams=[timer_stream])
 
 
+
+#######################################################
+#            PART 4: SPLIT
+#      SINGLE INPUT, TWO OR MORE OUTPUTS.
+#######################################################
+
+#______________________________________________________
+# PART 4A: Stateless
+# Single input, two or more outputs, stateless functions
+# A python function with a single input and a tuple of
+# outputs is wrapped to produce a function with a single
+# input stream and a list of output streams
+#______________________________________________________
+
+#          EXAMPLE 1
+
+# SPECIFICATION:
+# Write a function, square_and_double_stream, with a
+# single parameter: an input stream. The function returns
+# a list of two streams where the elements of the first
+# output stream are squares of the elements of the input
+# stream and the elements of the second output stream are
+# twice those of the input stream. If the input is the
+# stream [0, 1, 2, 3, ...] then the function returns a list
+# of two streams the first of which is [0, 1, 4, 9, ...]
+# and the second is [0, 2, 4, 6, ..]
+
+# HOW TO DEVELOP THE STREAMING PROGRAM.
+
+# First step:
+# Write a function, square_and_double with a single parameter,
+# a number. The function returns a tuple of two values, the
+# square and double of the input.
+def square_and_double(m):
+    return (m*m, 2*m)
+
+# Second step:
+# Wrap the function, square_and_double, to
+# obtain the desired function, square_and_double_stream.
+def square_and_double_stream(stream):
+    return stream_func(
+        inputs=stream,
+        f_type='element',
+        f=square_and_double,
+        num_outputs=2 #Two output streams
+        )
+
+
+#          EXAMPLE 2
+
+# SPECIFICATION:
+# Write a function, exp_mult_div_stream, with four
+# parameters: stream, exponent, multiplier, and
+# divisor where the last three parameters are numbers.
+# The function returns a list of three streams where
+# the elements of the streams are the elements of the
+# input stream raised to exponent, multiplied by
+# multiplier and divided by divisor, respectively.
+# If the input stream is [0, 1, 2, 3, ...] and exponent
+# is 3, multiplier is 10, and divisor is 0.25 then the
+# function returns a list of three streams:
+# [0, 1, 8, 27, ...], [0, 10, 20, 30, ...], and
+# [0, 4, 8, 12, ...]
+
+# HOW TO DEVELOP THE STREAMING PROGRAM.
+
+# Wrap the function (see below) exp_mult_div_number
+def exp_mult_div_stream(stream, exponent, multiplier, divisor):
+    def exp_mult_div_number(n):
+        return [n**exponent, n*multiplier, n/divisor]
+    return stream_func(inputs=stream,
+                       f_type='element',
+                       f=exp_mult_div_number,
+                       num_outputs=3 # Returns list of 3 streams.
+                       )
+
+
+#          EXAMPLE 3
+# Illustrates use of _no_value
+
+# SPECIFICATION:
+# Write a function, even_odd_stream, with one parameter: stream.
+# The function returns a list of two streams, the first containing
+# the even values of the input stream, and the second containing
+# the odd values.
+
+# HOW TO DEVELOP THE STREAMING PROGRAM.
+
+# First step:
+# Write a function, even_odd with a single parameter,
+# a number. The function returns a tuple with 2 values,
+# that will be inserted into the two output streams of the
+# wrapped function. even_odd returns (_no_value, m) if m
+# is even, because the odd stream gets no value and the even
+# stream gets m. Symmetrically, even_odd returns (m, _no_value)
+# if m is odd.
+def even_odd(m):
+    if m%2: return [_no_value, m]
+    else: return [m, _no_value]
+
+# Second step:
+# Wrap the function, even_odd, to get the desired function.
+def even_odd_stream(stream):
+    return stream_func(inputs=stream,
+                       f_type='element',
+                       f=even_odd,
+                       num_outputs=2 # Returns list of 2 streams.
+                       )
+
+
+def main():
+    
+    # Illustration of timer: Part 3. Example 1
+    # and print_stream: Part 2a. Example 2
+
+    # Create a stream x and call it
+    # 'natural numbers'
+    x = Stream('natural numbers')
+    # Create an agent that prints the stream
+    print_stream(x)
+    # call function timer to populate the stream
+    timer(
+        output_stream=x,
+        num_outputs=5,
+        time_period=0.1)
+
+    ################################################
+    #         PART 1a
+    ################################################
+    
+    ################################################
+    print
+    print 'Part 1a. Example 1'
+    # Illustration of square_stream
+    # Create a stream y whose elements are the squares
+    # of the elements of x.
+    y = square_stream(x)
+    # Give the stream a name.
+    # A name helps in reading the output.
+    y.set_name('Squares of x')
+    print_stream(y)
+
+    ################################################
+    print
+    print 'Part 1a. Example 2'
+    # Illustration of double_stream. Part 1a. Example 2
+    # Create a stream z whose elements are twice the
+    # elements of x
+    z = double_stream(x)
+    # Give the stream a name and print it.
+    z.set_name('Doubles of x')
+    print_stream(z)
+
+    ################################################
+    print
+    print 'Part 1a. Example 3'
+    w1 = double_stream(square_stream(x))
+    w2 = square_stream(double_stream(x))
+    w1.set_name('Doubles of squares of x')
+    w2.set_name('Squares of doubles of x')
+    print_stream(w1)
+    print_stream(w2)
+
+    ################################################
+    print
+    print 'Part 1a. Example 4'
+    v = discard_odds(x)
+    v.set_name('Even numbers in x')
+    print_stream(v)
+
+    v1 = discard_odds_1(x)
+    v1.set_name('Even numbers or None in x')
+    print_stream(v1)
+
+    ################################################
+    print
+    print 'Part 1a. Example 5'
+    u = evens_and_halves(x)
+    u.set_name('Evens and halves of evens in x')
+    print_stream(u)
+
+    u3 = evens_and_halves_3(x)
+    u3.set_name('Tuples of evens and halves of evens in x')
+    print_stream(u3)
+
+    ################################################
+    print
+    print 'Part 1a. Example 6'
+    s = multiply_elements_in_stream(stream=x, multiplier=3)
+    s.set_name('Three times x')
+    print_stream(s)
+
+    ################################################
+    print
+    print 'Part 1a. Example 7'
+    r = boolean_of_values_greater_than_threshold(
+        stream=x, threshold=2)
+    r.set_name('Indicator of values above 2 in x')
+    print_stream(r)
+
+
+    ################################################
+    #   PART 1B
+    ################################################
+
+    ################################################
+    print
+    print 'Part 1b. Example 1'
+    q = cumulative_stream(x)
+    q.set_name('Cumulative sum of x')
+    print_stream(q)
+
+    ################################################
+    print
+    print 'Part 1b. Example 2'
+    o = average_stream(x)
+    o.set_name('Average of x')
+    print_stream(o)
+
+
+    ################################################
+    #   PART 2: SINKS
+    ################################################
+
+    ################################################
+    print
+    print 'Part 2. Example 1'
+    print0(x)
+
+    ################################################
+    print
+    print 'Part 2. Example 2'
+    print_stream(x)
+
+    stream_to_file(x, 'temp')
+
+    
+    ################################################
+    #   PART 3: SOURCES
+    ################################################
+
+    ################################################
+    print
+    print 'Part 3. Example 2'
+    c = Stream('Random numbers')
+    rand(output_stream=c, num_outputs=5, time_period=0.05)
+    print_stream(c)
+
+    ################################################
+    print
+    print 'Part 3. Example 3'
+    b = Stream('stream from file temp')
+    print_stream(b)
+    file_to_stream('temp', b)
+
+    ################################################
+    print
+    print 'Part 3. Example 4'
+    a = single_stream_of_random_numbers(x)
+    a.set_name('Stream of random numbers triggered by x')
+    print_stream(a)
+    
+    
+    ################################################
+    #   PART 4A: SPLIT. STATELESS
+    ################################################
+
+    ################################################
+    print
+    print 'Part 4. Example 1'
+    sqr, dbl = square_and_double_stream(x)
+    sqr.set_name('square of x')
+    dbl.set_name('twice x')
+    print_stream(sqr)
+    print_stream(dbl)
+
+    ################################################
+    print
+    print 'Part 4. Example 2'
+    exp, mul, div = \
+      exp_mult_div_stream(
+          stream=x, exponent=3, multiplier=10, divisor=0.25)
+    exp.set_name('raise to 3rd power of x')
+    mul.set_name('multiply 10 times x')
+    div.set_name('divide by 0.25 of x')
+    print_stream(exp)
+    print_stream(mul)
+    print_stream(div)
+
+    
+    ################################################
+    print
+    print 'Part 4. Example 3'
+    evens, odds = even_odd_stream(x)
+    evens.set_name('even values of x')
+    odds.set_name('odd values of x')
+    print_stream(evens)
+    print_stream(odds)
  
 if __name__ == '__main__':
     main()
