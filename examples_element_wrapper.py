@@ -35,10 +35,11 @@ if __name__ == '__main__':
 from Stream import Stream, _no_value, _multivalue
 from Operators import stream_func
 import json
+import numpy as np
 
 #######################################################
 #            PART 1
-#   SINGLE INPUT, SINGLE OUTPUT.
+#   SINGLE INPUT STREAM, SINGLE OUTPUT STREAM.
 #######################################################
 
 #______________________________________________________
@@ -502,7 +503,7 @@ def average_stream(stream):
 
 #######################################################
 #            PART 2: SINKS
-#      SINGLE INPUT, NO OUTPUT.
+#      SINGLE INPUT STREAM, NO OUTPUT STREAMS.
 #######################################################
 
 #______________________________________________________
@@ -654,7 +655,7 @@ def stream_to_file(stream, filename):
 
 #######################################################
 #            PART 3: SOURCES
-#      NO INPUTS, ONE OR MORE OUTPUTS.
+#   NO INPUT STREAMS, ONE OR MORE OUTPUT STREAMS
 #######################################################
 
 #______________________________________________________
@@ -800,7 +801,7 @@ def single_stream_of_random_numbers(timer_stream):
 
 #######################################################
 #            PART 4: SPLIT
-#      SINGLE INPUT, TWO OR MORE OUTPUTS.
+#      SINGLE INPUT STREAM, TWO OR MORE OUTPUT STREAMS.
 #######################################################
 
 #______________________________________________________
@@ -904,6 +905,357 @@ def even_odd_stream(stream):
                        f_type='element',
                        f=even_odd,
                        num_outputs=2 # Returns list of 2 streams.
+                       )
+
+
+#______________________________________________________
+# PART 4B: Stateful
+# Single input, two or more outputs, stateful functions
+# Write a python function with two inputs --- a stream element
+# and a state --- and that returns a tuple of stream 
+# elements and the next state. Wrap the function to produce a
+# function with a single input stream and a list of output
+# streams.
+#______________________________________________________
+
+#          EXAMPLE 1
+
+# SPECIFICATION:
+# Write a function that has a single input stream where the
+# elements of the stream are tuples:
+#      (sensor name, time, sensor reading)
+# The sensor name is either 'temperature' or 'humidity'
+# The time is a positive integer. The sensor reading is
+# a number where the temperature reading is greater than -274,
+# and the humidity reading is non-negative.
+# The function returns two output streams, one for temperature
+# and one for humidity. If the temperature input stream has
+# a value that is less than DELTA away from its previous output,
+# where DELTA is a constant parameter, then that value is not
+# placed on the output stream; if the value exceeds DELTA then
+# it is placed on the output stream. Similarly for humidity data.
+# The parameters of the function are the input stream and DELTA.
+# The function returns a list of two output streams, one for
+# temperature and the other for humidity.
+
+# HOW TO DEVELOP THE STREAMING PROGRAM.
+
+# First step:
+# The state of the agent is the last value output on each of
+# the temperature and humidity streams. The state is represented
+# by a tuple of 2 numbers.
+# Write a function t_and_h with two parameters:
+# (1) msg: a 3-tuple (sensor_name, time, reading), and
+# (2) a state (last_temperature, last_humidity)
+# The function returns:
+# (1) A 2-tuple representing the next outputs on the temperature
+#     and humidity streams, and
+# (2) the next state.
+# The function reads a constant DELTA defined outside the function.
+
+# Second step:
+# Wrap the function, t_and_h, to get the desired function.
+# Set the initial state to be a 2-tuple.
+def temperature_and_humidity_streams(stream, DELTA):
+    def t_and_h(msg, state):
+        sensor_name, time, reading = msg
+        index = 0 if sensor_name == 'temperature' else 1
+        next_output = [_no_value, _no_value]
+        next_state = state
+        if abs(state[index] - reading) > DELTA:
+            next_output[index] = msg
+            state[index] = reading
+        return (next_output, next_state)
+
+    return stream_func(inputs=stream,
+                       f_type='element',
+                       f=t_and_h,
+                       num_outputs=2, # Returns list of 2 streams.
+                       state= [-274, -1] # Initial state
+                       )    
+        
+        
+
+
+#######################################################
+#            PART 5: MERGE
+#   TWO OR MORE INPUT STREAMS, SINGLE OUTPUT STREAM.
+#
+#######################################################
+
+#______________________________________________________
+# PART 5A: Merge Stateless
+# Two or more inputs, single output, stateless functions.
+# A python function with a single input which is a list
+# and a single return value is wrapped to produce a
+# function with a list of input streams and a single output
+# stream.
+#
+# This merge is synchronous. The agent waits to receive
+# the j-th message in each input stream and then carries out
+# a computation on the list of j-th messages, one message per
+# input stream. The agent only outputs m messages where m
+# is the minimum number of messages in each of its input
+# streams.
+#
+# For asynchronous merges see asynch_element.
+#______________________________________________________        
+
+#          EXAMPLE 1
+
+# SPECIFICATION:
+# Write a function, mean_stream that has a single parameter,
+# a list of input streams. It returns a stream where the j-th
+# value of the stream is the mean of the j-th values of
+# its input streams. If the values of streams x, y, z
+# are [3, 5, 8], [1, 7, 2], and [2, 3] and the input to
+# the function is [x, y, z] then the output at this point
+# is [2.0, 5.0], i.e. (3+1+2)/3.0 and (1+7+3)/3.0
+
+# HOW TO DEVELOP THE STREAMING PROGRAM.
+
+# First step:
+# Write a function that takes a list of numbers as input
+# and that returns its mean. np.mean() is such a function.
+
+# Second step:
+# Wrap the function np.mean() to get the desired function
+# mean_stream.
+def mean_stream(list_of_streams):
+    return stream_func(inputs=list_of_streams,
+                       f_type='element',
+                       f=np.mean,
+                       num_outputs=1)
+
+
+#______________________________________________________
+# PART 5B: Merge Stateful
+# Two or more inputs, single output, stateful functions.
+# A python function with two parameters: (1) a list
+# and (2) a state, and that returns two values: (1) a
+# single element of a stream and (2) a new state, is
+# wrapped to obtain a function that has as input a
+# list of streams and outputs a single stream.
+#
+
+#          EXAMPLE 1
+
+# SPECIFICATION:
+# Write a function, max_stream that has a single parameter,
+# a list of input streams, and that outputs a single stream.
+# The elements of all the input streams are nonnegative
+# numbers.
+# The elements of the output stream are 3-tuples:
+# (0) max value seen so far in all the inputs,
+# (1) index of the list in which max value appears, and
+# (3) the time, i.e., the count, at which the max value appeared.
+# For example, if the list of input streams is [x, y] where
+# x = [10, 9, 3, 0, 7, 8, 10] and y = [8, 8, 4, 9, 12, 2, 3]
+# then the output stream would be [(10, 0, 0), (12, 1, 4)] because
+# x[0]=10 and y[4]=12 are the max values seen, and x is the
+# zeroth element of the input list, while y is the first element
+# of the input list.
+
+# First step:
+# The state of the computation is  a 2-tuple:
+# (0) the previous max value,
+# (1) the current time (count).
+
+# Write a function, max_with_index,
+# with two parameters: a list of numbers and a state.
+# The function returns a 2-tuple: (msg, next_state).
+
+# At each step, the current time is incremented by 1.
+# msg is _no_value to indicate no message or is the
+# 3-tuple (current max, current max index, current time).
+
+def max_with_index(list_of_numbers, state):
+    previous_max, current_time = state
+    current_max = max(list_of_numbers)
+    current_time += 1
+    if previous_max >= current_max:
+        msg = _no_value
+        state = (previous_max, current_time)
+    else:
+        current_max_index = list_of_numbers.index(current_max)
+        msg = (current_max, current_max_index, current_time)
+        state = (current_max, current_time)
+    return (msg, state)
+
+# Second step:
+# Wrap the function, max_with_index, to get the desired function
+# max_stream.
+def max_stream(list_of_streams):
+    return stream_func(inputs=list_of_streams,
+                       f_type='element',
+                       f=max_with_index,
+                       num_outputs=1,
+                       state=(-1, -1) # Initial (max, time)
+                       )
+
+
+
+
+#######################################################
+#            PART 6: MANY TO MANY
+# TWO OR MORE INPUT STREAMS, TWO OR MORE OUTPUT STREAMS.
+#
+#######################################################
+
+#______________________________________________________
+# PART 6A: Many to Many Stateless
+
+# A python function with a single parameter, a list
+# of stream elements and that returns a single value: a
+# list of stream elements is wrapped to obtain a function
+# that inputs a list of streams and that ouputs a list
+# of streams
+#
+
+#          EXAMPLE 1
+
+# SPECIFICATION:
+# Write a function, inrange_and_outlier_streams, with the
+# following parameters: a list of two streams and constants
+# A, B, DELTA. We call the two input streams x_stream and
+# y_stream. The elements of the input streams are numbers.
+# The function returns a list of two streams that we call
+# inrange_stream and outlier_stream. A pair of inputs
+# (x, y) from the input streams x_stream, y_stream is placed
+# in inrange_stream if abs(A*x+B - y) <= DELTA, and
+# in outlier_stream otherwise.
+
+# HOW TO DEVELOP THE STREAMING PROGRAM.
+
+# First step:
+# Write a function, inrange_and_outlier_values, with a
+# single parameter, a list of two values, where the values
+# are elements of streams. The function uses constants
+# A, B, DELTA which are defined outside the function.
+# The function returns a list of two values which will
+# be output on inrange_stream and outlier_stream. The
+# function returns _no_value to indicate that no value
+# is output.
+
+# Second step:
+# Wrap the function, inrange_and_outlier_values, to get
+# the function, inrange_and_outlier_streams.
+    
+def inrange_and_outlier_streams(
+        x_and_y_streams, A, B, DELTA):
+
+    def in_range_and_outlier_values(x_and_y):
+        x, y = x_and_y
+        if abs(A*x+B-y) > DELTA:
+            return ([_no_value, x_and_y])
+        else:
+            return ([x_and_y, _no_value])
+
+    return stream_func(
+        inputs=x_and_y_streams,
+        f_type='element',
+        f=in_range_and_outlier_values,
+        num_outputs=2)
+
+
+#______________________________________________________
+# PART 6A: Many to Many Stateful
+
+# Start with a python function with two parameters, a list
+# of stream elements and a state; the function returns a
+# list of stream elements and a new state. We wrap this 
+# function to obtain a function that takes a list of
+# streams as input and that ouputs a list of streams.
+#
+
+#          EXAMPLE 1
+
+# SPECIFICATION:
+# Write a function similar to that of Section 5B
+# (Merge, Stateful), example 1. Write max_and_min
+# which takes a list of streams as input and outputs
+# two streams. One of the output streams contains the
+# max value seen so far, and the time at which the
+# this max value was received and the other contains the
+# same for the min value.
+# The elements of the input streams are nonnegative
+# numbers less than 10000.
+
+# See Section 5B, example 1. A difference with the
+# example in 5B is that the output streams contain
+# the names of streams rather than their indexes.
+# The wrapped function, max_and_min_with_names,
+# must have access to the stream names. So the
+# wrapped function is defined inside the stream
+# function, max_and_min_stream.
+
+def max_and_min_with_names(list_of_numbers, state):
+    previous_max, previous_min, current_time = state
+    current_max = max(list_of_numbers)
+    current_min = min(list_of_numbers)
+    current_time += 1
+
+    if previous_max >= current_max:
+        msg_max = _no_value
+    else:
+        max_index = list_of_numbers.index(current_max)
+        max_stream_name = list_of_streams[max_index].name
+        msg_max = (current_max, max_stream_name, current_time)
+        previous_max = current_max
+
+    if previous_min  <= current_min:
+        msg_min = _no_value
+    else:
+        min_index = list_of_numbers.index(current_min)
+        min_stream_name = list_of_streams[min_index].name
+        msg_min = (current_min, min_stream_name, current_time)
+        previous_min = current_min
+
+    state = (previous_max, previous_min, current_time)
+    msgs_max_and_min = [msg_max, msg_min]
+
+    return (msgs_max_and_min, state)
+
+
+# Second step:
+# Wrap the function, max_with_index, to get the desired function
+# max_stream.
+def max_and_min_stream(list_of_streams):
+
+    def max_and_min_with_names(list_of_numbers, state):
+        previous_max, previous_min, current_time = state
+        current_max = max(list_of_numbers)
+        current_min = min(list_of_numbers)
+        current_time += 1
+
+        if previous_max >= current_max:
+            msg_max = _no_value
+        else:
+            max_index = list_of_numbers.index(current_max)
+            max_stream_name = list_of_streams[max_index].name
+            msg_max = (current_max, max_stream_name, current_time)
+            previous_max = current_max
+
+        if previous_min  <= current_min:
+            msg_min = _no_value
+        else:
+            min_index = list_of_numbers.index(current_min)
+            min_stream_name = list_of_streams[min_index].name
+            msg_min = (current_min, min_stream_name, current_time)
+            previous_min = current_min
+
+        state = (previous_max, previous_min, current_time)
+        msgs_max_and_min = [msg_max, msg_min]
+
+        return (msgs_max_and_min, state)
+    # Finished def max_and_min_with_names
+
+    # Wrapper
+    return stream_func(inputs=list_of_streams,
+                       f_type='element',
+                       f=max_and_min_with_names,
+                       num_outputs=2,
+                       state=(-1, 10000, -1) # Initial (max, min, time)
                        )
 
 
@@ -1095,7 +1447,106 @@ def main():
     odds.set_name('odd values of x')
     print_stream(evens)
     print_stream(odds)
- 
+
+        
+    ################################################
+    #   PART 4B: SPLIT. STATEFUL
+    ################################################
+    
+    ################################################
+    print
+    print 'Part 4B. Example 1'
+    input_temp_humid_stream = Stream('input temperature and humidity')
+    print_stream(input_temp_humid_stream)
+    input_temp_humid_stream.extend([
+        ('temperature', 2015101501, 60),
+        ('humidity', 2015101501, 30),
+        ('temperature', 2015101502, 61),
+        ('temperature', 2015101503, 62),
+        ('humidity', 2015101503, 31),
+        ('temperature', 2015101504, 63),
+        ('temperature', 2015101505, 65),
+        ('humidity', 2015101505, 32)
+        ])
+    
+    temperature_stream, humidity_stream = \
+      temperature_and_humidity_streams(input_temp_humid_stream, DELTA=1)
+    temperature_stream.set_name('changing temperatures')
+    humidity_stream.set_name('changing humidities')
+    print_stream(temperature_stream)
+    print_stream(humidity_stream)
+
+    
+    ################################################
+    #   PART 5A: MERGE. STATELESS
+    ################################################
+
+    ################################################
+    print
+    print 'Part 5A. Example 1'
+    aaa = Stream('aaa')
+    bbb = Stream('bbb')
+    ccc = Stream('ccc')
+    print_stream(aaa)
+    print_stream(bbb)
+    print_stream(ccc)
+    ddd = mean_stream([aaa, bbb, ccc])
+    ddd.set_name('mean of aaa, bbb, ccc')
+    print_stream(ddd)
+    aaa.extend([30, 25, 50, 6, 10])
+    bbb.extend([10, 15, 70, 8, 6])
+    ccc.extend([20, 21, 30, 4])
+
+
+   
+    ################################################
+    #   PART 5B: MERGE. STATEFUL
+    ################################################
+
+    ################################################
+    print
+    print 'Part 5B. Example 1'
+    eee = max_stream([aaa, bbb, ccc])
+    eee.set_name('max of aaa, bb, ccc')
+    print_stream(eee)
+
+
+   
+    ################################################
+    #   PART 6: MANY TO MANY. STATELESS
+    ################################################
+
+    ################################################
+    print
+    print 'Part 6A. Example 1'
+    xx = Stream('x_stream')
+    yy = Stream('y_stream')
+    
+    inrange_stream, outlier_stream = \
+      inrange_and_outlier_streams(
+        x_and_y_streams=[xx,yy],
+        A=2, B=1, DELTA=2)
+
+    inrange_stream.set_name('inrange')
+    outlier_stream.set_name('outlier')
+    print_stream(inrange_stream)
+    print_stream(outlier_stream)
+
+    xx.extend([3, 5, 8, 4, 6, 2])
+    yy.extend([7, 14, 2, 10, 12, 9])
+
+
+    ################################################
+    print
+    print 'Part 6B. Example 1'
+    max_stream_2, min_stream_2 = max_and_min_stream([aaa, bbb, ccc])
+
+    max_stream_2.set_name('max from max_and_min of aaa, bbb, ccc')
+    min_stream_2.set_name('min from max_and_min of aaa, bbb, ccc')
+
+    print_stream(max_stream_2)
+    print_stream(min_stream_2)
+    
 if __name__ == '__main__':
     main()
 
