@@ -26,11 +26,12 @@ For each of the above cases we first consider agents
 that are stateless and then consider agents with state.
 
 """
-if __name__ == '__main__':
-    if __package__ is None:
-        import sys
-        from os import path
-        sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+## Commenting this section that appends everything on the path
+## if __name__ == '__main__':
+##     if __package__ is None:
+##         import sys
+##         from os import path
+##         sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
 from Stream import Stream, _no_value, _multivalue
 from Operators import stream_func
