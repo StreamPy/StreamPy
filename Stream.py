@@ -1,7 +1,8 @@
 """ This module contains the Stream class. The
 Stream and Agent classes are the building blocks
 of PythonStreams.
-(Modified 2015_09_07_15_05, Added _close. Mani)
+(12 October 2015. Mani. Fixed bug. Made _no_value
+and _close classes rather than object.)
 """
 
 from SystemParameters import DEFAULT_STREAM_SIZE,\
@@ -17,19 +18,26 @@ TimeAndValue = namedtuple('TimeAndValue', ['time', 'value'])
 
 # _no_value is the message sent on a stream to indicate that no
 # value is sent on the stream at that point. _no_value is used
-# instead of None because a message with value None may be
-# meaningful.
-_no_value = object
+# instead of None because you may want an agent to send a message
+# with value None and for the agent receiving that message to
+# take some specific action.
+class _no_value(object):
+    def __init__(self):
+        pass
 
 # _close is the message sent on a stream to indicate that the
 # stream is closed.
-_close = object
+class _close(object):
+    def __init__(self):
+        pass
 
-
+# When _multivalue([x1, x2, x3,...]) is sent on a stream, the
+# actual values sent are the messages x1, then x2, then x3,....
+# as opposed to a single instance of the class _multivalue.
+# See examples_element_wrapper for examples using _multivalue.
 class _multivalue(object):
     def __init__(self, lst):
         self.lst = lst
-
 
 class Stream(object):
     """
