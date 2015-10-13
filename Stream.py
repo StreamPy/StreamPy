@@ -490,7 +490,7 @@ class Stream(object):
                 # close_flag indicates that this stream must
                 # be closed after _close is output
                 close_flag = True
-                index_of_close = value_list[_close]
+                index_of_close = value_list.index(_close)
                 # The last entry in value_list is _close
                 value_list = value_list[:index_of_close+1]
             else:
