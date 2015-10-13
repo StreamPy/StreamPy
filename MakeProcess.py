@@ -98,49 +98,43 @@ def make_input_manager(input_queue, input_stream_names,
     if not input_queue:
         finished_execution = True
 
-    ## DEBUGGING statements
-    ## for key, value in name_to_stream_dict.items():
-        ## print 'In make_input_manager'
-        ## print 'name_to_stream_dict. key = ', key
-        ## print 'name_to_stream_dict. value = ', value
-    
     while not finished_execution:
-        #print 'entered make_input_manager'
-        #print 'input_queue', input_queue
         try:
             message = input_queue.get()
-            #print 'in make_input_manager. message = ', message
+            message = json.loads(message)
+            #print 'make_input_manager, message = ', message
         except Exception, err:
             print 'Error', err
             return
         # This message_content is to be appended to the
         # stream with name stream_name.
-        print 'received message: ', message
+        #print 'received message: ', message
         stream_name, message_content = message
         # Get the input_stream to which the message must
         # be appended.
         input_stream = map_name_to_input_stream[stream_name]
-        
+
+        # Message arrived for a closed stream. Error!
         if input_stream.closed:
             print 'WARNING: inserting values into a closed stream!'
             return
 
+        # Append message_content to input_stream. Note message_content
+        # may be '_close'; in this case convert the message content to
+        # the object _close. This is because the string '_close' was
+        # used as a proxy for the object _close because strings can be
+        # serialized.
         if message_content == '_close':
+            message_content = _close
+        input_stream.append(message_content)
+
+        # Terminate execution of the input manager when all its
+        # input streams get closed.
+        if message_content == _close:
             input_stream.close()
-            #for stream in map_name_to_input_stream.values():
-                #print 'stream is ', stream
-                #print 'stream.closed is', stream.closed
             finished_execution = \
               all([stream.closed for stream in
                    map_name_to_input_stream.values()])
-        else:
-            #print 'In MakeInputManager, message_content = ', message_content
-            #print 'In MakeInputManager, input_stream = ', input_stream
-            input_stream.append(message_content)
-            #print 'Appended ', message_content
-            #print 'In MakeInputManager, input_stream.recent', input_stream.recent[:input_stream.stop]
-        # Trying sleep with ActiveMQ to see if that makes a difference.
-        #time.sleep(1.0)
 
 
 def make_output_manager(output_streams, output_queues_list):
@@ -211,13 +205,11 @@ def make_output_manager(output_streams, output_queues_list):
             message_content = '_close'
         # The message placed in each of the receiver queues is
         # a tuple (name of the stream, content of the message).
-        message = (output_stream_name, message_content)
+        message = json.dumps((output_stream_name, message_content))
 
         for receiver_queue in receiver_queue_list:
-            #print 'In MakeOutputManager. receiver_queue =', receiver_queue
             try:
                 receiver_queue.put(message)
-                print 'put message = ', message
             except Exception, err:
                 print 'Error', err
                 return
@@ -297,11 +289,6 @@ def make_process(
                 
 
     """
-    print 'input_queue', input_queue
-    print 'output_queues_list', output_queues_list
-    print 'input_stream_names', input_stream_names
-    print 'output_stream_names', output_stream_names
-
     # Create input_streams, output_streams and
     # map_name_to_input_stream
     input_streams = [Stream(name) for name in input_stream_names]
@@ -318,90 +305,128 @@ def make_process(
 
 
 def main():
-    def simple(input_streams, output_streams):
-        for i in range(5):
-            output_streams[0].append(i*10)
+    #########################################
+    # 1. DEFINE ELEMENT FUNCTIONS
+    # The signature for all these functions is
+    # f(input_streams, output_streams) where
+    # input_streams and output_streams are lists of
+    # Stream.
+
+    # Generate a stream with N random numbers and
+    # then close the stream.
+    N = 5
+    from random import randint
+    def random_ints(input_streams, output_streams):
+        # Append random numbers to output_streams[0]
+        # The numbers are in the interval (0, 99).
+        for i in range(N):
+            element_of_stream = randint(0,99)
+            output_streams[0].append(element_of_stream)
+            print 'In random_ints. element = ', element_of_stream
             time.sleep(0.1)
+
+        # Close this stream
         output_streams[0].append(_close)
 
-    
-    def double_agent(input_streams, output_streams):
+
+    # The single output stream returns the function f
+    # applied to elements of the single input stream.
+    # When the input stream is closed, also close the
+    # output stream.
+    def f(v): return 2*v
+    def apply_func_agent(input_streams, output_streams):
         input_stream = input_streams[0]
         output_stream = output_streams[0]
         
-        def double(v):
-            return 2*v
+        def apply_func(v):
+            # When the input stream is closed, return
+            # _close to cause the output stream to close.
+            if v == _close:
+                return _close
+            else:
+                return f(v)
         
         return stream_agent(
             inputs=input_stream,
             outputs=output_stream,
             f_type='element',
-            f=double)
+            f=apply_func)
 
+    # Print the values received on the input stream.
     def print_agent(input_streams, output_streams):
         input_stream = input_streams[0]
         
         def p(v):
-            pass
-            #print 'print_agent', input_stream.name, v
+            if v != _close:
+                print 'print_agent', input_stream.name, v
 
-        
         return stream_agent(
             inputs=input_stream,
             outputs=[],
             f_type='element',
             f=p)
+    
+    #########################################
+    # 2. CREATE QUEUES
 
     #queue_0 = None
-    queue_2 = Queue()
+    queue_1 = Queue() # Input queue for process_1
+    queue_2 = Queue() # Input queue for process_2
 
-    SERVER = 'pcbunn.cacr.caltech.edu'
-    PORT = 61613
-    DESTINATION='topic/remote_queue_new'
-    #queue_1 = RemoteQueue(SERVER, PORT, DESTINATION)
+    #########################################
+    # 2. CREATE PROCESSES
 
+    # This process is a source; it has no input queue
+    # This process sends simple_stream to queue_1
     process_0 = Process(target=make_process,
                         args= (
                             [], # list of input stream names
-                            ['s'], # list of output stream names
-                            simple, # func
+                            ['random_ints_stream'], # list of output stream names
+                            random_ints, # func
                             None, # the input queue
-                            #[[(SERVER, PORT, DESTINATION)]] # list of list of output queues
-                            [[queue_2]]
+                            [[queue_1]] # list of list of output queues
                             ))
 
-    ## process_1 = Process(target=make_process,
-    ##                     args= (
-    ##                         ['simple_stream'], # list of input stream names
-    ##                         ['double_stream'], # list of output stream names
-    ##                         double_agent, # func
-    ##                         queue_1, # the input queue
-    ##                         [[queue_2]] list of list of output queues
-    ##                         ))
+    # This process receives simple_stream from process_0.
+    # It sends double_stream to process_2.
+    # It receives messages on queue_1 and sends messages to queue_2.
+    process_1 = Process(target=make_process,
+                        args= (
+                            ['random_ints_stream'], # list of input stream names
+                            ['func_stream'], # list of output stream names
+                            apply_func_agent, # func
+                            queue_1, # the input queue
+                            [[queue_2]] #list of list of output queues
+                            ))
 
+    # This process is a sink; it has no output queue.
+    # This process receives double_stream from process_1.
+    # It prints the messages it receives.
+    # This process prints [0, 2, ... , 8]
     process_2 = Process(target=make_process,
                         args= (
-                            ['s'], # list of input stream names
+                            ['func_stream'], # list of input stream names
                             [], # list of output stream names
                             print_agent, # func
-                            #(SERVER, PORT, DESTINATION), # the input queue
-                            queue_2,
+                            queue_2, # the input queue
                             [] # list of list of output queues
                             ))
 
-    print 'starting process_0'
-    #process_1.start()
-    process_0.start()
-    #process_1.join()
-    
-    #time.sleep(1.0)
-                               
+    #########################################
+    # 3. START PROCESSES
     process_2.start()
-    
-    process_0.join()
+    process_1.start()
+    process_0.start()
+
+
+    #########################################
+    # 4. JOIN PROCESSES
+    time.sleep(0.5)
     process_2.join()
-    
-    
+    time.sleep(0.5)
+    process_1.join()
+    time.sleep(0.5)
+    process_0.join()
 
 
 
