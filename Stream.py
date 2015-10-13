@@ -485,14 +485,14 @@ class Stream(object):
         if isinstance(value_list, list):
             if _close in value_list:
                 # Since _close is in value_list, first output
-                # the messages in value_list up to the message
-                # _close and then close the stream.
+                # the messages in value_list up to and including 
+                # the message _close and then close the stream.
                 # close_flag indicates that this stream must
-                # be closed after earlier messages in value_list
-                # are output.
+                # be closed after _close is output
                 close_flag = True
                 index_of_close = value_list[_close]
-                value_list = value_list[:index_of_close]
+                # The last entry in value_list is _close
+                value_list = value_list[:index_of_close+1]
             else:
                 close_flag = False
 
