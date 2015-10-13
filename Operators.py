@@ -27,17 +27,11 @@ operations on Python structures to operations on streams regardless of
 whether the function has no inputs, a single input stream, a list of
 input streams, or no outputs, a single output stream or a list of output
 streams.
-
+(12 October 2015. Mani. Changed initialization of output_lists.)
 """
-if __name__ == '__main__':
-    if __package__ is None:
-        import sys
-        from os import path
-        sys.path.append(path.dirname(
-            path.dirname(path.abspath(__file__))))
 
-from Agent import *
-from Stream import *
+from Agent import Agent
+from Stream import Stream, StreamArray
 from Stream import _no_value, _multivalue, _close
 
 # ASSERTIONS USED IN FILE
@@ -564,7 +558,9 @@ def timed_agent(f, inputs, outputs, state, call_streams,
 
     def transition(in_lists, combined_state):
         window_start_time, state = combined_state
-        output_lists = [ [] for _ in range_out]
+        output_lists = list()
+        for _ in range_out:
+            output_lists.append([])
         window_end_time = window_start_time + window_size
         window_start_indexes = [ in_lists[j].start for j in range_in]
         while True:
@@ -655,7 +651,9 @@ def asynch_element_agent(
         # Assert at least one input stream has unprocessed data.
         
         # output_lists[j] will be sent on output stream j
-        output_lists = [[]]*num_outputs
+        output_lists = list()
+        for _ in num_outputs:
+            output_lists.append([])
         for stream_number, v in enumerate(in_lists):
             # if v.stop <= v.start then skip this input stream
             if v.stop > v.start:
