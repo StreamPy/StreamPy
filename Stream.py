@@ -525,7 +525,7 @@ class Stream(object):
         """
         if self.closed:
             return
-        print "Stream " + self.name + " in " + self.proc_name + " closed"
+        print 'The stream, ' + self.name + ", in a process is closed."
         self.closed = True
         # signal subscribers that the stream has closed.
         # for a in self.subscribers_set: a.signal()
