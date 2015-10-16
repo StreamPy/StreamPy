@@ -504,7 +504,7 @@ def average_stream(stream):
 
 #######################################################
 #            PART 2: SINKS
-#      SINGLE INPUT STREAM, NO OUTPUT STREAMS.
+#      ONE OR MORE INPUT STREAM, NO OUTPUT STREAMS.
 #######################################################
 
 #______________________________________________________
@@ -564,6 +564,9 @@ def print0(stream):
         inputs=stream, f_type='element',
         f=p0, num_outputs=0)
 
+#______________________________________________________
+# PART 2A: Stateful
+# Single input, no output,  with state
 
 #          EXAMPLE 2
 # Illustrates state.
@@ -648,11 +651,36 @@ def stream_to_file(stream, filename):
     def write_value_to_file(v):
         with open(filename, 'a') as input_file:
             input_file.write(json.dumps(v) + '\n')
+
     return stream_func(
         inputs=stream, f_type='element',
         f=write_value_to_file, num_outputs=0)
 
 
+
+#          EXAMPLE 4
+# Illustrates synchronous merge of multiple inputs
+# in a sink (i.e., no output).
+
+# SPECIFICATION:
+# Write a function, print_sums, with a single parameter
+# which is a list of streams. The function returns None.
+# The function prints the sum of the k-th elements of
+# all its input streams for all k.
+
+def print_sums(list_of_streams):
+    def print_sum_of_list(list_of_elements):
+        print 'sum of', list_of_elements, '=', sum(list_of_elements)
+
+    return stream_func(inputs=list_of_streams,
+                       f_type='element',
+                       f=print_sum_of_list,
+                       num_outputs=0)
+    
+
+#          EXAMPLE 5
+# For an illustration of a sink with asynchronous merge
+# of its inputs see Section 7.
 
 #######################################################
 #            PART 3: SOURCES
@@ -1160,7 +1188,7 @@ def inrange_and_outlier_streams(
 
 
 #______________________________________________________
-# PART 6A: Many to Many Stateful
+# PART 6B: Many to Many Stateful
 
 # Start with a python function with two parameters, a list
 # of stream elements and a state; the function returns a
@@ -1260,6 +1288,160 @@ def max_and_min_stream(list_of_streams):
                        )
 
 
+#######################################################
+#            PART 7: ASYNCHRONOUS MERGES
+# TWO OR MORE INPUT STREAMS, OPERATE ON ONE STREAN AT A TIME.
+#
+#######################################################
+# Asynchronous merges operate on an element from one
+# of the input streams at a time. By contrast, a regular
+# merge waits until an element appears on each of its
+# input streams. If a regular merge has two input streams
+# and one has m elements and the other has n elements, then
+# the merge can only operate on min(m,n) elements because it
+# operates on the same number of elements on each of its input
+# streams. By contrast, an asynchronous merge could have m+n
+# outputs.
+
+# When a new element appears in any input stream that
+# element is processed. The function that is wrapped has
+# a single parameter: msg_content_and_stream_index_tuple
+# message_content, stream_index = msg_content_and_stream_index_tuple
+# where stream_index is a pointer to the input stream in which
+# the latest message appeared, and message_content is this latest
+# element.
+
+#______________________________________________________
+#             EXAMPLE 1
+# PART 7 Example 1 Asynchronous merge.
+# Example with no output and no state
+
+# SPECIFICATION
+# Write a function, print_streams, that has a single input
+# a list of streams. The function returns None. The function
+# prints the elements that arrive on any of its input streams.
+# The function prints elements on any ONE stream in order;
+# however, the order in which elements from DIFFERENT streams
+# are printed is left unspecified.
+
+# HOW TO DEVELOP THE STREAMING PROGRAM.
+
+# First step:
+# Write a function, print_stream_asynch, with a
+# single parameter, msg_content_and_stream_index_tuple, where
+# message_content, stream_index = msg_content_and_stream_index_tuple.
+# This function returns None.
+
+# Second step:
+# Wrap the funtion, print_stream_asynch, to get the desired
+# function on streams.
+def print_streams(list_of_streams):
+    list_of_stream_names =[stream.name for stream in list_of_streams]
+
+    def print_stream_asynch(msg_content_and_stream_index_tuple):
+        message_content, stream_index = msg_content_and_stream_index_tuple
+        stream_name = list_of_stream_names[stream_index]
+        print stream_name, ':', message_content
+
+    return stream_func(
+        inputs=list_of_streams,
+        f_type='asynch_element',
+        f=print_stream_asynch,
+        num_outputs=0)
+
+
+
+#             EXAMPLE 2
+# Example of asynchronous merge; single output, stateless
+
+# SPECIFICATION
+# Write a function, join_streams, which outputs
+# the elements arriving on its input streams as
+# they arrive.
+
+def join_streams(list_of_streams):
+    list_of_stream_names =[stream.name for stream in list_of_streams]
+
+    def output_asynch(msg_content_and_stream_index_tuple):
+        message_content, stream_index = msg_content_and_stream_index_tuple
+        stream_name = list_of_stream_names[stream_index]
+        return ((stream_name, message_content))
+
+    return stream_func(
+        inputs=list_of_streams,
+        f_type='asynch_element',
+        f=output_asynch,
+        num_outputs=1)
+
+
+
+#             EXAMPLE 3
+# Example of asynchronous merge; single output, stateful
+
+# SPECIFICATION
+# Write a function, max_seen_across_all_streams, which outputs
+# the maximum of all the elements arriving on all its input
+# streams seen so far. The elements of the input streams are
+# nonnegative.
+
+def max_seen_across_all_streams(list_of_streams):
+    def max_of_all_inputs(list_of_elements, previous_max):
+        current_max = max(max(list_of_elements), previous_max)
+        msg = current_max
+        state = current_max
+        return (msg, state)
+
+    return stream_func(
+        inputs=list_of_streams,
+        f_type='asynch_element',
+        f=max_of_all_inputs,
+        num_outputs=1,
+        state = -1
+        )
+
+
+#             EXAMPLE 4
+# Example of asynchronous merge
+# multiple inputs, multiple outputs, stateful
+
+# SPECIFICATION
+# Write a function, max_and_min_seen_across_all_streams, which
+# has a single parameter, a list of streams, and which returns
+# a tuple of two streams. The first output stream contains
+# the maximum of all the elements that have arrived on all its input
+# streams seen so far. The elements of the input streams are
+# nonnegative. The second output stream contains the minimum of
+# all the elements that have arrived on all its input streams so far.
+# Values are placed on the output streams whenever the max and min
+# values change due to an arrival on any input stream. By contrast
+# (synchronous) merge waits to get k arrivals on each input stream
+# before making the k-th step of the computation.
+def max_and_min_seen_across_all_streams(list_of_streams):
+    def max_and_min_of_all_inputs(
+            msg_content_and_stream_index_tuple, state):
+        message_content, stream_index = msg_content_and_stream_index_tuple
+        previous_max, previous_min = state
+        current_max = max(message_content, previous_max)
+        current_min = min(message_content, previous_min)
+        next_msg = [_no_value, _no_value]
+        if current_max > previous_max:
+            next_msg[0] = current_max
+        if current_min < previous_min:
+            next_msg[1] = current_min
+        next_state = (current_max, current_min)
+        return (next_msg, next_state)
+
+    return stream_func(
+        inputs=list_of_streams,
+        f_type='asynch_element',
+        f=max_and_min_of_all_inputs,
+        num_outputs=2,
+        state = (-1, 1000)
+        )
+        
+
+
+    
 def main():
     
     # Illustration of timer: Part 3. Example 1
@@ -1282,6 +1464,10 @@ def main():
     
     ################################################
     print
+    print '**************************************************'
+    print 'EXAMPLES OF SINGLE INPUT, SINGLE OUTPUT, STATELESS'
+    print '**************************************************'    
+    
     print 'Part 1a. Example 1'
     # Illustration of square_stream
     # Create a stream y whose elements are the squares
@@ -1357,6 +1543,9 @@ def main():
 
     ################################################
     print
+    print '**************************************************'
+    print 'EXAMPLES OF SINGLE INPUT, SINGLE OUTPUT STATEFUL'
+    print '**************************************************'
     print 'Part 1b. Example 1'
     q = cumulative_stream(x)
     q.set_name('Cumulative sum of x')
@@ -1376,6 +1565,10 @@ def main():
 
     ################################################
     print
+    
+    print '**************************************************'
+    print 'EXAMPLES OF SINKS. NO OUTPUTS'
+    print '**************************************************'
     print 'Part 2. Example 1'
     print0(x)
 
@@ -1384,8 +1577,19 @@ def main():
     print 'Part 2. Example 2'
     print_stream(x)
 
+    ################################################
+    print
+    print 'Part 2. Example 3'
     stream_to_file(x, 'temp')
 
+    ################################################
+    print
+    print 'Part 2. Example 4'
+    alpha = Stream()
+    beta = Stream()
+    print_sums([alpha, beta])
+    alpha.extend([5, 8, 13, 19, 25, 30])
+    beta.extend([3, 16, 27, 11])
     
     ################################################
     #   PART 3: SOURCES
@@ -1393,6 +1597,10 @@ def main():
 
     ################################################
     print
+    
+    print '**************************************************'
+    print 'EXAMPLES OF SOURCES: NO INPUTS'
+    print '**************************************************'
     print 'Part 3. Example 2'
     c = Stream('Random numbers')
     rand(output_stream=c, num_outputs=5, time_period=0.05)
@@ -1419,12 +1627,16 @@ def main():
 
     ################################################
     print
+       
+    print '**************************************************'
+    print 'EXAMPLES OF SPLITS, STATELESS'
+    print 'SINGLE INPUT, MULTIPLE OUTPUTS'
+    print '**************************************************'
     print 'Part 4. Example 1'
     sqr, dbl = square_and_double_stream(x)
     sqr.set_name('square of x')
     dbl.set_name('twice x')
-    print_stream(sqr)
-    print_stream(dbl)
+    print_streams([sqr, dbl])
 
     ################################################
     print
@@ -1438,6 +1650,7 @@ def main():
     print_stream(exp)
     print_stream(mul)
     print_stream(div)
+    print_streams([exp, mul, div])
 
     
     ################################################
@@ -1446,8 +1659,7 @@ def main():
     evens, odds = even_odd_stream(x)
     evens.set_name('even values of x')
     odds.set_name('odd values of x')
-    print_stream(evens)
-    print_stream(odds)
+    print_streams([evens, odds])
 
         
     ################################################
@@ -1456,6 +1668,10 @@ def main():
     
     ################################################
     print
+    print '**************************************************'
+    print 'EXAMPLES OF SPLIT, STATEFUL'
+    print 'SINGLE INPUT, MULTIPLE OUTPUTS'
+    print '**************************************************'
     print 'Part 4B. Example 1'
     input_temp_humid_stream = Stream('input temperature and humidity')
     print_stream(input_temp_humid_stream)
@@ -1484,7 +1700,12 @@ def main():
 
     ################################################
     print
+    print '**************************************************'
+    print 'EXAMPLES OF MERGE, STATELESS'
+    print 'MULTIPLE INPUTS, SINGLE OUTPUT'
+    print '**************************************************'
     print 'Part 5A. Example 1'
+    print 'Input streams are aaa, bbb, and ccc'
     aaa = Stream('aaa')
     bbb = Stream('bbb')
     ccc = Stream('ccc')
@@ -1506,22 +1727,33 @@ def main():
 
     ################################################
     print
+    print '**************************************************'
+    print 'EXAMPLES OF MERGE, STATEFUL'
+    print 'MULTIPLE INPUTS, SINGLE OUTPUT'
+    print '**************************************************'
     print 'Part 5B. Example 1'
+    print 'Input streams are aaa, bbb, and ccc'
     eee = max_stream([aaa, bbb, ccc])
     eee.set_name('max of aaa, bb, ccc')
     print_stream(eee)
 
-
-   
     ################################################
     #   PART 6: MANY TO MANY. STATELESS
     ################################################
 
     ################################################
     print
+    print '**************************************************'
+    print 'EXAMPLES OF MANY-TO-MANY, STATELESS'
+    print 'MULTIPLE INPUTS, MULTIPLE OUTPUTS'
+    print '**************************************************'
     print 'Part 6A. Example 1'
+    print 'Input streams are xx and yy'
+    print 'A=2, B=1, DELTA=2'
     xx = Stream('x_stream')
     yy = Stream('y_stream')
+    print_stream(xx)
+    print_stream(yy)
     
     inrange_stream, outlier_stream = \
       inrange_and_outlier_streams(
@@ -1536,9 +1768,17 @@ def main():
     xx.extend([3, 5, 8, 4, 6, 2])
     yy.extend([7, 14, 2, 10, 12, 9])
 
+    
+    ################################################
+    #   PART 6: MANY TO MANY. STATEFUL
+    ################################################
 
     ################################################
     print
+    print '**************************************************'
+    print 'EXAMPLES OF MANY-TO-MANY, STATEFUL'
+    print 'MULTIPLE INPUTS, MULTIPLE OUTPUTS'
+    print '**************************************************'
     print 'Part 6B. Example 1'
     max_stream_2, min_stream_2 = max_and_min_stream([aaa, bbb, ccc])
 
@@ -1547,7 +1787,68 @@ def main():
 
     print_stream(max_stream_2)
     print_stream(min_stream_2)
+
+    ################################################
+    print
+    print '**************************************************'
+    print 'EXAMPLES OF ASYNCHRONOUS MERGE'
+    print 'MULTIPLE INPUTS, SINGLE OUTPUT'
+    print '**************************************************'
+    print 'Part 7. Example 2'
+    print 'Input streams are xxx and yyy'
+    xxx = Stream('xxx')
+    yyy = Stream('yyy')
+    print_stream(xxx)
+    print_stream(yyy)
     
+    join_of_xxx_and_yyy_streams = join_streams([xxx,yyy])
+    join_of_xxx_and_yyy_streams.set_name('Join of xxx and yyy streams')
+    print_stream(join_of_xxx_and_yyy_streams)
+
+    N = 3
+    for i in range(N):
+        xxx.append(random.randint(0,10))
+        yyy.append(random.randint(10,20))
+
+    print
+    print '**************************************************'
+    print 'EXAMPLES OF ASYNCHRONOUS MERGE'
+    print 'MULTIPLE INPUTS, SINGLE OUTPUT WITH STATE'
+    print '**************************************************'
+    print 'Part 7. Example 3'
+    print 'Input streams are aaaa and bbbb'
+    aaaa = Stream('aaaa')
+    bbbb = Stream('bbbb')
+    print_stream(aaaa)
+    print_stream(bbbb)
+    mx_stream = max_seen_across_all_streams([aaaa, bbbb])
+    mx_stream.set_name('max across all streams')
+    print_stream(mx_stream)
+    N = 3
+    for i in range(N):
+        aaaa.append(random.randint(100,110))
+        bbbb.append(random.randint(110,120))
+
+    print
+    print '**************************************************'
+    print 'EXAMPLES OF ASYNCHRONOUS MERGE'
+    print 'MULTIPLE INPUTS, MULTIPLE OUTPUTS'
+    print '**************************************************'
+    print 'Part 7. Example 4'
+    print 'Input streams are cccc and dddd'
+    cccc = Stream('cccc')
+    dddd = Stream('dddd')
+    print_stream(cccc)
+    print_stream(dddd)
+    mxx_stream, mnn_stream = max_and_min_seen_across_all_streams([cccc,dddd])
+    mxx_stream.set_name('max from max and min of all streams')
+    mnn_stream.set_name('min from max and min of all streams')
+    print_streams([mxx_stream, mnn_stream])
+    cccc.extend([30, 25, 80, 50, 90])
+    dddd.extend([30, 15, 110, 10, 20, 2])
+    
+
+
 if __name__ == '__main__':
     main()
 
