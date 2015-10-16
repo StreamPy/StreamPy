@@ -102,7 +102,7 @@ def make_input_manager(input_queue, input_stream_names,
         try:
             message = input_queue.get()
             message = json.loads(message)
-            #print 'make_input_manager, message = ', message
+            print 'make_input_manager, message = ', message
         except Exception, err:
             print 'Error', err
             return
@@ -209,7 +209,10 @@ def make_output_manager(output_streams, output_queues_list):
 
         for receiver_queue in receiver_queue_list:
             try:
+                print 'make_output_manager. send_message_to_queue'
+                print 'put message', message
                 receiver_queue.put(message)
+                #time.sleep(0.1)
             except Exception, err:
                 print 'Error', err
                 return
@@ -300,7 +303,23 @@ def make_process(
     # map input streams to output streams.
     func(input_streams, output_streams)
 
-    make_output_manager(output_streams, output_queues_list)
+    new_output_queues_list = list()
+    for output_queues in output_queues_list:
+        new_output_queues = list()
+        for output_queue in output_queues:
+            if isinstance(output_queue, tuple):
+                SERVER, PORT, DESTINATION = output_queue
+                new_output_queue = RemoteQueue(SERVER, PORT, DESTINATION)
+                new_output_queues.append(new_output_queue)
+            else:
+                new_output_queues.append(output_queue)
+        new_output_queues_list.append(new_output_queues)
+        
+    make_output_manager(output_streams, new_output_queues_list)
+
+    if isinstance(input_queue, tuple):
+        SERVER, PORT, DESTINATION = input_queue
+        input_queue = RemoteQueue(SERVER, PORT, DESTINATION)
     make_input_manager(input_queue, input_streams, map_name_to_input_stream)
 
 
@@ -314,7 +333,7 @@ def main():
 
     # Generate a stream with N random numbers and
     # then close the stream.
-    N = 5
+    N = 2
     from random import randint
     def random_ints(input_streams, output_streams):
         # Append random numbers to output_streams[0]
@@ -323,7 +342,7 @@ def main():
             element_of_stream = randint(0,99)
             output_streams[0].append(element_of_stream)
             print 'In random_ints. element = ', element_of_stream
-            time.sleep(0.1)
+            #time.sleep(0.1)
 
         # Close this stream
         output_streams[0].append(_close)
@@ -371,7 +390,11 @@ def main():
 
     #queue_0 = None
     queue_1 = Queue() # Input queue for process_1
-    queue_2 = Queue() # Input queue for process_2
+    #queue_2 = Queue() # Input queue for process_2
+    SERVER = 'pcbunn.cacr.caltech.edu'
+    PORT = 61613
+    DESTINATION='topic/remote_queue_new'
+    queue_2 = (SERVER, PORT, DESTINATION)
 
     #########################################
     # 2. CREATE PROCESSES
@@ -415,17 +438,18 @@ def main():
     #########################################
     # 3. START PROCESSES
     process_2.start()
+    #time.sleep(0.1)
     process_1.start()
+    #time.sleep(0.1)
     process_0.start()
-
 
     #########################################
     # 4. JOIN PROCESSES
-    time.sleep(0.5)
+    #time.sleep(0.1)
     process_2.join()
-    time.sleep(0.5)
+    #time.sleep(0.1)
     process_1.join()
-    time.sleep(0.5)
+    #time.sleep(0.1)
     process_0.join()
 
 
