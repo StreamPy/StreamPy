@@ -34,7 +34,7 @@ that are stateless and then consider agents with state.
 ##         sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
 from Stream import Stream, _no_value, _multivalue
-from Operators import stream_func
+from Operators import stream_func, stream_agent
 import json
 import numpy as np
 
@@ -1384,13 +1384,13 @@ def join_streams(list_of_streams):
 # streams seen so far. The elements of the input streams are
 # nonnegative.
 
+def max_of_all_inputs(list_of_elements, previous_max):
+    current_max = max(max(list_of_elements), previous_max)
+    msg = current_max
+    state = current_max
+    return (msg, state)
+    
 def max_seen_across_all_streams(list_of_streams):
-    def max_of_all_inputs(list_of_elements, previous_max):
-        current_max = max(max(list_of_elements), previous_max)
-        msg = current_max
-        state = current_max
-        return (msg, state)
-
     return stream_func(
         inputs=list_of_streams,
         f_type='asynch_element',
@@ -1438,9 +1438,38 @@ def max_and_min_seen_across_all_streams(list_of_streams):
         num_outputs=2,
         state = (-1, 1000)
         )
-        
 
 
+#######################################################
+#     PART 8: CREATING AGENTS RATHER THAN STREAMS
+#
+#######################################################
+# The only difference in this section is that the
+# input AND output streams are declared before calling
+# the wrapper that creates an agent.
+# Consider Section 1, example 1A, create a stream
+# that is the square of an input stream. The wrapper code
+# was:
+    ## y_a = stream_func(
+    ##     inputs=stream, f_type='element', f=square, num_outputs=1)
+# The wrapper, stream_func, returned a stream, and a parameter
+# of the wrapper was num_outputs.
+
+# You can also define the stream y_a first, and call a
+# different wrapper called stream_agent, and pass y_a as an
+# argument to steam_agent, as in:
+    ## y_a = Stream('squares of x')
+    ## print_stream(y_a)
+# Now create the agent that populates y_a.
+    ## stream_agent(inputs=x, outputs= y_a, f_type='element', f=square)
+# The difference between the two wrappers is that num_ouputs is not
+# specified in stream_agent; instead you pass a stream or a list of
+# streams for the parameter 'outputs'.
+
+#####################################################
+#####################################################
+#####################################################
+#####################################################
     
 def main():
     
@@ -1651,7 +1680,6 @@ def main():
     print_stream(mul)
     print_stream(div)
     print_streams([exp, mul, div])
-
     
     ################################################
     print
@@ -1846,6 +1874,109 @@ def main():
     print_streams([mxx_stream, mnn_stream])
     cccc.extend([30, 25, 80, 50, 90])
     dddd.extend([30, 15, 110, 10, 20, 2])
+
+    
+    print
+    print '**************************************************'
+    print '**************************************************'
+    print '**************************************************'
+    print 'EXAMPLES CREATING AGENTS RATHER THAN STREAMS'
+    print '**************************************************'
+    print '**************************************************'
+    print '**************************************************'
+    print
+
+    print 'Section 1 Example 1 using Agents'
+    # Create a stream
+    y_a = Stream('squares of x')
+    print_stream(y_a)
+    # Create the agent that populates the stream.
+    stream_agent(inputs=x, outputs= y_a, f_type='element', f=square)
+
+    print
+    print '**************************************************'
+    print 'Section 1 Example 2 using Agents'
+    # Create a stream
+    z_a = Stream('Doubles of x')
+    print_stream(z_a)
+    # Create the agent that populates the stream.
+    stream_agent(inputs=x, outputs= z_a, f_type='element', f=double)
+
+    print
+    print '**************************************************'
+    print 'Section 1 Example 4 using Agents'
+    # Create a stream
+    vv_a = Stream('Even numbers in x')
+    print_stream(vv_a)
+    # Create the agent that populates the stream.
+    stream_agent(inputs=x, outputs= vv_a, f_type='element', f=even)
+
+    print
+    print '**************************************************'
+    print 'Section 7 Example 3 using Agents'
+    def max_agent_seen_across_all_streams(list_of_input_streams, output_stream):
+        return stream_agent(
+            inputs=list_of_input_streams,
+            outputs=output_stream,
+            f_type='asynch_element',
+            f=max_of_all_inputs,
+            state = -1
+            )
+
+    mx_a_stream = Stream('max agent stream of aaaa, bbbb')
+    print_stream(mx_a_stream)
+    max_agent = max_agent_seen_across_all_streams([aaaa, bbbb], mx_a_stream)
+
+    
+    print
+    print '**************************************************'
+    print 'Section 7 Example 4 using Agents'
+    def max_and_min_agent(list_of_input_streams, max_and_min_output_streams):
+
+        def max_and_min_with_names(list_of_numbers, state):
+            previous_max, previous_min, current_time = state
+            current_max = max(list_of_numbers)
+            current_min = min(list_of_numbers)
+            current_time += 1
+
+            if previous_max >= current_max:
+                msg_max = _no_value
+            else:
+                max_index = list_of_numbers.index(current_max)
+                max_stream_name = list_of_input_streams[max_index].name
+                msg_max = (current_max, max_stream_name, current_time)
+                previous_max = current_max
+
+            if previous_min  <= current_min:
+                msg_min = _no_value
+            else:
+                min_index = list_of_numbers.index(current_min)
+                min_stream_name = list_of_input_streams[min_index].name
+                msg_min = (current_min, min_stream_name, current_time)
+                previous_min = current_min
+
+            state = (previous_max, previous_min, current_time)
+            msgs_max_and_min = [msg_max, msg_min]
+
+            return (msgs_max_and_min, state)
+        # Finished def max_and_min_with_names
+
+        # Agent Wrapper
+        return stream_agent(inputs=list_of_input_streams,
+                            outputs=max_and_min_output_streams,
+                            f_type='element',
+                            f=max_and_min_with_names,
+                            state=(-1, 10000, -1) # Initial (max, min, time)
+                            )
+    list_of_input_streams = [aaa, bbb, ccc]
+    max_a = Stream('max of aaa, bbb, ccc')
+    min_a = Stream('min of aaa, bbb, ccc')
+    print_stream(max_a)
+    print_stream(min_a)
+    max_and_min_output_streams = [max_a, min_a]
+    max_and_min_agent(list_of_input_streams, max_and_min_output_streams)
+
+    
     
 
 
