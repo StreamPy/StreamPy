@@ -34,7 +34,7 @@ for this purpose. Likewise, we don't use windows for asynchronous merges.
 """
 
 from Stream import Stream, _no_value, _multivalue
-from Operators import stream_func
+from Operators import stream_func, stream_agent
 from examples_element_wrapper import print_stream
 import numpy as np
 import random
@@ -49,7 +49,6 @@ import random
 #----------
 #STATELESS
 #----------
-
 
 # Window size and step size and N, the length of the
 # input stream for the examples are specified next:
@@ -99,10 +98,31 @@ mean_of_x.set_name('Mean of x')
 # Create an agent to print the stream.
 print_stream(mean_of_x)
 
+
+#_____________________________________________________
+#_____________________________________________________
+# EXAMPLE 1A. SAME EXAMPLE USING AGENTS
+#_____________________________________________________
+#_____________________________________________________
+#          MEAN OF SLIDING WINDOW
+# USES STREAM_AGENT RATHER THAN STREAM_FUNC
+#_____________________________________________________
+
+
+mean_of_x_a = Stream('Mean of x for agent')
+stream_agent(
+    inputs=x,
+    outputs=mean_of_x_a,
+    f_type='window',
+    f=np.mean,
+    window_size=window_size,
+    step_size=step_size)
+print_stream(mean_of_x_a)
+
+ 
 # Drive the example.
 # Add values to stream x.
 x.extend([random.random() for _ in range(N)])
-
 
 #_____________________________________________________
 # EXAMPLE 2. STANDARD DEVIATION OF SLIDING WINDOW
@@ -313,7 +333,17 @@ print_stream(mean_of_v_computed_incrementally)
 # Add values to stream v.
 v.extend([random.random() for _ in range(110)])
     
-
+mean_using_agents = Stream('Mean using agents')
+print_stream(mean_using_agents)
+stream_agent(
+    inputs=v, # A single stream
+    outputs=mean_using_agents,
+    f_type='window', # Identifies the 'window' wrapper
+    f=mean_inc, # The wrapped function
+    state=(None, None), # Initial state
+    window_size=100,
+    step_size=1 # step_size is 1 for incremental computation.
+    )
 
 #######################################################
 #            PART 2: SPLIT
