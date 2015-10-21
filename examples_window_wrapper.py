@@ -332,7 +332,15 @@ print_stream(mean_of_v_computed_incrementally)
 
 # Add values to stream v.
 v.extend([random.random() for _ in range(110)])
-    
+
+
+#_____________________________________________________
+#_____________________________________________________
+#  SAME EXAMPLE, CREATING AGENT RATHER THAN A STREAM
+# EXAMPLE 1A. MEAN (INCREMENTAL) OF SLIDING WINDOW
+#_____________________________________________________
+#_____________________________________________________
+
 mean_using_agents = Stream('Mean using agents')
 print_stream(mean_using_agents)
 stream_agent(
