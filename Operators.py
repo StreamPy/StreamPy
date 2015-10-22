@@ -33,7 +33,7 @@ streams.
 from Agent import Agent
 from Stream import Stream, StreamArray
 
-from Stream import _no_value, _multivalue, _close
+from Stream import _no_value, _multivalue, _close, TimeAndValue
 
 # ASSERTIONS USED IN FILE
 def assert_is_list_of_streams_or_None(x):
