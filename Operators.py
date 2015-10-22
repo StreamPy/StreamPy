@@ -513,63 +513,114 @@ def dynamic_window_func(f, inputs, state,
 def list_index_for_timestamp(in_list, start_index, timestamp):
     """ A helper function for timed operators.
     The basic idea is to return the earliest index in
-    in_list.list with a time field that is greater than
-    or equal to timestamp. If no such index exists then
-    return a negative number.
+    in_list.list[start_index:in_list.stop] with a time field  
+    that is greater than or equal to timestamp. If no such index 
+    exists then return a negative number.
 
+    Parameters
+    ----------
+    in_list: InList
+             InList = namedtuple('InList', ['list', 'start', 'stop'])
+             A slice into a stream.
+    start_index: nonnegative integer
+             A pointer into in_list.list
+    timestamp: number
+
+    Returns
+    -------
     Returns positive integer i where:
     either: 'FOUND TIME WINDOW IN IN_LIST'
-        i > start_index and
+        i >= start_index and
         i <= in_list.stop  and
-        in_list.list[i-1].time >= timestamp and
-        (i == start_index+1 or in_list.list[i-2].time < timestamp)
+        (in_list[start_index] >= timestamp
+        or
+        in_list.list[i-2].time < timestamp <= in_list.list[i-1].time
+        )
+        
+        )
     or: 'NO TIME WINDOW IN IN_LIST'
-        i < 0 and
+        i < 0 (negative i indicates no time window) and
            (in_list.list[in_list.stop-1] <= timestamp
                        or
+           the list is empty, i.e.
            (in_list.start = in_list.stop)
 
-    Requires:
+    Requires
+    --------
          start_index >= in_list.start and
          start_index < in_list.stop
 
     """
-    if in_list.start == in_list.stop: return -1
+    # If the list is empty then return a negative number to indicate
+    # absence of time window.
+    if in_list.start == in_list.stop:
+        return -1
 
     if start_index < in_list.start or start_index >= in_list.stop:
         raise Exception('start_index out of range: start_index =', start_index,
                         ' in_list.start = ', in_list.start,
                         ' in_list.stop = ', in_list.stop)
+    
     for i in range(start_index, in_list.stop):
         # assert i <= in_list.stop-1
         if in_list.list[i].time >= timestamp:
+            # Found an index i with a sufficiently large time.
             return i
+        
+    # All the times in in_list up to in_list.stop are less
+    # than timestamp.
     # assert in_list.list[in_list.stop - 1] < timestamp
-    return -1
+    return -1 # Return a negative number to indicate absence of time window.
 
 
 def timed_agent(f, inputs, outputs, state, call_streams,
                window_size, step_size):
-    # inputs is a list of lists of TimeAndValue pairs.
+    # inputs is a list of lists of TimeAndValue pairs with
+    # one list of TimeAndValue pairs for each input stream.
+    # num_outputs is the number of output streams
     num_outputs = len(outputs)
-    range_out = range((num_outputs))
-    range_in = range(len(inputs))
+    range_out = range(num_outputs)
+    # num_inputs is the number of input streams.
+    num_inputs = len(inputs)
+    range_in = range(num_inputs)
     window_start_time = 0
+    # state is the state of the underlying agent.
+    # Augment the state with the start time of the
+    # window; window times will be the times of
+    # TimeAndValue objects in the output streams.
     combined_state = (window_start_time, state)
 
     def transition(in_lists, combined_state):
         window_start_time, state = combined_state
         output_lists = list()
+        # output_lists is a list of lists.
+        # output_lists has one list for each output stream.
         for _ in range_out:
             output_lists.append([])
         window_end_time = window_start_time + window_size
         window_start_indexes = [ in_lists[j].start for j in range_in]
+
+        # Each iteration of the while loop carries out a
+        # calculation for one time window. At each successive
+        # iteration, the time window is moved forward by the
+        # step size. Both the window_size and step_size refer
+        # to time rather than the number of elements in the
+        # window.
+        # The while loop breaks when the next time window does
+        # not span all input streams, i.e. when the time stamps
+        # for some input stream aren't greater than or equal
+        # to the end-time of the time window.  
         while True:
-            # window_end_indexes is a list where its j-th
-            # element is either the earliest index in the j-th
-            # input stream for which the stream element's time
-            # is at least window_end_time, or is a negative
-            # number if no such element exists in the stream.
+            # window_end_indexes is a list whose j-th
+            # element is either:
+            # (1) the earliest index in the j-th
+            # input list for which the stream element's time
+            # is window_end_time or greater, or
+            # (2) is a negative number if no such element
+            # exists in the list.
+            # In case (1) we have found a time window
+            # within this in_list, and in case (2)
+            # no time window exists within the in_list.
             window_end_indexes = [list_index_for_timestamp(
                 in_lists[j],
                 window_start_indexes[j],
@@ -582,31 +633,52 @@ def timed_agent(f, inputs, outputs, state, call_streams,
             # list.
             if any(window_end_indexes[j] < 0 for j in range_in):
                 break
-            # Assert all of the time windows are non-empty, i.e.,
-            # for each input stream j:
+
+            # Assert no time-window is empty.
+            # So, for each input stream j:
             # window_end_indexes[j] > window_start_indexes[j]
             windows = [in_lists[j].list[window_start_indexes[j]: \
                                        window_end_indexes[j]] for j in range_in]
-            # windows is a list where:
+            # windows is a list of num_inputs lists where:
             # windows[j] is a list of TimeAndValue objects.
-            # Function f returns a list of ordinary objects (i.e., these
-            # objects are typically not TimeAndValue objects).
-            # increments[k] is the output list for the k-th output stream.
+            # Function f returns a list of num_outputs elements,
+            # one element for each output stream. These elements
+            # are usually objects other than TimeAndValue objects.
+            # increments[k] is the output element appended to
+            # the k-th output stream. increments[k] is a single object
+            # (and not necessarily a list).
             if state is None:
                 increments = f(windows)
             else:
                 increments, state = f(windows, state)
 
-            # The output for each output stream contains TimeAndValue objects.
-            # The time field for all of the objects is the same: window_end_time.
+            # The output list for each output stream contains TimeAndValue objects.
+            # The time field associated with increments[k] for all k is the
+            # window end time; so, all the messages on all the output streams
+            # associated with this input time-window have the same time-value. 
             for k in range_out:
                 output_lists[k].append(TimeAndValue(window_end_time, increments[k]))
+
+            # Increment the window start and end times by step size (which is also
+            # in units of time).
             window_start_time += step_size
             window_end_time += step_size
+
+            # Compute how far forward (measured in numbers of
+            # elements) the windows can move for each input
+            # stream.
+            # new_window_start_indexes[j] is the index
+            # of the start of the next window, IF all windows
+            # move forward.
             new_window_start_indexes = [list_index_for_timestamp(
                 in_lists[j],
                 window_start_indexes[j],
                 window_start_time) for j in range_in]
+
+            # Exit the while-TRUE loop if a window on any stream
+            # cannot move forward because the stream doesn't have
+            # any more new data. This is indicated by a negative
+            # value for new_window_start_indexes[j] for stream j.
             if any(new_window_start_indexes[j] < 0 for j in range_in):
                 break
             ## #CHECKING FOR PROGRESS TOWARDS TERMINATION
@@ -618,7 +690,10 @@ def timed_agent(f, inputs, outputs, state, call_streams,
             window_start_indexes = new_window_start_indexes
 
         combined_state = (window_start_time, state)
+        # return output messages, the new state, and the new start values of
+        # the input streams.
         return (output_lists, combined_state, window_start_indexes)
+
     # Create agent
     combined_state = (window_start_time, state)
     Agent(inputs, outputs, transition, combined_state)
