@@ -19,7 +19,7 @@ server_name = s.getpeername()
 print "Connected to server at {0}:{1}".format(server_name[0], server_name[1])
 
 while True:
-    s.send("Hello")
+    s.send(raw_input())
     data = s.recv(1024)
     print "Server sent: " + data
     time.sleep(1)
