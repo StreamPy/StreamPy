@@ -1,0 +1,105 @@
+{
+    "properties": {
+        "name": "subgraph",
+        "project": "noflo-customname",
+        "id": "noflo-customname/subgraph",
+        "environment": {
+            "type": "noflo-browser"
+        },
+        "changed": true
+    },
+    "inports": {
+        "in": {
+            "process": "customname/multiply_elements_stream_gb54s",
+            "port": "in",
+            "metadata": {
+                "x": 252,
+                "y": 252,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "in1": {
+            "process": "customname/multiply_elements_stream_9ik70",
+            "port": "in",
+            "metadata": {
+                "x": 252,
+                "y": 360,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "outports": {
+        "out1": {
+            "process": "customname/multiply_elements_stream_9ik70",
+            "port": "out",
+            "metadata": {
+                "x": 684,
+                "y": 360,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "groups": [],
+    "processes": {
+        "customname/multiply_elements_stream_gb54s": {
+            "component": "customname/multiply_elements_stream",
+            "metadata": {
+                "label": "customname/multiply_elements_stream",
+                "x": 396,
+                "y": 252,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "customname/multiply_elements_stream_9ik70": {
+            "component": "customname/multiply_elements_stream",
+            "metadata": {
+                "label": "customname/multiply_elements_stream",
+                "x": 396,
+                "y": 360,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "customname/subgraphinner_jt1ct": {
+            "component": "customname/subgraphinner",
+            "metadata": {
+                "label": "customname/subgraphinner",
+                "x": 612,
+                "y": 216,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "connections": [
+        {
+            "src": {
+                "process": "customname/multiply_elements_stream_gb54s",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "customname/subgraphinner_jt1ct",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "data": "100",
+            "tgt": {
+                "process": "customname/multiply_elements_stream_gb54s",
+                "port": "multiplier"
+            }
+        },
+        {
+            "data": "100",
+            "tgt": {
+                "process": "customname/multiply_elements_stream_9ik70",
+                "port": "multiplier"
+            }
+        }
+    ]
+}

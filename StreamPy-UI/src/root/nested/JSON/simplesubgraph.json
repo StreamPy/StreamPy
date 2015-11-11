@@ -1,0 +1,80 @@
+{
+    "properties": {
+        "name": "simplesubgraph",
+        "project": "agentdemo",
+        "id": "agentdemo/simplesubgraph",
+        "environment": {
+            "type": "noflo-browser"
+        },
+        "changed": true
+    },
+    "inports": {},
+    "outports": {},
+    "groups": [],
+    "processes": {
+        "agentdemo/green_rqmkz": {
+            "component": "agentdemo/green",
+            "metadata": {
+                "label": "agentdemo/green",
+                "x": 432,
+                "y": 252,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "agentdemo/generate_stream_of_random_integers_mvexy": {
+            "component": "agentdemo/generate_stream_of_random_integers",
+            "metadata": {
+                "label": "agentdemo/generate_stream_of_random_integers",
+                "x": 288,
+                "y": 288,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "agentdemo/yellow": {
+            "component": "agentdemo/yellow",
+            "metadata": {
+                "label": "yellow",
+                "x": 612,
+                "y": 324,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "connections": [
+        {
+            "src": {
+                "process": "agentdemo/generate_stream_of_random_integers_mvexy",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "agentdemo/green_rqmkz",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "agentdemo/green_rqmkz",
+                "port": "product1"
+            },
+            "tgt": {
+                "process": "agentdemo/yellow",
+                "port": "print_value_stream_in"
+            }
+        },
+        {
+            "src": {
+                "process": "agentdemo/green_rqmkz",
+                "port": "product"
+            },
+            "tgt": {
+                "process": "agentdemo/yellow",
+                "port": "in"
+            },
+            "metadata": {}
+        }
+    ]
+}

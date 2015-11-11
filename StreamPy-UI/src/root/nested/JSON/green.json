@@ -1,0 +1,116 @@
+{
+    "properties": {
+        "name": "green",
+        "project": "agentdemo",
+        "id": "agentdemo/green",
+        "environment": {
+            "type": "noflo-browser"
+        },
+        "changed": true
+    },
+    "inports": {
+        "in": {
+            "process": "agentdemo/split_into_even_odd_stream_zdfq7",
+            "port": "in",
+            "metadata": {
+                "x": 144,
+                "y": 252,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "outports": {
+        "product": {
+            "process": "agentdemo/multiply_elements_stream_8yz2v",
+            "port": "product",
+            "metadata": {
+                "x": 756,
+                "y": 144,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "product1": {
+            "process": "agentdemo/multiply_elements_stream_yumzw",
+            "port": "product",
+            "metadata": {
+                "x": 756,
+                "y": 252,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "groups": [],
+    "processes": {
+        "agentdemo/split_into_even_odd_stream_zdfq7": {
+            "component": "agentdemo/split_into_even_odd_stream",
+            "metadata": {
+                "label": "agentdemo/split_into_even_odd_stream",
+                "x": 324,
+                "y": 180,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "agentdemo/multiply_elements_stream_8yz2v": {
+            "component": "agentdemo/multiply_elements_stream",
+            "metadata": {
+                "label": "agentdemo/multiply_elements_stream",
+                "x": 540,
+                "y": 72,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "agentdemo/multiply_elements_stream_yumzw": {
+            "component": "agentdemo/multiply_elements_stream",
+            "metadata": {
+                "label": "agentdemo/multiply_elements_stream",
+                "x": 504,
+                "y": 288,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "connections": [
+        {
+            "src": {
+                "process": "agentdemo/split_into_even_odd_stream_zdfq7",
+                "port": "even"
+            },
+            "tgt": {
+                "process": "agentdemo/multiply_elements_stream_8yz2v",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "agentdemo/split_into_even_odd_stream_zdfq7",
+                "port": "odd"
+            },
+            "tgt": {
+                "process": "agentdemo/multiply_elements_stream_yumzw",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "data": "1000",
+            "tgt": {
+                "process": "agentdemo/multiply_elements_stream_yumzw",
+                "port": "multiplier"
+            }
+        },
+        {
+            "data": "2",
+            "tgt": {
+                "process": "agentdemo/multiply_elements_stream_8yz2v",
+                "port": "multiplier"
+            }
+        }
+    ]
+}

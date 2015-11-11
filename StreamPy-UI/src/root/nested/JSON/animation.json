@@ -1,0 +1,100 @@
+{
+    "properties": {
+        "name": "animation",
+        "project": "demo",
+        "id": "demo/animation",
+        "environment": {
+            "type": "noflo-browser"
+        },
+        "changed": true
+    },
+    "inports": {},
+    "outports": {},
+    "groups": [],
+    "processes": {
+        "demo/generate_stream_of_random_integers_f8ya9": {
+            "component": "demo/generate_stream_of_random_integers",
+            "metadata": {
+                "label": "demo/generate_stream_of_random_integers",
+                "x": 180,
+                "y": 216,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "demo/multiply_elements_stream_acrjm": {
+            "component": "demo/multiply_elements_stream",
+            "metadata": {
+                "label": "demo/multiply_elements_stream",
+                "x": 360,
+                "y": 144,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "demo/print_value_stream_d5ma8": {
+            "component": "demo/print_value_stream",
+            "metadata": {
+                "label": "demo/print_value_stream",
+                "x": 612,
+                "y": 108,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "demo/print_value_stream_qja2v": {
+            "component": "demo/print_value_stream",
+            "metadata": {
+                "label": "demo/print_value_stream",
+                "x": 540,
+                "y": 252,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "connections": [
+        {
+            "src": {
+                "process": "demo/generate_stream_of_random_integers_f8ya9",
+                "port": "output"
+            },
+            "tgt": {
+                "process": "demo/multiply_elements_stream_acrjm",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "demo/multiply_elements_stream_acrjm",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "demo/print_value_stream_d5ma8",
+                "port": "input"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "demo/generate_stream_of_random_integers_f8ya9",
+                "port": "output"
+            },
+            "tgt": {
+                "process": "demo/print_value_stream_qja2v",
+                "port": "input"
+            },
+            "metadata": {
+                "route": 0
+            }
+        },
+        {
+            "data": "10",
+            "tgt": {
+                "process": "demo/multiply_elements_stream_acrjm",
+                "port": "multiplier"
+            }
+        }
+    ]
+}

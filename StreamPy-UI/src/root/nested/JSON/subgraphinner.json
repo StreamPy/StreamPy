@@ -1,0 +1,94 @@
+{
+    "properties": {
+        "name": "subgraphinner",
+        "project": "noflo-customname",
+        "id": "noflo-customname/subgraphinner",
+        "environment": {
+            "type": "noflo-browser"
+        },
+        "changed": true
+    },
+    "inports": {
+        "in": {
+            "process": "customname/multiply_elements_stream_peggw",
+            "port": "in",
+            "metadata": {
+                "x": 324,
+                "y": 216,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "outports": {},
+    "groups": [],
+    "processes": {
+        "customname/multiply_elements_stream_peggw": {
+            "component": "customname/multiply_elements_stream",
+            "metadata": {
+                "label": "customname/multiply_elements_stream",
+                "x": 468,
+                "y": 216,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "customname/print_value_stream_6jigz": {
+            "component": "customname/print_value_stream",
+            "metadata": {
+                "label": "customname/print_value_stream",
+                "x": 684,
+                "y": 216,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "noflo-customname/subgraphinnerinner": {
+            "component": "noflo-customname/subgraphinnerinner",
+            "metadata": {
+                "label": "subgraphinnerinner",
+                "x": 612,
+                "y": 324,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "connections": [
+        {
+            "src": {
+                "process": "customname/multiply_elements_stream_peggw",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "customname/print_value_stream_6jigz",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "customname/multiply_elements_stream_peggw",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "noflo-customname/subgraphinnerinner",
+                "port": "multiply_elements_stream_in"
+            }
+        },
+        {
+            "data": "2",
+            "tgt": {
+                "process": "customname/multiply_elements_stream_peggw",
+                "port": "multiplier"
+            }
+        },
+        {
+            "data": "0",
+            "tgt": {
+                "process": "customname/print_value_stream_6jigz",
+                "port": "state"
+            }
+        }
+    ]
+}
