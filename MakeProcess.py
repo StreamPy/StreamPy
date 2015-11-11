@@ -46,6 +46,8 @@ import json
 import time
 from server import create_server_thread
 
+import pdb
+
 
 def make_input_manager(input_queue, input_stream_names,
                        map_name_to_input_stream):
@@ -140,7 +142,7 @@ def make_input_manager(input_queue, input_stream_names,
                    map_name_to_input_stream.values()])
 
 
-def make_output_manager(output_streams, output_queues_list):
+def make_output_manager(output_streams, output_conn_list):
     """ Creates an agent, called the output manager, that
     receives messages on streams and inserts these messages
     into queues. The output manager receives messages on all
@@ -215,6 +217,7 @@ def make_output_manager(output_streams, output_queues_list):
             try:
                 print 'make_output_manager. send_message_to_queue'
                 print 'put message', message
+                print "Connecting to {0}:{1}".format(host, port)
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect((host, port))
                 s.send(message)
@@ -299,6 +302,9 @@ def make_process(
 
 
     """
+    print "Running process on {0}:{1}".format(host, port)
+    create_server_thread(host, port, input_queue)
+    print "Server created. Listening on {0}:{1}".format(host, port)
     # Create input_streams, output_streams and
     # map_name_to_input_stream
     input_streams = [Stream(name) for name in input_stream_names]
@@ -313,7 +319,6 @@ def make_process(
     make_output_manager(output_streams, output_conn_list)
     make_input_manager(input_queue, input_streams, map_name_to_input_stream)
 
-    create_server_thread(host, port, input_queue)
 
 
 def main():
@@ -382,12 +387,12 @@ def main():
     # 2. CREATE QUEUES
 
     #queue_0 = None
+    conn_0 = ('localhost', 8888)
     queue_1 = Queue() # Input queue for process_1
+    conn_1 = ('localhost', 8889)
     #queue_2 = Queue() # Input queue for process_2
-    SERVER = 'pcbunn.cacr.caltech.edu'
-    PORT = 61613
-    DESTINATION='topic/remote_queue_new'
-    queue_2 = (SERVER, PORT, DESTINATION)
+    queue_2 = Queue()
+    conn_2 = ('localhost', 8890)
 
     #########################################
     # 2. CREATE PROCESSES
@@ -400,7 +405,9 @@ def main():
                             ['random_ints_stream'], # list of output stream names
                             random_ints, # func
                             None, # the input queue
-                            [[queue_1]] # list of list of output queues
+                            [[conn_1]], # list of list of output queues
+                            conn_0[0],
+                            conn_0[1]
                             ))
 
     # This process receives simple_stream from process_0.
@@ -412,7 +419,9 @@ def main():
                             ['func_stream'], # list of output stream names
                             apply_func_agent, # func
                             queue_1, # the input queue
-                            [[queue_2]] #list of list of output queues
+                            [[conn_2]], #list of list of output queues
+                            conn_1[0],
+                            conn_1[1]
                             ))
 
     # This process is a sink; it has no output queue.
@@ -425,16 +434,21 @@ def main():
                             [], # list of output stream names
                             print_agent, # func
                             queue_2, # the input queue
-                            [] # list of list of output queues
+                            [], # list of list of output queues
+                            conn_2[0],
+                            conn_2[1]
                             ))
 
     #########################################
     # 3. START PROCESSES
     process_2.start()
+    print "Started process 2"
     #time.sleep(0.1)
     process_1.start()
+    print "Started process 1"
     #time.sleep(0.1)
     process_0.start()
+    print "Started process 0"
 
     #########################################
     # 4. JOIN PROCESSES
