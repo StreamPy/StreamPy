@@ -40,6 +40,7 @@ from Stream import Stream, _close, _no_value
 from Operators import stream_agent, stream_agent
 from multiprocessing import Process, Queue
 from RemoteQueue import RemoteQueue
+import socket
 import json
 import time
 
@@ -235,7 +236,7 @@ def make_output_manager(output_streams, output_queues_list):
 
 def make_process(
         input_stream_names, output_stream_names, func,
-        input_queue, output_queues_list):
+        input_queue, output_conn_list, host, port):
     """ Makes a process that gets messages on its single
     input queue, processes the messages and puts messages
     on its output queues. An output queue of this process
@@ -303,23 +304,7 @@ def make_process(
     # map input streams to output streams.
     func(input_streams, output_streams)
 
-    new_output_queues_list = list()
-    for output_queues in output_queues_list:
-        new_output_queues = list()
-        for output_queue in output_queues:
-            if isinstance(output_queue, tuple):
-                SERVER, PORT, DESTINATION = output_queue
-                new_output_queue = RemoteQueue(SERVER, PORT, DESTINATION)
-                new_output_queues.append(new_output_queue)
-            else:
-                new_output_queues.append(output_queue)
-        new_output_queues_list.append(new_output_queues)
-
-    make_output_manager(output_streams, new_output_queues_list)
-
-    if isinstance(input_queue, tuple):
-        SERVER, PORT, DESTINATION = input_queue
-        input_queue = RemoteQueue(SERVER, PORT, DESTINATION)
+    make_output_manager(output_streams, output_conn_list)
     make_input_manager(input_queue, input_streams, map_name_to_input_stream)
 
 
