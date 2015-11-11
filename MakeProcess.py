@@ -191,7 +191,7 @@ def make_output_manager(output_streams, output_queues_list):
         message_content, stream_index = msg_content_and_stream_index_tuple
         # receiver_queue_list is the list of queues to
         # which this message is copied.
-        receiver_queue_list = output_queues_list[stream_index]
+        receiver_conn_list = output_conn_list[stream_index]
         # output_streams[stream_index] is the output stream
         # on which this message arrived.
         # output_stream_name is the name of the stream on which
@@ -208,15 +208,19 @@ def make_output_manager(output_streams, output_queues_list):
         # a tuple (name of the stream, content of the message).
         message = json.dumps((output_stream_name, message_content))
 
-        for receiver_queue in receiver_queue_list:
+        for receiver_conn in receiver_conn_list:
+            host, port = receiver_conn
             try:
                 print 'make_output_manager. send_message_to_queue'
                 print 'put message', message
-                receiver_queue.put(message)
-                #time.sleep(0.1)
-            except Exception, err:
-                print 'Error', err
-                return
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.connect((host, port))
+                s.send(message)
+                s.close()
+
+            except socket.error as error_msg:
+                print error_msg
+                continue
 
         return _no_value
 
