@@ -51,7 +51,7 @@ logging.basicConfig(filename="make_process_log.log", filemode='w', level=logging
 
 
 def make_input_manager(input_queue, input_stream_names,
-                       map_name_to_input_stream):
+                       map_name_to_input_stream, finished_execution):
     """ Makes an object that waits continuously for a
     message arriving on input_queue and then sends the message
     to the stream with the name specified on the message.
@@ -304,7 +304,8 @@ def make_process(
 
     """
     logging.info("Running process on {0}:{1}".format(host, port))
-    create_server_thread(host, port, input_queue)
+    finished_execution = False
+    create_server_thread(host, port, input_queue, finished_execution)
     logging.info("Server created. Listening on {0}:{1}".format(host, port))
     # Create input_streams, output_streams and
     # map_name_to_input_stream
@@ -318,7 +319,7 @@ def make_process(
     func(input_streams, output_streams)
 
     make_output_manager(output_streams, output_conn_list)
-    make_input_manager(input_queue, input_streams, map_name_to_input_stream)
+    make_input_manager(input_queue, input_streams, map_name_to_input_stream, finished_execution)
 
 
 

@@ -4,7 +4,7 @@ import socket
 import thread
 import logging
 
-def create_server(host, port, queue):
+def create_server(host, port, queue, finished_execution):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
@@ -28,7 +28,7 @@ def create_server(host, port, queue):
         conn.close()
 
 
-    while True:
+    while not finished_execution:
         conn, addr = s.accept()
         logging.info("Server {0}:{1} connected with {2}:{3} \n".format(host, port, addr[0], addr[1]))
         thread.start_new_thread(clientthread, (conn,))
@@ -36,5 +36,5 @@ def create_server(host, port, queue):
     s.close()
 
 
-def create_server_thread(host, port, queue):
-    thread.start_new_thread(create_server, (host, port, queue))
+def create_server_thread(host, port, queue, finished_execution):
+    thread.start_new_thread(create_server, (host, port, queue, finished_execution))
