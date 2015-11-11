@@ -331,7 +331,7 @@ def main():
 
     # Generate a stream with N random numbers and
     # then close the stream.
-    N = 2
+    N = 5
     from random import randint
     def random_ints(input_streams, output_streams):
         # Append random numbers to output_streams[0]

@@ -21,6 +21,8 @@ def create_server(host, port, queue):
         client_name = conn.getpeername()
         while True:
             data = conn.recv(1024)
+            if not data:
+                break
             print "Server received {0} from {1}:{2}".format(data, client_name[0], client_name[1])
             print "Adding to queue \n"
             queue.put(data)
