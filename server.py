@@ -27,7 +27,7 @@ def create_server(host, port, queue):
             reply = "OK " + data
             if not data:
                 break
-            conn.sendall(reply)
+            # conn.sendall(reply)
         conn.close()
 
 

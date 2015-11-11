@@ -41,8 +41,10 @@ from Operators import stream_agent, stream_agent
 from multiprocessing import Process, Queue
 from RemoteQueue import RemoteQueue
 import socket
+import thread
 import json
 import time
+from server import create_server_thread
 
 
 def make_input_manager(input_queue, input_stream_names,
@@ -310,6 +312,8 @@ def make_process(
 
     make_output_manager(output_streams, output_conn_list)
     make_input_manager(input_queue, input_streams, map_name_to_input_stream)
+
+    create_server_thread(host, port, input_queue)
 
 
 def main():
