@@ -25,7 +25,7 @@ The module consists of three functions:
 (2) make_output_manager, which makes an agent that we call
 'output manager'
 (3) make_process, which sets up the data structures for
-input and output managers and calls func which creates 
+input and output managers and calls func which creates
 a network of agents that processes input streams and produces
 output streams.
 
@@ -49,7 +49,7 @@ def make_input_manager(input_queue, input_stream_names,
     """ Makes an object that waits continuously for a
     message arriving on input_queue and then sends the message
     to the stream with the name specified on the message.
-    
+
     Parameters
     ----------
     input_queue: queue
@@ -57,7 +57,7 @@ def make_input_manager(input_queue, input_stream_names,
                         StreamPy.RemoteQueue
     input_stream_names: list of str
                   The list of names of the input streams.
-    
+
     map_name_to_input_stream : dict
                 key : str
                       Name of an input stream.
@@ -86,7 +86,7 @@ def make_input_manager(input_queue, input_stream_names,
     is attached to the log.
     The input manager continues execution until all its input streams
     are closed, and then stops.
-    
+
     """
 
     # Initially, by default, all streams are open
@@ -184,7 +184,7 @@ def make_output_manager(output_streams, output_queues_list):
                                  processes that receive the specified stream.
                    stream_index: int
                                  The slot of the sending stream in the list
-                                 output_stream_names_list. 
+                                 output_stream_names_list.
 
         """
         message_content, stream_index = msg_content_and_stream_index_tuple
@@ -199,7 +199,7 @@ def make_output_manager(output_streams, output_queues_list):
 
         # The messages in the queue must be serializable. The
         # object _close is not serializable; so convert it into a
-        # string '_close'. The receiving agent will convert this  
+        # string '_close'. The receiving agent will convert this
         # string back into the object _close.
         if message_content is _close:
             message_content = '_close'
@@ -240,7 +240,7 @@ def make_process(
     input queue, processes the messages and puts messages
     on its output queues. An output queue of this process
     is an input queue of another process.
-    
+
     Parameters
     ----------
     input_stream_names : list of str
@@ -280,7 +280,7 @@ def make_process(
                  name of an input stream
            value : Stream
                  The stream with the specified name.
-    
+
     Notes
     -----
     make_process carries out the following steps:
@@ -289,7 +289,7 @@ def make_process(
     that process messages on its input streams and puts
     messages on its output streams.
     (3) Makes the output and input managers.
-                
+
 
     """
     # Create input_streams, output_streams and
@@ -314,7 +314,7 @@ def make_process(
             else:
                 new_output_queues.append(output_queue)
         new_output_queues_list.append(new_output_queues)
-        
+
     make_output_manager(output_streams, new_output_queues_list)
 
     if isinstance(input_queue, tuple):
@@ -356,7 +356,7 @@ def main():
     def apply_func_agent(input_streams, output_streams):
         input_stream = input_streams[0]
         output_stream = output_streams[0]
-        
+
         def apply_func(v):
             # When the input stream is closed, return
             # _close to cause the output stream to close.
@@ -364,7 +364,7 @@ def main():
                 return _close
             else:
                 return f(v)
-        
+
         return stream_agent(
             inputs=input_stream,
             outputs=output_stream,
@@ -374,7 +374,7 @@ def main():
     # Print the values received on the input stream.
     def print_agent(input_streams, output_streams):
         input_stream = input_streams[0]
-        
+
         def p(v):
             if v != _close:
                 print 'print_agent', input_stream.name, v
@@ -384,7 +384,7 @@ def main():
             outputs=[],
             f_type='element',
             f=p)
-    
+
     #########################################
     # 2. CREATE QUEUES
 
@@ -456,7 +456,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-            
-                
-    
