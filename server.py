@@ -2,10 +2,10 @@ import sys
 import os
 import socket
 import thread
+import logging
 
 def create_server(host, port, queue):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # servers.append(s)
 
     try:
         s.bind((host, port))
@@ -13,7 +13,7 @@ def create_server(host, port, queue):
         print msg
         sys.exit()
 
-    print "Server listening on {0}:{1} \n".format(host, port)
+    logging.info("Server listening on {0}:{1}".format(host, port))
 
     s.listen(10)
 
@@ -23,21 +23,15 @@ def create_server(host, port, queue):
             data = conn.recv(1024)
             if not data:
                 break
-            print "Server received {0} from {1}:{2}".format(data, client_name[0], client_name[1])
-            print "Adding to queue \n"
+            logging.info("Server {0}:{1} received {2} from {3}:{4}".format(host, port, data, client_name[0], client_name[1]))
             queue.put(data)
-            reply = "OK " + data
-            if not data:
-                break
-            # conn.sendall(reply)
         conn.close()
 
 
     while True:
         conn, addr = s.accept()
-        print "Connected with {0}:{1} \n".format(addr[0], addr[1])
+        logging.info("Server {0}:{1} connected with {2}:{3} \n".format(host, port, addr[0], addr[1]))
         thread.start_new_thread(clientthread, (conn,))
-
 
     s.close()
 

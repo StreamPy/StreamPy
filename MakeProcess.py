@@ -45,8 +45,9 @@ import thread
 import json
 import time
 from server import create_server_thread
+import logging
 
-import pdb
+logging.basicConfig(filename="make_process_log.log", filemode='w', level=logging.INFO)
 
 
 def make_input_manager(input_queue, input_stream_names,
@@ -107,9 +108,9 @@ def make_input_manager(input_queue, input_stream_names,
         try:
             message = input_queue.get()
             message = json.loads(message)
-            print 'make_input_manager, message = ', message
+            logging.info('make_input_manager, message = ' + str(message))
         except Exception, err:
-            print 'Error', err
+            logging.error(err)
             return
         # This message_content is to be appended to the
         # stream with name stream_name.
@@ -121,7 +122,7 @@ def make_input_manager(input_queue, input_stream_names,
 
         # Message arrived for a closed stream. Error!
         if input_stream.closed:
-            print 'WARNING: inserting values into a closed stream!'
+            logging.warning('inserting values into a closed stream!')
             return
 
         # Append message_content to input_stream. Note message_content
@@ -215,16 +216,16 @@ def make_output_manager(output_streams, output_conn_list):
         for receiver_conn in receiver_conn_list:
             host, port = receiver_conn
             try:
-                print 'make_output_manager. send_message_to_queue'
-                print 'put message', message
-                print "Connecting to {0}:{1}".format(host, port)
+                logging.info('make_output_manager. send_message_to_queue')
+                logging.info('put message' + str(message))
+                logging.info("Connecting to {0}:{1}".format(host, port))
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect((host, port))
                 s.send(message)
                 s.close()
 
             except socket.error as error_msg:
-                print error_msg
+                logging.error(error_msg)
                 continue
 
         return _no_value
@@ -302,9 +303,9 @@ def make_process(
 
 
     """
-    print "Running process on {0}:{1}".format(host, port)
+    logging.info("Running process on {0}:{1}".format(host, port))
     create_server_thread(host, port, input_queue)
-    print "Server created. Listening on {0}:{1}".format(host, port)
+    logging.info("Server created. Listening on {0}:{1}".format(host, port))
     # Create input_streams, output_streams and
     # map_name_to_input_stream
     input_streams = [Stream(name) for name in input_stream_names]
@@ -442,13 +443,10 @@ def main():
     #########################################
     # 3. START PROCESSES
     process_2.start()
-    print "Started process 2"
     #time.sleep(0.1)
     process_1.start()
-    print "Started process 1"
     #time.sleep(0.1)
     process_0.start()
-    print "Started process 0"
 
     #########################################
     # 4. JOIN PROCESSES
