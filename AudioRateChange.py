@@ -200,8 +200,8 @@ def main():
     process_0 = Process(target=make_process,
                         args= (
                             [], # list of input stream names
-                            ['random_ints_stream'], # list of output stream names
-                            random_ints, # func
+                            ['audio_input_stream'], # list of output stream names
+                            create_audio_stream, # func
                             None, # the input queue
                             [[conn_1]], # list of list of output queues
                             conn_0[0],
@@ -213,9 +213,42 @@ def main():
     # It receives messages on queue_1 and sends messages to queue_2.
     process_1 = Process(target=make_process,
                         args= (
-                            ['random_ints_stream'], # list of input stream names
-                            ['func_stream'], # list of output stream names
-                            apply_func_agent, # func
+                            ['audio_input_stream'], # list of input stream names
+                            ['shift_frequency_stream'], # list of output stream names
+                            shift_freq, # func
+                            queue_1, # the input queue
+                            [[conn_2]], #list of list of output queues
+                            conn_1[0],
+                            conn_1[1]
+                            ))
+
+    process_2 = Process(target=make_process,
+                        args= (
+                            ['shift_frequency_stream'], # list of input stream names
+                            ['chunked_stream'], # list of output stream names
+                            chunk_stream, # func
+                            queue_1, # the input queue
+                            [[conn_2]], #list of list of output queues
+                            conn_1[0],
+                            conn_1[1]
+                            ))
+
+    process_3 = Process(target=make_process,
+                        args= (
+                            ['chunked_stream'], # list of input stream names
+                            ['formatted_stream'], # list of output stream names
+                            format_stream, # func
+                            queue_1, # the input queue
+                            [[conn_2]], #list of list of output queues
+                            conn_1[0],
+                            conn_1[1]
+                            ))
+
+    process_4 = Process(target=make_process,
+                        args= (
+                            ['formatted_stream'], # list of input stream names
+                            [], # list of output stream names
+                            play, # func
                             queue_1, # the input queue
                             [[conn_2]], #list of list of output queues
                             conn_1[0],
