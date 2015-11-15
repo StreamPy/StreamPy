@@ -186,7 +186,7 @@ def main():
 
     def shift_freq(input_streams, output_streams):
 
-        output_stream[0] = keep_every_nth_value(input_stream[0], 2)
+        output_streams[0] = keep_every_nth_value(input_streams[0], 2)
 
     def chunk_stream(input_streams, output_streams):
         output_streams[0] = package_into_lists(input_streams[0], CHUNK)
