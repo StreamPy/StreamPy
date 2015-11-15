@@ -7,7 +7,7 @@ import pyaudio
 import wave
 import struct
 import sys
-from Stream import Stream, _multivalue
+from Stream import Stream, _multivalue,  _close
 from Operators import stream_func
 from MakeProcess import make_process
 from multiprocessing import Process, Queue
@@ -185,6 +185,7 @@ def main():
         output_streams[0].append(_close)
 
     def shift_freq(input_stream, output_stream):
+
         output_stream = keep_every_nth_value(input_stream, 2)
 
     def chunk_stream(input_stream, output_stream):
@@ -206,54 +207,47 @@ def main():
     conn_3 = ('localhost', 8891)
     conn_4 = ('localhost', 8892)
 
+    queue_1 = Queue()
+    queue_2 = Queue()
+    queue_3 = Queue()
+    queue_4 = Queue()
+
     process_0 = Process(target=make_process,
                         args= (
                             [], # list of input stream names
                             ['audio_input_stream'], # list of output stream names
                             create_audio_stream, # func
                             None, # the input queue
-                            [[conn_1]], # list of list of output queues
-                            conn_0[0],
-                            conn_0[1]
+                            [[queue_1]], # list of list of output queues
                             ))
 
-    queue_1 = Queue()
     process_1 = Process(target=make_process,
                         args= (
                             ['audio_input_stream'], # list of input stream names
                             ['shift_frequency_stream'], # list of output stream names
                             shift_freq, # func
                             queue_1, # the input queue
-                            [[conn_2]], #list of list of output queues
-                            conn_1[0],
-                            conn_1[1]
+                            [[queue_2]], #list of list of output queues
                             ))
 
-    queue_2 = Queue()
     process_2 = Process(target=make_process,
                         args= (
                             ['shift_frequency_stream'], # list of input stream names
                             ['chunked_stream'], # list of output stream names
                             chunk_stream, # func
                             queue_2, # the input queue
-                            [[conn_3]], #list of list of output queues
-                            conn_2[0],
-                            conn_2[1]
+                            [[queue_3]], #list of list of output queues
                             ))
 
-    queue_3 = Queue()
     process_3 = Process(target=make_process,
                         args= (
                             ['chunked_stream'], # list of input stream names
                             ['formatted_stream'], # list of output stream names
                             format_stream, # func
                             queue_3, # the input queue
-                            [[conn_4]], #list of list of output queues
-                            conn_3[0],
-                            conn_3[1]
+                            [[queue_4]], #list of list of output queues
                             ))
 
-    queue_4 = Queue()
     process_4 = Process(target=make_process,
                         args= (
                             ['formatted_stream'], # list of input stream names
@@ -261,9 +255,43 @@ def main():
                             play, # func
                             queue_4, # the input queue
                             [], #list of list of output queues
-                            conn_4[0],
-                            conn_4[1]
                             ))
+
+    #########################################
+    # 3. START PROCESSES
+
+
+    # process_4.start()
+
+    # process_3.start()
+
+    # process_2.start()
+
+    #time.sleep(0.1)
+    # process_1.start()
+
+    #time.sleep(0.1)
+    # process_0.start()
+    process_0.start()
+
+    process_1.start()
+
+    process_2.start()
+
+    #time.sleep(0.1)
+    process_3.start()
+    # process_4.start()
+
+    #########################################
+    # 4. JOIN PROCESSES
+    #time.sleep(0.1)
+    # process_4.join()
+    process_3.join()
+    process_2.join()
+    #time.sleep(0.1)
+    process_1.join()
+    #time.sleep(0.1)
+    process_0.join()
 
     # processing the audio: we can shift the frequency up (keep_every) or down (insert)
 
