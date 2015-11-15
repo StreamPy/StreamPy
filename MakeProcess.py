@@ -246,7 +246,7 @@ def make_output_manager(output_streams, output_conn_list):
 
 def make_process(
         input_stream_names, output_stream_names, func,
-        output_conn_list, host, port):
+        input_queue, output_conn_list, host, port):
     """ Makes a process that gets messages on its single
     input queue, processes the messages and puts messages
     on its output queues. An output queue of this process
@@ -305,7 +305,6 @@ def make_process(
     """
     logging.info("Running process on {0}:{1}".format(host, port))
     finished_execution = False
-    input_queue = Queue()
     create_server_thread(host, port, input_queue, finished_execution)
     logging.info("Server created. Listening on {0}:{1}".format(host, port))
     # Create input_streams, output_streams and
@@ -407,6 +406,7 @@ def main():
                             [], # list of input stream names
                             ['random_ints_stream'], # list of output stream names
                             random_ints, # func
+                            None, # the input queue
                             [[conn_1]], # list of list of output queues
                             conn_0[0],
                             conn_0[1]
@@ -420,6 +420,7 @@ def main():
                             ['random_ints_stream'], # list of input stream names
                             ['func_stream'], # list of output stream names
                             apply_func_agent, # func
+                            queue_1, # the input queue
                             [[conn_2]], #list of list of output queues
                             conn_1[0],
                             conn_1[1]
@@ -434,6 +435,7 @@ def main():
                             ['func_stream'], # list of input stream names
                             [], # list of output stream names
                             print_agent, # func
+                            queue_2, # the input queue
                             [], # list of list of output queues
                             conn_2[0],
                             conn_2[1]
