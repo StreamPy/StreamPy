@@ -10,6 +10,7 @@ import sys
 from Stream import Stream, _multivalue
 from Operators import stream_func
 from MakeProcess import make_process
+from multiprocessing import Process, Queue
 
 
 import logging
@@ -197,6 +198,14 @@ def main():
     def play(input_streams, output_streams):
         output_streams[0] = stream_to_output(py_audio, input_streams[0], frame_rate=22050)
 
+    # Connections
+
+    conn_0 = ('localhost', 8888)
+    conn_1 = ('localhost', 8889)
+    conn_2 = ('localhost', 8890)
+    conn_3 = ('localhost', 8891)
+    conn_4 = ('localhost', 8892)
+
     process_0 = Process(target=make_process,
                         args= (
                             [], # list of input stream names
@@ -208,9 +217,7 @@ def main():
                             conn_0[1]
                             ))
 
-    # This process receives simple_stream from process_0.
-    # It sends double_stream to process_2.
-    # It receives messages on queue_1 and sends messages to queue_2.
+    queue_1 = Queue()
     process_1 = Process(target=make_process,
                         args= (
                             ['audio_input_stream'], # list of input stream names
@@ -222,37 +229,40 @@ def main():
                             conn_1[1]
                             ))
 
+    queue_2 = Queue()
     process_2 = Process(target=make_process,
                         args= (
                             ['shift_frequency_stream'], # list of input stream names
                             ['chunked_stream'], # list of output stream names
                             chunk_stream, # func
-                            queue_1, # the input queue
-                            [[conn_2]], #list of list of output queues
-                            conn_1[0],
-                            conn_1[1]
+                            queue_2, # the input queue
+                            [[conn_3]], #list of list of output queues
+                            conn_2[0],
+                            conn_2[1]
                             ))
 
+    queue_3 = Queue()
     process_3 = Process(target=make_process,
                         args= (
                             ['chunked_stream'], # list of input stream names
                             ['formatted_stream'], # list of output stream names
                             format_stream, # func
-                            queue_1, # the input queue
-                            [[conn_2]], #list of list of output queues
-                            conn_1[0],
-                            conn_1[1]
+                            queue_3, # the input queue
+                            [[conn_4]], #list of list of output queues
+                            conn_3[0],
+                            conn_3[1]
                             ))
 
+    queue_4 = Queue()
     process_4 = Process(target=make_process,
                         args= (
                             ['formatted_stream'], # list of input stream names
                             [], # list of output stream names
                             play, # func
-                            queue_1, # the input queue
-                            [[conn_2]], #list of list of output queues
-                            conn_1[0],
-                            conn_1[1]
+                            queue_4, # the input queue
+                            [], #list of list of output queues
+                            conn_4[0],
+                            conn_4[1]
                             ))
 
     # processing the audio: we can shift the frequency up (keep_every) or down (insert)
