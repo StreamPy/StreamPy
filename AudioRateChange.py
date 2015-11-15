@@ -14,6 +14,7 @@ from multiprocessing import Process, Queue
 
 
 import logging
+logging.basicConfig(filename="AudioRateChange.log", filemode='w', level=logging.INFO)
 
 def package_into_lists(input_stream, window_size):
     def identity(lst):
