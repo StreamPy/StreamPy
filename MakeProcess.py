@@ -143,7 +143,7 @@ def make_input_manager(input_queue, input_stream_names,
                    map_name_to_input_stream.values()])
 
 
-def make_output_manager(output_streams, output_conn_list):
+def make_output_manager(output_streams, output_socket_list):
     """ Creates an agent, called the output manager, that
     receives messages on streams and inserts these messages
     into queues. The output manager receives messages on all
@@ -196,7 +196,7 @@ def make_output_manager(output_streams, output_conn_list):
         message_content, stream_index = msg_content_and_stream_index_tuple
         # receiver_queue_list is the list of queues to
         # which this message is copied.
-        receiver_conn_list = output_conn_list[stream_index]
+        receiver_socket_list = output_socket_list[stream_index]
         # output_streams[stream_index] is the output stream
         # on which this message arrived.
         # output_stream_name is the name of the stream on which
@@ -213,16 +213,14 @@ def make_output_manager(output_streams, output_conn_list):
         # a tuple (name of the stream, content of the message).
         message = json.dumps((output_stream_name, message_content))
 
-        for receiver_conn in receiver_conn_list:
-            host, port = receiver_conn
+        for i in range(0, len(receiver_socket_list)):
+            s = receiver_socket_list[i]
+            host, port = s.getpeername()
             try:
                 logging.info('make_output_manager. send_message_to_queue')
                 logging.info('put message' + str(message))
                 logging.info("Connecting to {0}:{1}".format(host, port))
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.connect((host, port))
                 s.send(message)
-                s.close()
 
             except socket.error as error_msg:
                 logging.error(error_msg)
@@ -318,7 +316,17 @@ def make_process(
     # map input streams to output streams.
     func(input_streams, output_streams)
 
-    make_output_manager(output_streams, output_conn_list)
+    output_socket_list = []
+    for conn_list in output_conn_list:
+        new_conn_list = []
+        for conn in conn_list:
+            host, port = conn
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect((host, port))
+            new_conn_list.append(s)
+        output_socket_list.append(new_conn_list)
+
+    make_output_manager(output_streams, output_socket_list)
     make_input_manager(input_queue, input_streams, map_name_to_input_stream, finished_execution)
 
 
