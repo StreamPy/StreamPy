@@ -184,17 +184,17 @@ def main():
 
         output_streams[0].append(_close)
 
-    def shift_freq(input_stream, output_stream):
+    def shift_freq(input_streams, output_streams):
 
-        output_stream = keep_every_nth_value(input_stream, 2)
+        output_stream[0] = keep_every_nth_value(input_stream[0], 2)
 
-    def chunk_stream(input_stream, output_stream):
-        output_stream[0] = package_into_lists(input_stream[0], CHUNK)
-        output_stream[0].set_name('Chunked audio for output')
+    def chunk_stream(input_streams, output_streams):
+        output_streams[0] = package_into_lists(input_streams[0], CHUNK)
+        output_streams[0].set_name('Chunked audio for output')
 
-    def format_stream(input_stream, output_stream):
-        output_stream[0] = format_audio_output(input_stream[0])
-        output_stream[0].set_name('Formatted chunked output')
+    def format_stream(input_streams, output_streams):
+        output_streams[0] = format_audio_output(input_streams[0])
+        output_streams[0].set_name('Formatted chunked output')
 
     def play(input_streams, output_streams):
         output_streams[0] = stream_to_output(py_audio, input_streams[0], frame_rate=22050)
