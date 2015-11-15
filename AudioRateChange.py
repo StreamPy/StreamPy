@@ -79,7 +79,7 @@ def stream_to_output(py_audio, input_stream, num_channels=1, \
         audio_stream.write(formatted_samples)
 
 
-    return stream_func(inputs=input_stream, f_type='element',
+    stream_func(inputs=input_stream, f_type='element',
                        f=write_samples_to_output, num_outputs=0)
 
 
@@ -261,31 +261,22 @@ def main():
     # 3. START PROCESSES
 
 
-    # process_4.start()
+    process_4.start()
 
-    # process_3.start()
-
-    # process_2.start()
-
-    #time.sleep(0.1)
-    # process_1.start()
-
-    #time.sleep(0.1)
-    # process_0.start()
-    process_0.start()
-
-    process_1.start()
+    process_3.start()
 
     process_2.start()
 
     #time.sleep(0.1)
-    process_3.start()
-    # process_4.start()
+    process_1.start()
+
+    #time.sleep(0.1)
+    process_0.start()
 
     #########################################
     # 4. JOIN PROCESSES
     #time.sleep(0.1)
-    # process_4.join()
+    process_4.join()
     process_3.join()
     process_2.join()
     #time.sleep(0.1)
