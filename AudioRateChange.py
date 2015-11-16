@@ -17,6 +17,7 @@ import logging
 
 def package_into_lists(input_stream, output_stream, window_size):
     def identity(lst):
+        print "Package"
         return lst
     return stream_agent(
         inputs=input_stream, # The input is input_stream
@@ -44,6 +45,7 @@ def insert_interpolated_values(input_stream, output_stream, n):
 
 def keep_every_nth_value(input_stream, output_stream, n):
     def drop(lst):
+        print "Drop"
         return lst[0]
     return stream_agent(
         inputs=input_stream, # The input is input_stream
@@ -76,7 +78,8 @@ def stream_to_output(input_stream, num_channels=1, \
                 input=False)
 
     def write_samples_to_output(formatted_samples):
-        audio_stream.write(formatted_samples)
+        print "Play"
+        audio_stream.write(formatted_samples.encode("utf-8"))
 
 
     stream_agent(inputs=input_stream, outputs=[], f_type='element',
@@ -95,6 +98,7 @@ def format_audio_output(input_stream, output_stream):
     """
 
     def format_data(shorts):
+        print "Format"
         format = 'h'*len(shorts)
         packed = struct.pack(format, *shorts)
         return packed
@@ -116,7 +120,7 @@ def wavfile_to_stream(filename, output_stream, chunk_size=1024, force_mono=True)
     force_mono: boolean
 
     """
-
+    print "Read"
     wf = wave.open(filename, 'rb')
 
     sample_width = wf.getsampwidth()
@@ -181,11 +185,11 @@ def main():
     def create_audio_stream(input_streams, output_streams):
         wavfile_to_stream(wav_file, output_streams[0], chunk_size=CHUNK, force_mono=True)
 
-        output_streams[0].append(_close)
+        # output_streams[0].append(_close)
 
     def shift_freq(input_streams, output_streams):
 
-        keep_every_nth_value(input_streams[0], output_streams[0], 2)
+        keep_every_nth_value(input_streams[0], output_streams[0], 5)
 
     def chunk_stream(input_streams, output_streams):
         package_into_lists(input_streams[0], output_streams[0], CHUNK)

@@ -102,9 +102,9 @@ def make_input_manager(input_queue, input_stream_names,
         try:
             message = input_queue.get()
             message = json.loads(message)
-            print 'make_input_manager, message = ', message
+            # print 'make_input_manager, message = ', message
         except Exception, err:
-            print 'Error', err
+            # print 'Error', err
             return
         # This message_content is to be appended to the
         # stream with name stream_name.
@@ -116,7 +116,7 @@ def make_input_manager(input_queue, input_stream_names,
 
         # Message arrived for a closed stream. Error!
         if input_stream.closed:
-            print 'WARNING: inserting values into a closed stream!'
+            # print 'WARNING: inserting values into a closed stream!'
             return
 
         # Append message_content to input_stream. Note message_content
@@ -126,7 +126,13 @@ def make_input_manager(input_queue, input_stream_names,
         # serialized.
         if message_content == '_close':
             message_content = _close
-        input_stream.append(message_content)
+        try:
+            input_stream.append(message_content)
+        except Exception, err:
+            print err
+            # print message_content
+            print type(message_content)
+            return
 
         # Terminate execution of the input manager when all its
         # input streams get closed.
@@ -205,12 +211,12 @@ def make_output_manager(output_streams, output_queues_list):
             message_content = '_close'
         # The message placed in each of the receiver queues is
         # a tuple (name of the stream, content of the message).
-        message = json.dumps((output_stream_name, message_content))
+        message = json.dumps((output_stream_name, message_content), encoding="ISO-8859-1")
 
         for receiver_queue in receiver_queue_list:
             try:
-                print 'make_output_manager. send_message_to_queue'
-                print 'put message', message
+                # print 'make_output_manager. send_message_to_queue'
+                # print 'put message', message
                 receiver_queue.put(message)
                 #time.sleep(0.1)
             except Exception, err:
