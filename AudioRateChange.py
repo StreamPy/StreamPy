@@ -17,7 +17,7 @@ import logging
 
 def package_into_lists(input_stream, output_stream, window_size):
     def identity(lst):
-        print "Package"
+        # print "Package"
         return lst
     return stream_agent(
         inputs=input_stream, # The input is input_stream
@@ -45,7 +45,7 @@ def insert_interpolated_values(input_stream, output_stream, n):
 
 def keep_every_nth_value(input_stream, output_stream, n):
     def drop(lst):
-        print "Drop"
+        # print "Drop"
         return lst[0]
     return stream_agent(
         inputs=input_stream, # The input is input_stream
@@ -78,8 +78,8 @@ def stream_to_output(input_stream, num_channels=1, \
                 input=False)
 
     def write_samples_to_output(formatted_samples):
-        print "Play"
-        audio_stream.write(formatted_samples.encode("utf-8"))
+        # print "Play"
+        audio_stream.write(formatted_samples.encode("ISO-8859-1"))
 
 
     stream_agent(inputs=input_stream, outputs=[], f_type='element',
@@ -98,7 +98,7 @@ def format_audio_output(input_stream, output_stream):
     """
 
     def format_data(shorts):
-        print "Format"
+        # print "Format"
         format = 'h'*len(shorts)
         packed = struct.pack(format, *shorts)
         return packed
@@ -120,7 +120,7 @@ def wavfile_to_stream(filename, output_stream, chunk_size=1024, force_mono=True)
     force_mono: boolean
 
     """
-    print "Read"
+    # print "Read"
     wf = wave.open(filename, 'rb')
 
     sample_width = wf.getsampwidth()
@@ -176,7 +176,7 @@ def main():
     wav_file = 'AngelinaJolieShortExtract.wav'
 
     # the number of samples we will read/write at one time to the audio system
-    CHUNK = 1024
+    CHUNK = 1
 
     audio_input_stream = Stream('stream from file '+wav_file)
 
@@ -189,7 +189,7 @@ def main():
 
     def shift_freq(input_streams, output_streams):
 
-        keep_every_nth_value(input_streams[0], output_streams[0], 5)
+        keep_every_nth_value(input_streams[0], output_streams[0], 1)
 
     def chunk_stream(input_streams, output_streams):
         package_into_lists(input_streams[0], output_streams[0], CHUNK)
