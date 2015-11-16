@@ -54,7 +54,7 @@ def keep_every_nth_value(input_stream, output_stream, n):
         step_size=n)
 
 
-def stream_to_output(py_audio, input_stream, num_channels=1, \
+def stream_to_output(input_stream, num_channels=1, \
                      sample_width=2, frame_rate=44100):
     """
     Parameters
@@ -66,7 +66,7 @@ def stream_to_output(py_audio, input_stream, num_channels=1, \
     frame_rate: rate at which samples are played back (samples/second)
 
     """
-
+    py_audio = pyaudio.PyAudio()
     logging.info('Preparing output audio stream')
 
     audio_stream = py_audio.open(format=py_audio.get_format_from_width(sample_width),
@@ -168,7 +168,6 @@ def main():
     ch.setFormatter(format)
     log.addHandler(ch)
 
-    py_audio = pyaudio.PyAudio()
 
     wav_file = 'AngelinaJolieShortExtract.wav'
 
@@ -195,7 +194,7 @@ def main():
         format_audio_output(input_streams[0], output_streams[0])
 
     def play(input_streams, output_streams):
-        stream_to_output(py_audio, input_streams[0], frame_rate=22050)
+        stream_to_output(input_streams[0], frame_rate=22050)
 
     # Connections
 
@@ -303,7 +302,6 @@ def main():
     wavfile_to_stream(wav_file, audio_input_stream, chunk_size=CHUNK, force_mono=True)
     '''
 
-    py_audio.terminate()
 
 if __name__ == '__main__':
     main()
