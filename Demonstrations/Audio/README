@@ -1,0 +1,16 @@
+You must install pyaudio before you can run these examples.
+
+pip install pyaudio
+
+1) Rate Change Demonstration
+
+This demonstration opens a WAV file of audio data, converts it to streams, 
+shifts the pitch by altering the samples, and sends the pitch shifted audio
+to the loudspeaker/headphones.
+
+2) Reverberation Demonstration
+
+This demonstration opens a WAV file of audio data, converts it to streams, and
+then simulates a reverberant room by adding time shifted samples, before sending
+the altered audio to the loudspeaker/headphones.
+
