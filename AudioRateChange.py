@@ -1,4 +1,4 @@
-﻿'''
+'''
 Created on Oct 30, 2015
 
 @author: julian
@@ -7,27 +7,27 @@ import pyaudio
 import wave
 import struct
 import sys
-from Stream import Stream, _multivalue
-from Operators import stream_func
+from Stream import Stream, _multivalue,  _close
+from Operators import stream_agent
 from MakeProcess import make_process
 from multiprocessing import Process, Queue
 
 
 import logging
-logging.basicConfig(filename="AudioRateChange.log", filemode='w', level=logging.INFO)
 
-def package_into_lists(input_stream, window_size):
+def package_into_lists(input_stream, output_stream, window_size):
     def identity(lst):
+        # print "Package"
         return lst
-    return stream_func(
+    return stream_agent(
         inputs=input_stream, # The input is input_stream
+        outputs=output_stream,
         f_type='window', # Identifies 'window' wrapper
         f=identity, # The function that is wrapped
-        num_outputs=1, # Returns a single stream
         window_size=window_size,
         step_size=window_size)
 
-def insert_interpolated_values(input_stream, n):
+def insert_interpolated_values(input_stream, output_stream, n):
 
     def interpolate(lst):
         if len(lst) < 2: return lst
@@ -35,27 +35,28 @@ def insert_interpolated_values(input_stream, n):
         return_list = [lst[0]+k*increment for k in range(n)]
         return _multivalue(return_list)
 
-    return stream_func(
+    return stream_agent(
         inputs=input_stream, # The input is input_stream
+        outputs=output_stream,
         f_type='window', # Identifies 'window' wrapper
         f=interpolate, # The function that is wrapped
-        num_outputs=1, # Returns a single stream
         window_size=2,
         step_size=1)
 
-def keep_every_nth_value(input_stream, n):
+def keep_every_nth_value(input_stream, output_stream, n):
     def drop(lst):
+        # print "Drop"
         return lst[0]
-    return stream_func(
+    return stream_agent(
         inputs=input_stream, # The input is input_stream
+        outputs=output_stream,
         f_type='window', # Identifies 'window' wrapper
         f=drop, # The function that is wrapped
-        num_outputs=1, # Returns a single stream
         window_size=n,
         step_size=n)
 
 
-def stream_to_output(py_audio, input_stream, num_channels=1, \
+def stream_to_output(input_stream, num_channels=1, \
                      sample_width=2, frame_rate=44100):
     """
     Parameters
@@ -67,7 +68,7 @@ def stream_to_output(py_audio, input_stream, num_channels=1, \
     frame_rate: rate at which samples are played back (samples/second)
 
     """
-
+    py_audio = pyaudio.PyAudio()
     logging.info('Preparing output audio stream')
 
     audio_stream = py_audio.open(format=py_audio.get_format_from_width(sample_width),
@@ -75,20 +76,28 @@ def stream_to_output(py_audio, input_stream, num_channels=1, \
                 rate=frame_rate,
                 output=True,
                 input=False)
+    wf = wave.open("modified.wav", 'wb')
+
+    wf.setsampwidth(sample_width)
+    wf.setnchannels(num_channels)
+    wf.setframerate(frame_rate)
+
 
     def write_samples_to_output(formatted_samples):
-        audio_stream.write(formatted_samples)
+        # print "Play"
+        audio_stream.write(formatted_samples.encode("ISO-8859-1"))
+        wf.writeframes(formatted_samples.encode("ISO-8859-1"))
 
 
-    return stream_func(inputs=input_stream, f_type='element',
-                       f=write_samples_to_output, num_outputs=0)
+    stream_agent(inputs=input_stream, outputs=[], f_type='element',
+                       f=write_samples_to_output)
 
 
     # need to call these when the stream is terminated - how to do this?
     #audio_stream.stop_stream()
     #audio_stream.close()
 
-def format_audio_output(stream):
+def format_audio_output(input_stream, output_stream):
     """
     Parameters
     ----------
@@ -96,15 +105,16 @@ def format_audio_output(stream):
     """
 
     def format_data(shorts):
+        # print "Format"
         format = 'h'*len(shorts)
         packed = struct.pack(format, *shorts)
         return packed
 
-    return stream_func(
-                       inputs=stream,
+    return stream_agent(
+                       inputs=input_stream,
+                       outputs=output_stream,
                        f_type='element',
-                       f=format_data,
-                       num_outputs=1)
+                       f=format_data)
 
 
 def wavfile_to_stream(filename, output_stream, chunk_size=1024, force_mono=True):
@@ -117,7 +127,7 @@ def wavfile_to_stream(filename, output_stream, chunk_size=1024, force_mono=True)
     force_mono: boolean
 
     """
-
+    # print "Read"
     wf = wave.open(filename, 'rb')
 
     sample_width = wf.getsampwidth()
@@ -169,7 +179,6 @@ def main():
     ch.setFormatter(format)
     log.addHandler(ch)
 
-    py_audio = pyaudio.PyAudio()
 
     wav_file = 'AngelinaJolieShortExtract.wav'
 
@@ -185,19 +194,18 @@ def main():
 
         output_streams[0].append(_close)
 
-    def shift_freq(input_stream, output_stream):
-        output_stream = keep_every_nth_value(input_stream, 2)
+    def shift_freq(input_streams, output_streams):
 
-    def chunk_stream(input_stream, output_stream):
-        output_stream[0] = package_into_lists(input_stream[0], CHUNK)
-        output_stream[0].set_name('Chunked audio for output')
+        keep_every_nth_value(input_streams[0], output_streams[0], 1)
 
-    def format_stream(input_stream, output_stream):
-        output_stream[0] = format_audio_output(input_stream[0])
-        output_stream[0].set_name('Formatted chunked output')
+    def chunk_stream(input_streams, output_streams):
+        package_into_lists(input_streams[0], output_streams[0], CHUNK)
+
+    def format_stream(input_streams, output_streams):
+        format_audio_output(input_streams[0], output_streams[0])
 
     def play(input_streams, output_streams):
-        output_streams[0] = stream_to_output(py_audio, input_streams[0], frame_rate=22050)
+        stream_to_output(input_streams[0], frame_rate=22050)
 
     # Connections
 
@@ -207,6 +215,11 @@ def main():
     conn_3 = ('localhost', 8891)
     conn_4 = ('localhost', 8892)
 
+    queue_1 = Queue()
+    queue_2 = Queue()
+    queue_3 = Queue()
+    queue_4 = Queue()
+
     process_0 = Process(target=make_process,
                         args= (
                             [], # list of input stream names
@@ -215,10 +228,9 @@ def main():
                             None, # the input queue
                             [[conn_1]], # list of list of output queues
                             conn_0[0],
-                            conn_0[1]
+                            conn_0[1],
                             ))
 
-    queue_1 = Queue()
     process_1 = Process(target=make_process,
                         args= (
                             ['audio_input_stream'], # list of input stream names
@@ -227,10 +239,9 @@ def main():
                             queue_1, # the input queue
                             [[conn_2]], #list of list of output queues
                             conn_1[0],
-                            conn_1[1]
+                            conn_1[1],
                             ))
 
-    queue_2 = Queue()
     process_2 = Process(target=make_process,
                         args= (
                             ['shift_frequency_stream'], # list of input stream names
@@ -239,10 +250,9 @@ def main():
                             queue_2, # the input queue
                             [[conn_3]], #list of list of output queues
                             conn_2[0],
-                            conn_2[1]
+                            conn_2[1],
                             ))
 
-    queue_3 = Queue()
     process_3 = Process(target=make_process,
                         args= (
                             ['chunked_stream'], # list of input stream names
@@ -251,10 +261,9 @@ def main():
                             queue_3, # the input queue
                             [[conn_4]], #list of list of output queues
                             conn_3[0],
-                            conn_3[1]
+                            conn_3[1],
                             ))
 
-    queue_4 = Queue()
     process_4 = Process(target=make_process,
                         args= (
                             ['formatted_stream'], # list of input stream names
@@ -263,8 +272,35 @@ def main():
                             queue_4, # the input queue
                             [], #list of list of output queues
                             conn_4[0],
-                            conn_4[1]
+                            conn_4[1],
                             ))
+
+    #########################################
+    # 3. START PROCESSES
+
+
+    process_1.start()
+
+    process_2.start()
+
+    process_3.start()
+
+    #time.sleep(0.1)
+    process_4.start()
+
+    #time.sleep(0.1)
+    process_0.start()
+
+    #########################################
+    # 4. JOIN PROCESSES
+    #time.sleep(0.1)
+    process_4.join()
+    process_3.join()
+    process_2.join()
+    #time.sleep(0.1)
+    process_1.join()
+    #time.sleep(0.1)
+    process_0.join()
 
     # processing the audio: we can shift the frequency up (keep_every) or down (insert)
 
@@ -287,7 +323,6 @@ def main():
     wavfile_to_stream(wav_file, audio_input_stream, chunk_size=CHUNK, force_mono=True)
     '''
 
-    py_audio.terminate()
 
 if __name__ == '__main__':
     main()
