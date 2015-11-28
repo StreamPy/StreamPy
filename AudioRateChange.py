@@ -76,10 +76,17 @@ def stream_to_output(input_stream, num_channels=1, \
                 rate=frame_rate,
                 output=True,
                 input=False)
+    wf = wave.open("modified.wav", 'wb')
+
+    wf.setsampwidth(sample_width)
+    wf.setnchannels(num_channels)
+    wf.setframerate(frame_rate)
+
 
     def write_samples_to_output(formatted_samples):
         # print "Play"
         audio_stream.write(formatted_samples.encode("ISO-8859-1"))
+        wf.writeframes(formatted_samples.encode("ISO-8859-1"))
 
 
     stream_agent(inputs=input_stream, outputs=[], f_type='element',
@@ -176,7 +183,7 @@ def main():
     wav_file = 'AngelinaJolieShortExtract.wav'
 
     # the number of samples we will read/write at one time to the audio system
-    CHUNK = 1
+    CHUNK = 1024
 
     audio_input_stream = Stream('stream from file '+wav_file)
 
@@ -185,7 +192,7 @@ def main():
     def create_audio_stream(input_streams, output_streams):
         wavfile_to_stream(wav_file, output_streams[0], chunk_size=CHUNK, force_mono=True)
 
-        # output_streams[0].append(_close)
+        output_streams[0].append(_close)
 
     def shift_freq(input_streams, output_streams):
 
