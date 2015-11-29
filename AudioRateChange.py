@@ -17,7 +17,7 @@ import logging
 
 def package_into_lists(input_stream, output_stream, window_size):
     def identity(lst):
-        # print "Package"
+        print "Package"
         return lst
     return stream_agent(
         inputs=input_stream, # The input is input_stream
@@ -26,6 +26,7 @@ def package_into_lists(input_stream, output_stream, window_size):
         f=identity, # The function that is wrapped
         window_size=window_size,
         step_size=window_size)
+    
 
 def insert_interpolated_values(input_stream, output_stream, n):
 
@@ -45,7 +46,7 @@ def insert_interpolated_values(input_stream, output_stream, n):
 
 def keep_every_nth_value(input_stream, output_stream, n):
     def drop(lst):
-        # print "Drop"
+        print "Drop"
         return lst[0]
     return stream_agent(
         inputs=input_stream, # The input is input_stream
@@ -84,7 +85,7 @@ def stream_to_output(input_stream, num_channels=1, \
 
 
     def write_samples_to_output(formatted_samples):
-        # print "Play"
+        print "Play"
         audio_stream.write(formatted_samples.encode("ISO-8859-1"))
         wf.writeframes(formatted_samples.encode("ISO-8859-1"))
 
@@ -105,7 +106,7 @@ def format_audio_output(input_stream, output_stream):
     """
 
     def format_data(shorts):
-        # print "Format"
+        print "Format"
         format = 'h'*len(shorts)
         packed = struct.pack(format, *shorts)
         return packed
@@ -127,7 +128,7 @@ def wavfile_to_stream(filename, output_stream, chunk_size=1024, force_mono=True)
     force_mono: boolean
 
     """
-    # print "Read"
+    print "Read"
     wf = wave.open(filename, 'rb')
 
     sample_width = wf.getsampwidth()
