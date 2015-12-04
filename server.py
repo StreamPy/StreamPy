@@ -33,7 +33,7 @@ def create_server(host, port, queue, finished_execution):
         conn, addr = s.accept()
         logging.info("Server {0}:{1} connected with {2}:{3} \n".format(host, port, addr[0], addr[1]))
         thread.start_new_thread(clientthread, (conn,))
-
+    s.shutdown()
     s.close()
 
 

@@ -389,12 +389,12 @@ def main():
     # 2. CREATE QUEUES
 
     #queue_0 = None
-    conn_0 = ('localhost', 8888)
+    conn_0 = ('localhost', 8891)
     queue_1 = Queue() # Input queue for process_1
-    conn_1 = ('localhost', 8889)
+    conn_1 = ('localhost', 8892)
     #queue_2 = Queue() # Input queue for process_2
     queue_2 = Queue()
-    conn_2 = ('localhost', 8890)
+    conn_2 = ('localhost', 8893)
 
     #########################################
     # 2. CREATE PROCESSES
