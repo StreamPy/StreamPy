@@ -32,7 +32,6 @@ streams.
 
 from Agent import Agent
 from Stream import Stream, StreamArray
-
 from Stream import _no_value, _multivalue, _close, TimeAndValue
 
 # ASSERTIONS USED IN FILE
@@ -1309,6 +1308,13 @@ def stream_agent(inputs, outputs, f_type, f,
             return many_to_many_agent(f_type, f, inputs, outputs,
                                 state, call_streams, window_size, step_size)
 
+def ef(inputs, outputs, func, **kwargs):
+        def g(element):
+            print 'in g, element = ', element
+            return func(element, **kwargs)
+        stream_agent(
+            inputs, outputs, f_type='element', f=g)
+
 
 def main():
     def squares(l):
@@ -1327,6 +1333,16 @@ def main():
         min_so_far = min(min_so_far, v)
         state = (max_so_far, min_so_far)
         return([max_so_far, min_so_far], state)
+
+    def print_stream(stream):
+        def print_element(v, count):
+            print '{0}[{1}] = {2}'.format(stream.name, count, v)
+            return (count+1)
+
+        return stream_func(
+            inputs=stream, f_type='element',
+            f=print_element, num_outputs=0,
+            state=0)
 
     x_stream = Stream('x')
     w_stream = Stream('w')
@@ -1364,6 +1380,17 @@ def main():
     z_stream.print_recent()
     r_stream.print_recent()
     s_stream.print_recent()
+
+    A = Stream('A')
+    print_stream(A)
+    B = Stream('B')
+    print_stream(B)
+    C = Stream('C')
+    D = Stream('D')
+    def mult(v): return v*2
+    ef(A, B, mult)
+    A.extend(range(5))
+
 
 if __name__ == '__main__':
     main()
