@@ -382,7 +382,11 @@ for <code>j = 0, 1, 2, 3, ...</code> and <code>k < n = len(x)</code>.
 <code>a[0], b[0], c[0], a[1], b[1], c[1], a[2], b[2], c[2],....</code> </p>
 
 
-<p><b>Solution: see <i>weave_streams.py</i> </b>
+<p><b>Solution: see </b>
+<a href=
+"https://github.com/StreamPy/StreamPy/blob/master/weave_streams.py">
+<i>weave_streams.py</i></a>
+
 <center><code>
 ef(x, y, _multivalue)
 </code></center>
@@ -398,11 +402,13 @@ on earlier elements of an input stream.
 </p>
 
 <p> A state is an arbitrary object. It can be a number, string, tuple,
-or instance of any class. The (j+1)-th state and the j-th element on
-each of the output streams is a function <i>f</i> of the agent's j-th
-state and the j-th elements on each of its input streams, for all
-j. The initial state is the agent's zero-th state. (See "Mealy
-machine.") </p>
+or instance of any class. (Note: If the state is modified in the
+state-update function, then the state must be a mutable data
+structure; for example a list is mutable whereas a tuple is not.) The
+(j+1)-th state and the j-th element on each of the output streams is a
+function <i>f</i> of the agent's j-th state and the j-th elements on
+each of its input streams, for all j. The initial state is the agent's
+zero-th state. (See "Mealy machine.") </p>
 
 <p> The wrapper for an agent with state specifies its initial
 state.<p> 
@@ -430,39 +436,40 @@ that sets the j-th element of <code>y</code> to the average of the
 first j elements of <code>x</code>. </p>
 
 <p> <b>Solution</b> see <i>tutorial_average_of_stream.py</i> The state
-of the agent is a tuple <code>(n, cumulative)</code> where
+of the agent is a list <code>[n, cumulative]</code> where
 <code>n</code> is the number of elements of <code>x</code> that have
 been processed and <code>cumulative</code> is the sum of these
-elements. Initially, the state is (0, 0.0).  </p>
+elements. Initially, the state is [0, 0.0].  </p>
 
 <p>When an element <code>v</code> is received on <code>x</code>, the
-next state is computed by incrementing <code>n</code> by 1 and
-incrementing <code>cumulative</code> by <code>v</code>, or
-equivalently: <code> state += (1, v) </code>
+next state is computed by incrementing <code>n</code>, or
+<code>state[0]</code> by 1 and incrementing <code>cumulative</code> or
+<code>state[1]</code> by <code>v</code>.</code>
 
 <p>
 The new average is : <code>cumulative/float(n)</code> or equivalently
 <code>state[1]/float(state[0])</code>; this new average is output on
 <code>y</code>.</p>
 
-<p> We first write a function, <code>update</code> which
+<p> We first write a function, <code>update_avg</code> which
 returns the next output and next state given the current input and
 state.  </p>
 
 <p>
 <pre><code>
-def update(v, state):
-    state += (1, v)
+def update_avg(v, state):
+    state[0] += 1
+    state[1] += v
     return (state[1]/float(state[0]), state)
 </code></pre>
 </p>
 
 <p>
 Next we write the function that creates the agent in the usual way,
-adding the initial state, <code>(0, 0.0)</code> to the list of parameters:
+adding the initial state, <code>[0, 0.0]</code> to the list of parameters:
 <center>
 <code>
-ef(x, y, update, (0, 0.0))
+ef(x, y, update_avg, [0, 0.0])
 </code></center>
 </p>
 
@@ -487,13 +494,13 @@ list consisting of the j-th element from each stream in <code>x</code>.
 
 <p> <b>Solution</b> see <i>tutorial_average_of_stream.py</i> The state
 of the agent is <code>y[j]</code> and is initially <code>init</code>.
-We first write a function, <code>update</code> which returns the next
+We first write a function, <code>update_smooth</code> which returns the next
 output and state given the current input and state, and other
 parameters. </p>
 
 <p>
 <pre><code>
-def update(lst, state, func, alpha):
+def update_smooth(lst, state, func, alpha):
     state = state*(1-alpha) + func(lst)*alpha
     return (state, state)
 </code></pre>
@@ -506,7 +513,7 @@ list, and <code>alpha = 0.5</code>. We add the initial state,
 parameters as keyword parameters.
 <center>
 <code>
-ef(x, y, update, init, func=np.mean, alpha=0.5)
+ef(x, y, update_smooth, init, func=np.mean, alpha=0.5)
 </code></center>
 </p>
 
