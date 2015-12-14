@@ -1314,7 +1314,7 @@ def stream_agent(inputs, outputs, f_type, f,
 # Passes **kwargs to the element function, ef
 def ef(inputs, outputs, func, state=None, **kwargs):
         def g(element, state=None):
-            if state:
+            if state is not None:
                 return func(element, state, **kwargs)
             else:
                 return func(element, **kwargs)
