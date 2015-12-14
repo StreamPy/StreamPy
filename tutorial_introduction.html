@@ -44,69 +44,79 @@ appended to a stream in exactly the same way as values are appended to
 a list, i.e., by using <i>append</i> to append a single value and
 <i>extend</i> to extend the list by a list of values.<p>
 
-<p>We will describe implementation of the
+<p>We describe implementation of the
 <a
 href="https://github.com/StreamPy/StreamPy/blob/master/Stream.py">Stream
-class</a> later. An understanding of the implementation is not
-necessary to use streams.</p>
+class</a> later.</p>
 
-<h1>Sources of streams</h1>
-A <b>source</b> is a function that appends values to a stream without
-reading other streams. A source may obtain values to append to a
-stream from a file, database, random number generator or sensor.
+<h1>Sources of streams</h1> A <b>source</b> is a function that appends
+values to a stream without reading other streams. <code> s.append(v)
+</code> appends <code>v</code> to a stream <code>s</code> and <code>
+s.extend(lst) </code> extends <code>s</code> by a list
+<code>lst</code>.  </p>
 
-<p><b>Note about examples. Please look at, run, modify and then rerun
-the example files</b>. In the examples, <code>np</code> refers to
-<b>NumPy</b>. </p>
+<p> The following code appends j to stream <code>x</code> every 0.5
+seconds for j in <code>range(10)</code>.
 
-<h4>Example of a source: <i>source_stream.py</i></h4>
-<p>
-<i>source_stream.py</i> appends values to a stream where the
-values are specified by a function and arguments passed to
-<i>source_stream.py</i>. The example illustrates that the statements
-for appending to a list and appending to a stream are identical. The
-function appends a value to a stream or a list periodically where the
-period is a function parameter. Appending values to a list forever
-causes memory overflow eventually whereas appending values to a stream
-forever does not result in memory overflow. Earlier values of a stream
-that are no longer accessed are garbage collected, i.e., they are
+<pre> <code>
+for j in range(10):
+    x.append(j)
+    time.sleep(0.5)
+</code> </pre>
+
+<h2>Examples</h2>
+
+In the examples, <code>np</code> refers to NumPy. </p>
+
+<h4>Example of a source: <a href =
+https://github.com/StreamPy/StreamPy/blob/master/source_stream.py
+<i>source_stream.py</i></a></h4>
+
+<p> <i>source_stream.py</i> appends values to a stream where the
+values are specified by a function <code>func</code> and keyword
+arguments, <code>**kwargs</code>, passed to <i>func</i>. The function
+appends a value to a stream or a list periodically where the period is
+the parameter <code>time_period</code>. The number of values appended
+to the stream is the parameter <code>number_of_values</code>. Note
+that setting this parameter to a negative value makes the number of
+values unbounded and the computation never stops.  </p>
+
+<p>The example illustrates that the statements for appending to a list
+and appending to a stream are identical. Appending values to a list
+forever causes memory overflow whereas appending values to a stream
+does not. Earlier values of a stream that are no longer accessed are
 stored in secondary storage or discarded so that the amount of main
 memory occupied by a stream is bounded. Stream implementation is
 discussed later.</p>
 
-<p> See <i>TutorialExamplesSource.html</i> for examples of sources of
-streams. </p>
+<p>Note: <i>source_stream.py</i> executes forever because
+<code>number_of_values</code> is set to -1 in one of the cases. Use
+the command line (Control-C) to stop execution in this case. Or change
+<code>number_of_values</code> to a nonnegative value so that execution
+stops after the specified number of values.  </p>
 
 
-<h1>Encapsulators: From data at rest to data in motion</h1>
+<h1>Encapsulators: From lists to streams</h1>
 
-<p> The phrase "data at rest" refers to data that doesn't change; for
-example, data in a list or an array. Data in motion refers to streams
-and other data structures that change with time. Data at rest is often
-a snapshot of data in motion. Most open-source and proprietary
-programs operate on data at rest. StreamPy has a library of
-encapsulators, or "wrappers" that encapsulate programs that operate on
-data at rest to obtain programs that operate on streams. We will
-develop programs that operate on streams by wrapping programs that
-operate on standard data structures such as lists and arrays.</p>
+<p> Most programs operate on lists, arrays and other familiar data
+structures. StreamPy has a library of encapsulators, or "wrappers"
+that encapsulate programs that operate on such data structures to
+obtain programs that operate on streams. </p>
 
 
 <h1>Agents</h1>
 
-<p>An agent is a program that has input streams and zero or more
+<p>An agent is a program that has input streams and (possibly zero)
 output streams. An agent waits for data to arrive on its input
 streams, processes the incoming data, and puts values on its output
-streams. The simplest way to create an agent is to wrap
-(i.e. encapsulate) a program that operates on lists or arrays.</p>
+streams. An agent may have state or it may be stateless. We begin with
+a description of stateless agents and a simple wrapper - the element
+wrapper.</p>
 
-<p>An agent may have state or it may be stateless. We begin with the
-stateless case and the simplest wrapper - the element wrapper.</p>
-
-<p>We will describe implementation of the
-<a
+<p>We describe implementation of the <a
 href="https://github.com/StreamPy/StreamPy/blob/master/Agent.py">Agent
-class</a> later. An understanding of the implementation is not
-necessary to use streams.</p>
+class</a> later.</p>
+
 
 <h1>The element wrapper</h1>
 
@@ -162,72 +172,106 @@ than the lengths of its input stream. We begin with the case where the
 agent places a single element on each output stream at each step.
 </p>
 
-See <i>TutorialExamplesElementWrapper.html</i> for a collection of examples
-of the element wrapper. 
+<h2>ef: Alternative form of the element wrapper</h2>
+<p>
+An alternative form of the element wrapper is:
+<center><code>
+ef(inputs, outputs, f, **kwargs)
+</code></center>
+where <code>**kwargs</code> is a set of keyword parameters that are
+passed to function <code>f</code>.
+</p>
 
+<p> Note: We use <code>ef</code> for a function that creates an agent,
+where the wrapped function <code>f</code> is an <b>e</b><i>lement</i>
+function. Similarly, we use <code>lf</code>, <code>wf</code>,
+<code>twf</code> when the wrapped function <code>f</code> is a
+<b>l</b><i>ist</i>, <b>w</b><i>indows</i>, or <b>t</b><i>imed</i>
+<b>w</b><i>indows</i> function, respectively.</p>
 
 
 <!------------------------------------------------------------>
 <!------------------------------------------------------------>
 <!------------------------------------------------------------>
-<h3>Examples of element wrappers</h3>
+<h2>Examples of element wrappers</h2>
 
-<h4>Example of <i>stream operator</i>: single input stream, single output
-stream.</h4>
+<p>
+<i>Please execute, modify and re-execute the example .py files.</i>
+<br>
+In the examples, <code>np</code> represents
+<a href="http://www.numpy.org/">NumPy</a>. 
+</p>
+
+<h3>Example of <i>stream operator</i>: single input stream, single output
+stream.</h3>
 
 <p> <b>Problem</b>: <code>x</code> and <code>y</code> are streams. Write
 an agent that sets the <code>j</code>-th element of <code>y</code> to the <i>sine</i> of the
 <code>j</code>-th element of <code>x</code>, for all <code>j</code>.</p>
 
-<p> <b>Solution</b> see <i>tutorial_sine.py</i>:
+<p> <b>Solution</b> see
+<a href= "https://github.com/StreamPy/StreamPy/blob/master/tutorial_sine.py"><i>tutorial_sine.py</i></a>:
 <center><code>
 stream_agent(inputs=x, outputs=y, f_type='element', f=np.sin)
 </code></center>
+or
+<center><code>
+ef(x, y, np.sin)
+</code></center>
 </p>
 
-<!------------------------------------------------------------>
-<!------------------------------------------------------------>
-<!------------------------------------------------------------>
-<h4>Example of <i>merge</i>: multiple input streams, single output
-stream.</h4> 
+<p> In the following examples, we give only the <code>ef</code>
+version.  </p>
 
-<p> <b>Problem</b> <code>list_of_stream</code> is a list of streams, and <code>y</code>
+<!------------------------------------------------------------>
+<!------------------------------------------------------------>
+<!------------------------------------------------------------>
+<h3>Example of <i>merge</i>: multiple input streams, single output
+stream.</h3> 
+
+<p> <b>Problem</b> <code>x</code> is a list of streams, and <code>y</code>
 is a stream. Write an agent that sets the <code>j</code>-th
 element of <code>y</code> to the sum of the <code>j</code>-th element of all streams in
-<code>list_of_stream</code>. </p>
-<p><b>Solution</b> see <i>tutorial_merge.py</i>:
-<p>
+<code>x</code>. </p>
+<p><b>Solution</b> see <a
+href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_merge.py">
+<i>tutorial_merge.py</i></a>:
 <center><code>
-stream_agent(inputs=list_of_streams, outputs=y,f_type ='element', f=sum)
+ef(x, y, sum)
 </code></center>
 </p>
 
-<!------------------------------------------------------------>
-<!------------------------------------------------------------>
-<!------------------------------------------------------------>
-<h4>Example of <i>split</i>: single input streams, multiple output
-streams.</h4>
 
-<p> <b>Problem</b> <code>squareroot_stream</code>, 
-<code>square_stream</code> and <code>input_stream</code> are
-streams. You are given the function:</p> 
-<center><code>
-def squareroot_and_square(v): return (math.sqrt(v), v*v)
-</code></center>
-(where <code>math</code> was imported earlier). Write an agent that sets the
-<code>j</code>-th element of the stream <code>squareroot_stream</code> to
-the square root of the <code>j</code>-th element of <code>input_stream</code> and sets the
-<code>j</code>-th element of the stream <code>square_stream</code> to
-the square of the <code>j</code>-th element of <code>input_stream</code> </p>
+<!------------------------------------------------------------>
+<!------------------------------------------------------------>
+<!------------------------------------------------------------>
+<h3>Example of <i>split</i>: single input streams, multiple output
+streams.</h3>
 
-<p><b>Solution</b> see <i>tutorial_split.py</i>:
-<p>
+<p> <b>Problem</b>: <code>x</code>, 
+<code>y</code> and <code>z</code> are
+streams. You are given the function:
 <pre>
 <code>
-stream_agent(inputs=x, outputs=[squareroot_stream, square_stream],
-             f_type='element', f=squareroot_and_square) 
+def execute(v, g, h):
+    return (g(v), h(v))
 </code>
 </pre>
+Write an agent that sets the
+<code>j</code>-th element of <code>y</code> to
+<code>math.sqrt</code> of the <code>j</code>-th element of <code>x</code> and sets the
+<code>j</code>-th element of <code>z</code> to
+<code>math.exp</code> of the <code>j</code>-th element of <code>x</code> </p>
+
+<p><b>Solution</b> see <a
+href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_split.py">
+<i>tutorial_split.py</i></a>:
+<p>
+<center>
+<code>
+ef(x, [y, z], execute, g=math.sqrt, h=math.exp) 
+</code>
+</center>
 </p>
 
 
@@ -236,30 +280,26 @@ stream_agent(inputs=x, outputs=[squareroot_stream, square_stream],
 <!------------------------------------------------------------>
 <!------------------------------------------------------------>
 
-<h4>Example of <i>many to many</i>: multiple input streams, multiple output
-streams.</h4>
+<h3>Example of <i>many to many</i>: multiple input streams, multiple output
+streams.</h3>
 
-<p> <b>Problem</b> <code>list_of_streams</code> is a list of streams, and
-<code>max_stream</code> and <code>max_stream</code> are streams. You are
-given the function:</p>
-
-<center><code>
-def max_and_min(lst): return (max(lst), min(lst))
-</code></center>
+<p> <b>Problem</b>: <code>x</code> is a list of streams, and
+<code>y</code> and <code>z</code> are streams. 
 
 <p>Write an
 agent that sets the <code>j</code>-th element of
-<code>max_stream</code> to the max of the <code>j</code>-th
-element of each stream in <code>list_of_streams</code> and sets the
-<code>j</code>-th element of <code>min_stream[1]</code> to the min of
-the <code>j</code>-th element of each stream in <code>list_of_streams</code>.
+<code>y</code> to the max of the <code>j</code>-th
+element of each stream in <code>x</code> and sets the
+<code>j</code>-th element of <code>z</code> to the min of
+the <code>j</code>-th element of each stream in <code>x</code>.
 </p>
 
-<p><b>Solution</b> see <i>tutorial_many_to_many.py</i>:
+<p><b>Solution</b> see <a
+href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_many_to_many.py">
+<i>tutorial_many_to_many.py</i></a>:
 <p>
 <center><code>
-stream_agent(inputs=list_of_streams, outputs=[max_stream, min_stream],
-             f_type ='element', f=max_and_min)
+ef(x, [y, z], execute, g=max, h=min)
 </code></center>
 </p>
 
@@ -279,35 +319,32 @@ object <code>_no_value</code> for this purpose. The effect of appending the
 object <code>_no_value</code> to a stream is that no value gets appended to
 the stream.</p>
 
-<h4>Example of <i>_no_value</i>: Filter</h4>
+<h3>Example of <i>_no_value</i>: Filter</h3>
 
-<p> <b>Problem</b>: <code>input_stream</code> and <code>output_stream</code> are streams and
-<code>boolean_func</code> is a function from elements of <code>input_stream</code> to
-Booleans. Write a function <code>filter_stream_1</code>:
-</p>
-<center><code>
-filter_stream_1(input_stream, output_stream, boolean_func)
-</code></center>
-that creates an agent that places elements of
-<code>input_stream</code> that satisfy <code>boolean_func</code> on
-<code>output_stream</code>. (We will write a function
-<code>filter_stream</code> with the same semantics as
-<code>filter_stream_1</code>; the difference is that
-<code>filter_stream</code> is implemented with the list wrapper rather
-than the element wrapper.
+<p> <b>Problem</b>: <code>x</code> and <code>y</code> are
+streams. Create an agent that puts elements of <code>x</code> that are
+greater than 5 in <code>y</code>,
+and puts no value in <code>y</code> for other elements of
+<code>x</code>.
 
-<p><b>Solution: see <i>filter_stream_1.py</i> </b>
+<p><b>Solution: see </b> <a
+href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_filter_1.py">
+<i>tutorial_filter_1.py</i></a>
+We first define a function <code>filter_threshold</code>.
 <pre>
 <code>
-from Stream import _no_value
-def filter_stream_1(input_stream, output_stream, boolean_func):
-    def filter_element(element):
-        return element if boolean_func(element) else _no_value
-    stream_agent(
-       inputs=input_stream, outputs=output_stream,
-       f_type ='element', f=filter_element)
+def ft(v, threshold):
+    return v if v > threshold else _no_value
 </code>
 </pre>
+</p>
+<p>
+We create the agent in the usual way:
+<center>
+<code>
+ef(x, y, ft, threshold=5)
+</code>
+</center>
 </p>
 
 
@@ -328,39 +365,27 @@ appends each element of <code>z</code>, as a separate element, to the output
 stream.</p>
 
 
-<h4>Example of <i>_multi_value</i></h4>
+<h3>Example of <i>_multivalue</i></h3>
 
-<p> <b>Problem</b>: <code>list_of_streams</code> is a list of streams and
-<code>output_stream</code> is a stream. Write a function:
+<p> <b>Problem</b>: <code>x</code> is a list of streams and
+<code>y</code> is a stream. Create an agent that sets:
 <center><code>
-weave_streams(list_of_streams, output_stream)
+y[n*j + k] = x[k][j]
 </code></center>
-that creates an agent that sets:
-<center><code>
-output_stream[n*j + k] = list_of_streams[k][j]
-</code></center>
-for <code>j = 0, 1, 2, 3, ...</code> and <code>k < n = len(list_of_streams)</code>.
+for <code>j = 0, 1, 2, 3, ...</code> and <code>k < n = len(x)</code>.
 </p>
 
-<p> For example, if <code>list_of_streams = [x, y, z]</code> where <code>x</code>,
-<code>y</code> and <code>z</code> are streams, then the sequence of values of
-<code>output_stream</code> are:
+<p> For example, if <code>x = [a, b, c]</code> where <code>a</code>,
+<code>b</code> and <code>c</code> are streams, then the sequence of values of
+<code>y</code> are:
 <br>
-<code>x[0], y[0], z[0], x[1], y[1], z[1], x[2], y[2], z[2], ....</code> </p>
+<code>a[0], b[0], c[0], a[1], b[1], c[1], a[2], b[2], c[2],....</code> </p>
 
 
 <p><b>Solution: see <i>weave_streams.py</i> </b>
-<pre>
-<code>
-from Stream import _multi_value
-def weave_streams(list_of_streams, output_stream):
-    def weave(list_of_elements):
-        return _multivalue(list_of_elements)
-    stream_agent(
-       inputs=list_of_streams, outputs=output_stream,
-       f_type ='element', f=weave)
-</code>
-</pre>
+<center><code>
+ef(x, y, _multivalue)
+</code></center>
 </p>
 
 <h1>Agents with state</h1>
@@ -384,51 +409,106 @@ state.<p>
 <center><code>
 stream_agent(inputs, outputs, f_type='element',f, state)
 </code></center>
+or
+<center><code>
+ef(inputs, outputs, f, state, **kwargs)
+</code></center>
 <p>
 where state is the initial state.
 </p>
 
-<h3>Example of element wrappers for agents with state</h3>
+<h2>Example of element wrappers for agents with state</h2>
 
-<p><b>Problem</b>: <code>input_stream</code> and
-<code>output_stream</code> are streams. Write a function:
-<pre><code>
-average_of_stream(input_stream, output_stream)
-</code></pre>
-that creates an agent that sets the <code>j</code>-th element of
-<code>output_stream</code> to the average of the first <code>j</code>
-elements of <code>input_stream</code>.</p>
+<p>See <i>TutorialExamplesElementWrapper.html</i> for a collection of
+examples of agents with state. </p>
 
-<p> <b>Solution</b> see <i>tutorial_average_of_stream.py</i>:
-The state is a tuple <code>(n, cumulative)</code> where <code>n</code>
-is the number of elements of <code>input_stream</code> that have been
-processed and <code>cumulative</code> is the sum of these
-elements. Initially, the state is (0, 0.0). When an element is
-received on <code>input_stream</code>, the next state is computed by
-incrementing <code>n</code> by 1 and incrementing
-<code>cumulative</code> by the element just received. The element
-appended to <code>output_stream</code> is the average:
-<code>cumulative/float(n)</code>.
+
+<h3>Example: Average of a stream</h3>
+
+<p><b>Problem</b>: <code>x</code> and <code>y</code> are streams.  Create an agent
+that sets the j-th element of <code>y</code> to the average of the
+first j elements of <code>x</code>. </p>
+
+<p> <b>Solution</b> see <i>tutorial_average_of_stream.py</i> The state
+of the agent is a tuple <code>(n, cumulative)</code> where
+<code>n</code> is the number of elements of <code>x</code> that have
+been processed and <code>cumulative</code> is the sum of these
+elements. Initially, the state is (0, 0.0).  </p>
+
+<p>When an element <code>v</code> is received on <code>x</code>, the
+next state is computed by incrementing <code>n</code> by 1 and
+incrementing <code>cumulative</code> by <code>v</code>, or
+equivalently: <code> state += (1, v) </code>
+
+<p>
+The new average is : <code>cumulative/float(n)</code> or equivalently
+<code>state[1]/float(state[0])</code>; this new average is output on
+<code>y</code>.</p>
+
+<p> We first write a function, <code>update</code> which
+returns the next output and next state given the current input and
+state.  </p>
+
+<p>
 <pre><code>
-def average_of_stream(input_stream, output_stream):
-    def update_average(input_element, current_state):
-        n, cumulative = current_state
-        n += 1
-        cumulative += input_element
-        next_state = (n, cumulative)
-        output_element = cumulative/float(n) # the new mean
-        return (output_element, next_state)
-    stream_agent(inputs=input_stream, outputs=output_stream,
-                 f_type='element', f=update_average,
-                 state=(0, 0.0))
+def update(v, state):
+    state += (1, v)
+    return (state[1]/float(state[0]), state)
 </code></pre>
 </p>
 
-<p>See <i>TutorialExamplesElementWrapper.html</i> for a collection of
-examples of agents with state.
+<p>
+Next we write the function that creates the agent in the usual way,
+adding the initial state, <code>(0, 0.0)</code> to the list of parameters:
+<center>
+<code>
+ef(x, y, update, (0, 0.0))
+</code></center>
+</p>
 
 
+<h3>Example: Exponential Smoothing</h3>
+<p><b>Problem</b>: <code>x</code> is a list of streams and
+<code>y</code> is a stream.  <code>func</code> is a function whose
+single argument is a list and returns an object. Create an agent that
+sets the elements of <code>y</code> to the exponentially-smoothed
+average of <code>func</code> applied to the first elements of
+<code>x</code>. </p>
 
+<p> The initial smoothed value is a given value <code>init</code>. The
+j-th value of <code>y</code> is:
+<center>
+<code>
+y[j] = y[j-1]*(1-alpha) + func(x[j])*alpha
+</code>
+</center>
+with <code>y[-1] = init</code>, and where <code>x[j]</code> is the
+list consisting of the j-th element from each stream in <code>x</code>.
+
+<p> <b>Solution</b> see <i>tutorial_average_of_stream.py</i> The state
+of the agent is <code>y[j]</code> and is initially <code>init</code>.
+We first write a function, <code>update</code> which returns the next
+output and state given the current input and state, and other
+parameters. </p>
+
+<p>
+<pre><code>
+def update(lst, state, func, alpha):
+    state = state*(1-alpha) + func(lst)*alpha
+    return (state, state)
+</code></pre>
+</p>
+
+<p>
+Next, we create an agent with <code>func</code> being the mean of a
+list, and <code>alpha = 0.5</code>. We add the initial state,
+<code>init</code> to the list of parameters, and also additional
+parameters as keyword parameters.
+<center>
+<code>
+ef(x, y, update, init, func=np.mean, alpha=0.5)
+</code></center>
+</p>
 
 
 
