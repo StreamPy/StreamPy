@@ -435,8 +435,12 @@ examples of agents with state. </p>
 that sets the j-th element of <code>y</code> to the average of the
 first j elements of <code>x</code>. </p>
 
-<p> <b>Solution</b> see <i>tutorial_average_of_stream.py</i> The state
-of the agent is a list <code>[n, cumulative]</code> where
+<p> <b>Solution</b> see
+<a
+href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_average_of_stream.py">
+<i>tutorial_average_of_stream.py</i><a>
+
+<p>The state of the agent is a list <code>[n, cumulative]</code> where
 <code>n</code> is the number of elements of <code>x</code> that have
 been processed and <code>cumulative</code> is the sum of these
 elements. Initially, the state is [0, 0.0].  </p>
@@ -492,15 +496,19 @@ y[j] = y[j-1]*(1-alpha) + func(x[j])*alpha
 with <code>y[-1] = init</code>, and where <code>x[j]</code> is the
 list consisting of the j-th element from each stream in <code>x</code>.
 
-<p> <b>Solution</b> see <i>tutorial_average_of_stream.py</i> The state
-of the agent is <code>y[j]</code> and is initially <code>init</code>.
-We first write a function, <code>update_smooth</code> which returns the next
-output and state given the current input and state, and other
-parameters. </p>
+<p> <b>Solution</b> see
+<a
+href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_exponential_smoothing.py">
+<i>tutorial_exponential_smoothing.py</i></a>
+
+<p>The state of the agent is <code>y[j]</code> and is initially
+<code>init</code>.  We first write a function,
+<code>update_smooth</code> which returns the next output and state
+given the current input and state, and other parameters. </p>
 
 <p>
 <pre><code>
-def update_smooth(lst, state, func, alpha):
+def update_smooth(lst, state, h, alpha):
     state = state*(1-alpha) + func(lst)*alpha
     return (state, state)
 </code></pre>
@@ -513,7 +521,7 @@ list, and <code>alpha = 0.5</code>. We add the initial state,
 parameters as keyword parameters.
 <center>
 <code>
-ef(x, y, update_smooth, init, func=np.mean, alpha=0.5)
+ef(x, y, update_smooth, init, h=np.mean, alpha=0.5)
 </code></center>
 </p>
 
