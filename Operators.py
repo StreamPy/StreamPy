@@ -1307,10 +1307,13 @@ def stream_agent(inputs, outputs, f_type, f,
             # Multiple input and output streams
             return many_to_many_agent(f_type, f, inputs, outputs,
                                 state, call_streams, window_size, step_size)
-
+        
+####################################################
+# ef
+####################################################
+# Passes **kwargs to the element function, ef
 def ef(inputs, outputs, func, **kwargs):
         def g(element):
-            print 'in g, element = ', element
             return func(element, **kwargs)
         stream_agent(
             inputs, outputs, f_type='element', f=g)
