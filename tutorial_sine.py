@@ -1,34 +1,32 @@
 from Stream import Stream
-from Operators import stream_agent
+from Operators import stream_agent, ef
 from examples_element_wrapper import print_stream
 import numpy as np
 """ Example of an element-wrapper to create an agent
 with a single input stream and a single output stream.
 The function that is wrapped is np.sin.
+
+Illustrates: ef(x, y, np.sin)
+
 """
+# CREATE STREAMS AND PRINTING AGENTS
+# Create a stream x and call it 'input'
+x = Stream('input')
+# Create a stream y and call it 'sine of input'
+y = Stream('sine of input')
+# Create an agent that prints stream x
+print_stream(x)
+# Create an agent that prints stream y
+print_stream(y)
 
-# Create a stream input_stream and call it 'input'
-input_stream = Stream('input')
-# Create a stream output_stream and call it 'sine of input'
-output_stream = Stream('sine of input')
-# Create an agent that prints stream input_stream.
-print_stream(input_stream)
-# Create an agent that prints stream output_stream
-print_stream(output_stream)
-# Create an agent that puts the sine of elements of
-# input_stream into output_stream by wrapping np.sin
-# using the element wrapper.
-stream_agent(inputs=input_stream, outputs=output_stream,
-             f_type='element', f=np.sin)
+# Create an agent that puts the sine of x into y.
+ef(x, y, np.sin)
 
-# Put numbers into input_stream. 
+# ALTERNATIVE WAY OF SPECIFYING THE AGENT
+#stream_agent(inputs=x, outputs=y, f_type='element', f=np.sin)
+
+# Put elements into the input stream, x.
+# As elements enter x, an agent will put elements into y, and
+# the printer agents will print elements from x and y.
 for _ in range(2):
-    input_stream.extend(np.linspace(0, np.pi, 8))
-
-# As elements are placed in the input stream, the agent that we
-# created using the wrapper will put elements into
-# output_stream.
-# Also each printing agent will print elements from its stream as
-# elements enter the stream.
-# Note that multiple agents will be printing simultaneously
-# and so the print lines may be interspersed.
+    x.extend(np.linspace(0, np.pi, 8))
