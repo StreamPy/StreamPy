@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head><title>Introduction to StreamPy</title></head>
+<style type="text/css">
+body {
+  background-color: white ;
+  color: black ;
+  font-family: Arial, Helvetica, sans-serif ;
+}
+.boxed {
+  border: 4px solid green ;
+}
+</style>
 <body>
 
 <center><h1>Introduction to StreamPy</h1></center>
@@ -58,11 +68,13 @@ s.extend(lst) </code> extends <code>s</code> by a list
 <p> The following code appends j to stream <code>x</code> every 0.5
 seconds for j in <code>range(10)</code>.
 
+<div class="boxed">
 <pre> <code>
 for j in range(10):
     x.append(j)
     time.sleep(0.5)
-</code> </pre>
+  </code> </pre>
+</div>
 
 <h2>Examples</h2>
 
@@ -123,9 +135,11 @@ class</a> later.</p>
 <p>We begin by describing the required parameters of a wrapper
 function and  postpone discussion of optional parameters. The element
 wrapper function has the form:
+<div class="boxed">
 <center><code>
 stream_agent(inputs, outputs, f_type='element',f)
-</code></center>
+  </code></center>
+</div>
 where:
 <ul>
   <li><code>inputs</code> is either a stream or a list of streams.</li>
@@ -175,9 +189,11 @@ agent places a single element on each output stream at each step.
 <h2>ef: Alternative form of the element wrapper</h2>
 <p>
 An alternative form of the element wrapper is:
-<center><code>
+<div class="boxed">
+<code>
 ef(inputs, outputs, f, **kwargs)
-</code></center>
+</code>
+</div>
 where <code>**kwargs</code> is a set of keyword parameters that are
 passed to function <code>f</code>.
 </p>
@@ -209,15 +225,18 @@ stream.</h3>
 an agent that sets the <code>j</code>-th element of <code>y</code> to the <i>sine</i> of the
 <code>j</code>-th element of <code>x</code>, for all <code>j</code>.</p>
 
-<p> <b>Solution</b> see
+<p>
+<div class="boxed">
+<b>Solution</b> see
 <a href= "https://github.com/StreamPy/StreamPy/blob/master/tutorial_sine.py"><i>tutorial_sine.py</i></a>:
-<center><code>
+<pre><code>
 stream_agent(inputs=x, outputs=y, f_type='element', f=np.sin)
-</code></center>
+</code></pre>
 or
-<center><code>
+<pre><code>
 ef(x, y, np.sin)
-</code></center>
+</code></pre>
+</div>
 </p>
 
 <p> In the following examples, we give only the <code>ef</code>
@@ -233,12 +252,14 @@ stream.</h3>
 is a stream. Write an agent that sets the <code>j</code>-th
 element of <code>y</code> to the sum of the <code>j</code>-th element of all streams in
 <code>x</code>. </p>
+<div class="boxed">
 <p><b>Solution</b> see <a
 href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_merge.py">
-<i>tutorial_merge.py</i></a>:
-<center><code>
+  <i>tutorial_merge.py</i></a>:
+<pre><code>
 ef(x, y, sum)
-</code></center>
+</code></pre>
+</div>
 </p>
 
 
@@ -263,15 +284,16 @@ Write an agent that sets the
 <code>j</code>-th element of <code>z</code> to
 <code>math.exp</code> of the <code>j</code>-th element of <code>x</code> </p>
 
-<p><b>Solution</b> see <a
+<p>
+<div class="boxed">
+  <b>Solution</b> see <a
 href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_split.py">
 <i>tutorial_split.py</i></a>:
 <p>
-<center>
-<code>
+<pre><code>
 ef(x, [y, z], execute, g=math.sqrt, h=math.exp) 
-</code>
-</center>
+</code></pre>
+</div>
 </p>
 
 
@@ -294,13 +316,16 @@ element of each stream in <code>x</code> and sets the
 the <code>j</code>-th element of each stream in <code>x</code>.
 </p>
 
-<p><b>Solution</b> see <a
+<p>
+<div class="boxed">
+<b>Solution</b> see <a
 href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_many_to_many.py">
 <i>tutorial_many_to_many.py</i></a>:
 <p>
-<center><code>
+<pre><code>
 ef(x, [y, z], execute, g=max, h=min)
-</code></center>
+</code></pre>
+</div>
 </p>
 
 
@@ -327,24 +352,18 @@ greater than 5 in <code>y</code>,
 and puts no value in <code>y</code> for other elements of
 <code>x</code>.
 
-<p><b>Solution: see </b> <a
+<p>
+<div class="boxed">
+<b>Solution: see </b> <a
 href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_filter_1.py">
 <i>tutorial_filter_1.py</i></a>
 We first define a function <code>filter_threshold</code>.
-<pre>
-<code>
+<pre><code>
 def ft(v, threshold):
     return v if v > threshold else _no_value
-</code>
-</pre>
-</p>
-<p>
-We create the agent in the usual way:
-<center>
-<code>
+
 ef(x, y, ft, threshold=5)
-</code>
-</center>
+</code></pre></div>
 </p>
 
 
@@ -369,9 +388,9 @@ stream.</p>
 
 <p> <b>Problem</b>: <code>x</code> is a list of streams and
 <code>y</code> is a stream. Create an agent that sets:
-<center><code>
+<pre><code>
 y[n*j + k] = x[k][j]
-</code></center>
+</code></pre>
 for <code>j = 0, 1, 2, 3, ...</code> and <code>k < n = len(x)</code>.
 </p>
 
@@ -382,14 +401,17 @@ for <code>j = 0, 1, 2, 3, ...</code> and <code>k < n = len(x)</code>.
 <code>a[0], b[0], c[0], a[1], b[1], c[1], a[2], b[2], c[2],....</code> </p>
 
 
-<p><b>Solution: see </b>
+<p>
+<div class="boxed">
+<b>Solution: see </b>
 <a href=
 "https://github.com/StreamPy/StreamPy/blob/master/weave_streams.py">
 <i>weave_streams.py</i></a>
 
-<center><code>
+<pre><code>
 ef(x, y, _multivalue)
-</code></center>
+</code></pre>
+</div>
 </p>
 
 <h1>Agents with state</h1>
@@ -412,13 +434,13 @@ zero-th state. (See "Mealy machine.") </p>
 
 <p> The wrapper for an agent with state specifies its initial
 state.<p> 
-<center><code>
+<pre><code>
 stream_agent(inputs, outputs, f_type='element',f, state)
-</code></center>
+</code></pre>
 or
-<center><code>
+<pre><code>
 ef(inputs, outputs, f, state, **kwargs)
-</code></center>
+</code></pre>
 <p>
 where state is the initial state.
 </p>
@@ -435,10 +457,11 @@ examples of agents with state. </p>
 that sets the j-th element of <code>y</code> to the average of the
 first j elements of <code>x</code>. </p>
 
-<p> <b>Solution</b> see
+<p>
+<b>Solution</b> see
 <a
 href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_average_of_stream.py">
-<i>tutorial_average_of_stream.py</i><a>
+  <i>tutorial_average_of_stream.py</i><a>
 
 <p>The state of the agent is a list <code>[n, cumulative]</code> where
 <code>n</code> is the number of elements of <code>x</code> that have
@@ -457,44 +480,45 @@ The new average is : <code>cumulative/float(n)</code> or equivalently
 
 <p> We first write a function, <code>update_avg</code> which
 returns the next output and next state given the current input and
-state.  </p>
+state, and then we create the agent in the usual way.  </p>
 
 <p>
+<div class="boxed">
 <pre><code>
 def update_avg(v, state):
     state[0] += 1
     state[1] += v
     return (state[1]/float(state[0]), state)
-</code></pre>
-</p>
 
-<p>
-Next we write the function that creates the agent in the usual way,
-adding the initial state, <code>[0, 0.0]</code> to the list of parameters:
-<center>
-<code>
 ef(x, y, update_avg, [0, 0.0])
-</code></center>
+</code></pre></div>
 </p>
 
 
 <h3>Example: Exponential Smoothing</h3>
 <p><b>Problem</b>: <code>x</code> is a list of streams and
-<code>y</code> is a stream.  <code>func</code> is a function whose
+<code>y</code> is a stream.  <code>h</code> is a function whose
 single argument is a list and returns an object. Create an agent that
 sets the elements of <code>y</code> to the exponentially-smoothed
-average of <code>func</code> applied to the first elements of
+average of <code>h</code> applied to the elements of
 <code>x</code>. </p>
 
 <p> The initial smoothed value is a given value <code>init</code>. The
 j-th value of <code>y</code> is:
-<center>
+<pre>
 <code>
-y[j] = y[j-1]*(1-alpha) + func(x[j])*alpha
+y[j] = y[j-1]*(1-alpha) + h(x[j])*alpha
 </code>
-</center>
+</pre>
 with <code>y[-1] = init</code>, and where <code>x[j]</code> is the
-list consisting of the j-th element from each stream in <code>x</code>.
+list consisting of the j-th element from each stream in
+<code>x</code>.
+
+<p>
+Create an agent that sets the initial state to 0.0, <code>h =
+np.mean</code> and <code>alpha=0.5</code>.
+</p>
+
 
 <p> <b>Solution</b> see
 <a
@@ -504,25 +528,18 @@ href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_exponential_smoo
 <p>The state of the agent is <code>y[j]</code> and is initially
 <code>init</code>.  We first write a function,
 <code>update_smooth</code> which returns the next output and state
-given the current input and state, and other parameters. </p>
+given the current input and state, and other parameters, and then
+create the agent in the usual way. </p>
 
 <p>
+<div class="boxed">
 <pre><code>
 def update_smooth(lst, state, h, alpha):
     state = state*(1-alpha) + func(lst)*alpha
     return (state, state)
-</code></pre>
-</p>
 
-<p>
-Next, we create an agent with <code>func</code> being the mean of a
-list, and <code>alpha = 0.5</code>. We add the initial state,
-<code>init</code> to the list of parameters, and also additional
-parameters as keyword parameters.
-<center>
-<code>
-ef(x, y, update_smooth, init, h=np.mean, alpha=0.5)
-</code></center>
+ef(x, y, update_smooth, 0.0, h=np.mean, alpha=0.5)
+</code></pre></div>
 </p>
 
 
