@@ -1312,11 +1312,14 @@ def stream_agent(inputs, outputs, f_type, f,
 # ef
 ####################################################
 # Passes **kwargs to the element function, ef
-def ef(inputs, outputs, func, **kwargs):
-        def g(element):
-            return func(element, **kwargs)
+def ef(inputs, outputs, func, state=None, **kwargs):
+        def g(element, state=None):
+            if state:
+                return func(element, state, **kwargs)
+            else:
+                return func(element, **kwargs)
         stream_agent(
-            inputs, outputs, f_type='element', f=g)
+            inputs, outputs, 'element', g, state)
 
 
 def main():
