@@ -129,7 +129,6 @@ wrapper.</p>
 href="https://github.com/StreamPy/StreamPy/blob/master/Agent.py">Agent
 class</a> later.</p>
 
-
 <h1>The element wrapper</h1>
 
 <p>We begin by describing the required parameters of a wrapper
@@ -542,8 +541,50 @@ ef(x, y, update_smooth, 0.0, h=np.mean, alpha=0.5)
 </code></pre></div>
 </p>
 
+<h2>How to trigger agents: call_streams</h2>
 
+<p>The default setting is that an agent is called when data is
+available for the agent to process. In some cases, however, better
+efficiency is obtained if an agent executes when some external
+condition occurs --- for example, when an agent executes periodically
+--- rather than when each item of data becomes available. In this
+case, unprocessed data is batched until the agent executes, and the
+agent executes on a whole batch. In some cases, processing small
+batches of unprocessed data can be more efficient than processing
+single data items. In other cases, however, an agent needs to process
+data as soon as possible, rather than wait for unprocessed data to
+batch up, to reduce response time.</p>
 
+You can trigger an agent by sending it a message on any of its 
+<code>call_streams</code>.
+
+<div class="boxed">
+<pre><code>
+stream_agent(inputs, outputs, f_type='element', f, state=None, call_streams=None)
+</code></pre>
+or
+<pre><code>
+ef(inputs, outputs, f, state=None, call_streams=None, **kwargs)
+</code></pre></div>
+
+<p> If <code>call_streams</code> is <code>None</code> (or equivalently
+if no value is assigned to the parameter <code>call_streams</code>),
+then the agent executes when data becomes available for it to
+process. If <code>call_streams</code> is not <code>None</code> then
+<code>call_streams</code> must be a <i>list</i> of streams. Note that
+even if an agent has only a single call stream,
+<code>call_streams</code> must be a list, in this case a list
+consisting of a single stream. When <code>call_streams</code> is a
+list of streams, the agent remains asleep, allowing unprocessed data
+to batch up, until a message arrives on any of its
+<code>call_streams</code>; at that point, the agent wakes up and
+processes all the batched-up unprocessed data.  </p>
+
+<p>Note: If an agent sleeps forever --- for example, if the agent has
+call_streams which never get any messages --- and if unprocessed data
+continues to batch up for this agent, without bound, then eventually a
+memory-overflow error will occur. We will discuss implementations of
+streams and memory-management later.</p>
 
 
 
