@@ -2,7 +2,9 @@ from Stream import Stream
 from Operators import stream_agent, ef
 from examples_element_wrapper import print_stream
 import numpy as np
-""" Example of an element-wrapper with call_streams.
+""" Example of an element-wrapper with call_streams. The example shows
+that agents with call streams wait for new values to appear on their
+call streams before processing their input.
 
 """
 # CREATE STREAMS AND PRINTING AGENTS
