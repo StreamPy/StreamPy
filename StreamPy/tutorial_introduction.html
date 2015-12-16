@@ -56,7 +56,7 @@ a list, i.e., by using <i>append</i> to append a single value and
 
 <p>We describe implementation of the
 <a
-href="https://github.com/StreamPy/StreamPy/blob/master/Stream.py">Stream
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/Stream.py">Stream
 class</a> later.</p>
 
 <h1>Sources of streams</h1> A <b>source</b> is a function that appends
@@ -81,7 +81,7 @@ for j in range(10):
 In the examples, <code>np</code> refers to NumPy. </p>
 
 <h4>Example of a source: <a href =
-https://github.com/StreamPy/StreamPy/blob/master/source_stream.py
+"https://github.com/StreamPy/StreamPy/blob/master/StreamPy/source_stream.py"
 <i>source_stream.py</i></a></h4>
 
 <p> <i>source_stream.py</i> appends values to a stream where the
@@ -126,7 +126,7 @@ a description of stateless agents and a simple wrapper - the element
 wrapper.</p>
 
 <p>We describe implementation of the <a
-href="https://github.com/StreamPy/StreamPy/blob/master/Agent.py">Agent
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/Agent.py">Agent
 class</a> later.</p>
 
 <h1>The element wrapper</h1>
@@ -227,7 +227,7 @@ an agent that sets the <code>j</code>-th element of <code>y</code> to the <i>sin
 <p>
 <div class="boxed">
 <b>Solution</b> see
-<a href= "https://github.com/StreamPy/StreamPy/blob/master/tutorial_sine.py"><i>tutorial_sine.py</i></a>:
+<a href= "https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_sine.py"><i>tutorial_sine.py</i></a>:
 <pre><code>
 stream_agent(inputs=x, outputs=y, f_type='element', f=np.sin)
 </code></pre>
@@ -253,7 +253,7 @@ element of <code>y</code> to the sum of the <code>j</code>-th element of all str
 <code>x</code>. </p>
 <div class="boxed">
 <p><b>Solution</b> see <a
-href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_merge.py">
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_merge.py">
   <i>tutorial_merge.py</i></a>:
 <pre><code>
 ef(x, y, sum)
@@ -286,7 +286,7 @@ Write an agent that sets the
 <p>
 <div class="boxed">
   <b>Solution</b> see <a
-href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_split.py">
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_split.py">
 <i>tutorial_split.py</i></a>:
 <p>
 <pre><code>
@@ -318,7 +318,7 @@ the <code>j</code>-th element of each stream in <code>x</code>.
 <p>
 <div class="boxed">
 <b>Solution</b> see <a
-href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_many_to_many.py">
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_many_to_many.py">
 <i>tutorial_many_to_many.py</i></a>:
 <p>
 <pre><code>
@@ -354,7 +354,7 @@ and puts no value in <code>y</code> for other elements of
 <p>
 <div class="boxed">
 <b>Solution: see </b> <a
-href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_filter_1.py">
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_filter_1.py">
 <i>tutorial_filter_1.py</i></a>
 We first define a function <code>filter_threshold</code>.
 <pre><code>
@@ -404,7 +404,7 @@ for <code>j = 0, 1, 2, 3, ...</code> and <code>k < n = len(x)</code>.
 <div class="boxed">
 <b>Solution: see </b>
 <a href=
-"https://github.com/StreamPy/StreamPy/blob/master/weave_streams.py">
+"https://github.com/StreamPy/StreamPy/blob/master/StreamPy/weave_streams.py">
 <i>weave_streams.py</i></a>
 
 <pre><code>
@@ -459,7 +459,7 @@ first j elements of <code>x</code>. </p>
 <p>
 <b>Solution</b> see
 <a
-href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_average_of_stream.py">
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_average_of_stream.py">
   <i>tutorial_average_of_stream.py</i><a>
 
 <p>The state of the agent is a list <code>[n, cumulative]</code> where
@@ -521,7 +521,7 @@ np.mean</code> and <code>alpha=0.5</code>.
 
 <p> <b>Solution</b> see
 <a
-href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_exponential_smoothing.py">
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_exponential_smoothing.py">
 <i>tutorial_exponential_smoothing.py</i></a>
 
 <p>The state of the agent is <code>y[j]</code> and is initially
@@ -603,7 +603,9 @@ respectively. </p>
 <code>a_min</code> are set to <code>a_min</code> and values above
 <code>a_max</code> are set to <code>a_max</code>.  </p>
 
-<p><b>Solution</b> see <a href=" "><i>tutorial_call_streams.py</i></a>
+<p><b>Solution</b> see <a
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_call_streams.py">
+<i>tutorial_call_streams.py</i></a>
 
 <div class="boxed">
 <pre><code>
