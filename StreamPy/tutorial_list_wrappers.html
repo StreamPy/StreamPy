@@ -139,7 +139,10 @@ respectively.<p>
 
 
 <div class="boxed">
-<b>Solution using the list wrapper and trigger streams</b>
+<a href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_list_simple.py">
+  <b>Solution using the list wrapper and trigger streams</b>
+</a>
+  
 <pre><code>
 stream_agent(inputs=x, outputs=y, f_type='list', f=np.sin,
              call_streams=[trigger_1])
@@ -147,6 +150,28 @@ stream_agent(inputs=x, outputs=z, f_type='element', f=np.sin,
              call_streams=[trigger_2])
 </code></pre></div>
 
+<h1>Parameters of the list wrapper: Review</h1>
+<p>For completeness, we describe the types of the parameters of the list
+wrapper. The analogy to the element wrapper is self-evident.</p>
+
+<h3>Inputs to function <code>f</code> for the list wrapper</h3>
+<ul>
+  <li> If <code>inputs</code> is a single stream then the input to <code>f</code>
+  is a single list consisting of elements of <code>inputs</code>.</li>
+  <li> If <code>inputs</code> is a list of <i>n</i> streams then the input to <code>f</code>
+  is a list of <i>n</i> lists, with the <i>m</i>-th of the
+  <i>n</i> lists consisting of elements from the <i>m</i>-th stream in <code>inputs</code>.</li>
+</ul>
+
+<h3>Outputs of function <code>f</code></h3>
+<ul>
+  <li> If <code>outputs</code> is a single stream then <code>f</code> returns a
+  single list of elements of <code>outputs</code>.</li>
+  <li> If <code>outputs</code> is a list of <i>n</i> streams then
+  <code>f</code> returns a list of <i>n</i> lists, with the
+  <i>m</i>-th of the <i>n</i> lists consisting of elements for the
+  <i>m</i>-th stream in <code>outputs</code>.</li>
+</ul>
 
 </body>
 </html>
