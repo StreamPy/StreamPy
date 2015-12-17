@@ -150,6 +150,18 @@ stream_agent(inputs=x, outputs=z, f_type='element', f=np.sin,
              call_streams=[trigger_2])
 </code></pre></div>
 
+<h1>lf: Alternative form of the list wrapper</h1>
+<code>lf</code> stands for <b>l</b>ist <b>f</b>unction, and is analogous to
+<code>ef</code> for element function. You can use <code>lf</code> in
+place of <code>stream_agent</code> with <code>f_type='list'</code>,
+and you can add keyword arguments to function <code>f</code>.
+<div class="boxed">
+<pre><code>
+stream_agent(inputs, outputs, f_type='list', f)
+lf(inputs, outputs, f, **kwargs)
+</code></pre>
+</div>
+
 <h1>Parameters of the list wrapper: Review</h1>
 <p>For completeness, we describe the types of the parameters of the list
 wrapper. The analogy to the element wrapper is self-evident.</p>
@@ -163,7 +175,7 @@ wrapper. The analogy to the element wrapper is self-evident.</p>
   <i>n</i> lists consisting of elements from the <i>m</i>-th stream in <code>inputs</code>.</li>
 </ul>
 
-<h3>Outputs of function <code>f</code></h3>
+<h3>Outputs of function <code>f</code> for the list wrapper</h3>
 <ul>
   <li> If <code>outputs</code> is a single stream then <code>f</code> returns a
   single list of elements of <code>outputs</code>.</li>
@@ -172,6 +184,66 @@ wrapper. The analogy to the element wrapper is self-evident.</p>
   <i>m</i>-th of the <i>n</i> lists consisting of elements for the
   <i>m</i>-th stream in <code>outputs</code>.</li>
 </ul>
+
+
+<h2>Example: NumPy reduce with multiple inputs, single output </h2>
+
+<p><b>Problem</b>: <code>x</code> is a list of streams and
+<code>a</code>, <code>b</code>, are streams.  Write a function that
+creates agents that set the j-th element of <code>a</code> and
+<code>b</code> to the sum and mean (respectively) of the j-th elements
+of <code>x</code>.</p>
+
+<p> For example, if <code>u</code>, <code>v</code>, <code>w</code> and
+<code>x = [u, v, w]</code> then:
+<br>
+<code>
+a[j] = u[j]+v[j]+w[j]
+</code>
+for all j.
+
+<div class="boxed">
+<p><b>Solution</b>: see <a href=" ">
+<i>merge_func_numpy.py</i></a>
+<pre>
+<code>
+lf(x, a, np.sum, axis=0)
+lf(x, b, np.mean, axis=0)
+</code></pre>
+</div>
+
+<h2>Example: NumPy with multiple inputs, multiple outputs</h2>
+
+<p><b>Problem</b>: You are given the following function:
+<pre><code>
+def execute_list_of_np_func(v, list_of_np_func):
+    return ([f(v, axis=0) for f in list_of_np_func])
+</code></pre>
+where <code>list_of_np_func</code> is a list of NumPy reduce
+functions, and <code>v</code> is a list.
+</p>
+
+<p> <code>x</code>, <code>y</code>, <code>z</code>, <code>a</code>,
+<code>b</code>, <code>c</code>, <code>d</code> are streams. Write a
+function that creates an agent that sets <code>a</code>,
+<code>b</code>, <code>c</code>, <code>d</code> to the sum, mean,
+variance, and conjunction, respectively, of the
+corresponding elements of <code>x</code>, <code>y</code>,
+<code>z</code>.  </p>
+
+<p>Note: Conjunction here returns <code>True</code> if and only if all
+the elements of the list on which the conjunction is taken are
+non-zero. </p>
+
+<div class="boxed">
+<p><b>Solution</b>: see <a href=" ">
+<i>many_to_many_np.py</i></a>
+<pre>
+<code>
+lf([x,y,z], [a,b,c,d], execute_list_of_np_func,
+   list_of_np_func=[np.sum, np.mean, np.var, np.all])
+</code></pre>
+</div>
 
 </body>
 </html>
