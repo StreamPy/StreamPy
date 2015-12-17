@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head><title>Encapsulating functions that operate on lists</title></head>
+<style type="text/css">
+body {
+  background-color: white ;
+  color: black ;
+  font-family: Arial, Helvetica, sans-serif ;
+}
+.boxed {
+  border: 4px solid green ;
+}
+</style>
+<body>
+
+<center><h1>Encapsulating functions on lists: List wrappers</h1></center>
+
+<h1>List wrappers</h1>
+A list wrapper is similar to an element wrapper, except that the
+function-type parameter <code>f_type</code> in
+<code>stream_agent</code> is "list" rather than "element", and:
+<ol>
+  <li>For an element wrapper, <code>f</code> is a function from
+  elements of input streams to elements of output streams.</li>
+  <li> For a list wrapper, <code>f</code> is a function from
+  <i>lists of</i> elements of input streams to <i>lists of
+  elements</i> of output streams.</li>
+</ol>
+<div class="boxed">
+<b>Element wrapper</b>:
+<code>
+stream_agent(inputs, outputs, f_type='element',f)
+</code>
+<br>
+<b>List wrapper</b>:
+<code>
+stream_agent(inputs, outputs, f_type='list',f)
+</code>
+</div>
+
+<h2>Simple Example</h2>
+<p><b>Problem</b>: <code>x</code>, <code>y</code> and <code>z</code>
+are streams. Write agents using the element and list encapsulators to
+make elements of <code>y</code> and <code>z</code> double the
+corresponding elements of code>x</code>.</p>
+
+<div class="boxed">
+<b>Solution using the element wrapper</b>
+<pre><code>
+def double_element(element): return 2*element
+stream_agent(inputs=x, outputs=y, f_type='element', f=double_element)
+</code></pre>
+<b>Solution using the list wrapper</b>
+<pre><code>
+def double_list(lst): return [2*element for element in lst]
+stream_agent(inputs=x, outputs=z, f_type='list', f=double_list)
+  </code></pre></div>
+<p>
+The parameter for <code>double_list</code> is a list of elements and
+it returns a list. In general, if <code>g</code> is a function with a
+single parameter that is an element and that returns an element, then
+--- generalizing the above example --- <code>y</code> and
+  <code>z</code>  will have the same values:
+  
+<div class="boxed">
+<b>Solution using the element wrapper</b>
+<pre><code>
+stream_agent(inputs=x, outputs=y, f_type='element', f=g)
+</code></pre>
+<b>Solution using the list wrapper</b>
+<pre><code>
+def g_list(lst): return [g(element) for element in lst]
+stream_agent(inputs=x, outputs=z, f_type='list', f=g_list)
+</code></pre></div>
+</p>
+
+<h1>Rationale for the list wrapper</h1>
+
+<p> List operations, particularly on large lists, can be more
+efficient than looping through the arguments of a list. Some NumPy
+calculations are faster when carried out on lists or arrays. In some
+cases, a more efficient solution is for agents to operate on batches
+(i.e., lists) of data elements using the list wrapper than for agents
+to operate on each element individually. </p>
+
+<p> Some NumPy operations on elements of an array also extend to
+arrays. For example the sine of a single number can be obtained from
+np.sin as in:
+<br>
+<samp>
+>>> np.sin(0.0)
+<br>
+0.0
+</samp>
+<br>
+and the sine of a list of numbers can be obtained using the same
+function:
+<br>
+<samp>
+>>> np.sin(range(3))
+<br>
+array([ 0.        ,  0.84147098,  0.90929743])
+</samp>
+</p>
+
+<p>
+This feature allows us to use the same NumPy function with element
+and list wrappers:
+<div class="boxed">
+<b>Solution using the element wrapper</b>
+<pre><code>
+stream_agent(inputs=x, outputs=y, f_type='element', f=np.sin)
+</code></pre>
+<b>Solution using the list wrapper</b>
+<pre><code>
+stream_agent(inputs=x, outputs=z, f_type='list', f=np.sin)
+</code></pre></div>
+Execution of the agent using the list wrapper results in
+<code>np.sin</code> operating on a list whereas the agent using the
+element wrapper loops through each element of the list, executing
+<code>np.sin</code> on each element separately.
+</p>
+
+<p>List wrappers are usually used with call_streams so that an agent
+is woken up to process backlogs of large lists of unprocessed data; in
+this case list operations can provide better efficiency than looping
+through multiple element operations.  </p>
+
+<h2>Simple example of the list wrapper with call streams</h2>
+
+<p><b>Problem</b>: <code>x</code>, <code>y</code> and <code>z</code>
+are streams. Write agents using the list and element encapsulators to
+make elements of <code>y</code> and <code>z</code> the sine of the
+corresponding values of <code>x</code>. Trigger execution of the
+<code>y</code>-agent (i.e. the agent that puts values into the
+<code>y</code> stream) and <code>z</code>-agent by putting values into
+the streams <code>trigger_1</code> and <code>trigger_2</code>,
+respectively.<p>
+
+
+<div class="boxed">
+<b>Solution using the list wrapper and trigger streams</b>
+<pre><code>
+stream_agent(inputs=x, outputs=y, f_type='list', f=np.sin,
+             call_streams=[trigger_1])
+stream_agent(inputs=x, outputs=z, f_type='element', f=np.sin,
+             call_streams=[trigger_2])
+</code></pre></div>
+
+
+</body>
+</html>
