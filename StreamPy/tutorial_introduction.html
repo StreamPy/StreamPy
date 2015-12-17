@@ -56,7 +56,7 @@ a list, i.e., by using <i>append</i> to append a single value and
 
 <p>We describe implementation of the
 <a
-href="https://github.com/StreamPy/StreamPy/blob/master/Stream.py">Stream
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/Stream.py">Stream
 class</a> later.</p>
 
 <h1>Sources of streams</h1> A <b>source</b> is a function that appends
@@ -81,7 +81,7 @@ for j in range(10):
 In the examples, <code>np</code> refers to NumPy. </p>
 
 <h4>Example of a source: <a href =
-https://github.com/StreamPy/StreamPy/blob/master/source_stream.py
+"https://github.com/StreamPy/StreamPy/blob/master/StreamPy/source_stream.py"
 <i>source_stream.py</i></a></h4>
 
 <p> <i>source_stream.py</i> appends values to a stream where the
@@ -126,7 +126,7 @@ a description of stateless agents and a simple wrapper - the element
 wrapper.</p>
 
 <p>We describe implementation of the <a
-href="https://github.com/StreamPy/StreamPy/blob/master/Agent.py">Agent
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/Agent.py">Agent
 class</a> later.</p>
 
 <h1>The element wrapper</h1>
@@ -135,9 +135,9 @@ class</a> later.</p>
 function and  postpone discussion of optional parameters. The element
 wrapper function has the form:
 <div class="boxed">
-<center><code>
+<pre><code>
 stream_agent(inputs, outputs, f_type='element',f)
-  </code></center>
+</code></pre>
 </div>
 where:
 <ul>
@@ -227,7 +227,7 @@ an agent that sets the <code>j</code>-th element of <code>y</code> to the <i>sin
 <p>
 <div class="boxed">
 <b>Solution</b> see
-<a href= "https://github.com/StreamPy/StreamPy/blob/master/tutorial_sine.py"><i>tutorial_sine.py</i></a>:
+<a href= "https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_sine.py"><i>tutorial_sine.py</i></a>:
 <pre><code>
 stream_agent(inputs=x, outputs=y, f_type='element', f=np.sin)
 </code></pre>
@@ -253,7 +253,7 @@ element of <code>y</code> to the sum of the <code>j</code>-th element of all str
 <code>x</code>. </p>
 <div class="boxed">
 <p><b>Solution</b> see <a
-href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_merge.py">
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_merge.py">
   <i>tutorial_merge.py</i></a>:
 <pre><code>
 ef(x, y, sum)
@@ -286,7 +286,7 @@ Write an agent that sets the
 <p>
 <div class="boxed">
   <b>Solution</b> see <a
-href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_split.py">
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_split.py">
 <i>tutorial_split.py</i></a>:
 <p>
 <pre><code>
@@ -318,7 +318,7 @@ the <code>j</code>-th element of each stream in <code>x</code>.
 <p>
 <div class="boxed">
 <b>Solution</b> see <a
-href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_many_to_many.py">
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_many_to_many.py">
 <i>tutorial_many_to_many.py</i></a>:
 <p>
 <pre><code>
@@ -354,7 +354,7 @@ and puts no value in <code>y</code> for other elements of
 <p>
 <div class="boxed">
 <b>Solution: see </b> <a
-href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_filter_1.py">
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_filter_1.py">
 <i>tutorial_filter_1.py</i></a>
 We first define a function <code>filter_threshold</code>.
 <pre><code>
@@ -404,7 +404,7 @@ for <code>j = 0, 1, 2, 3, ...</code> and <code>k < n = len(x)</code>.
 <div class="boxed">
 <b>Solution: see </b>
 <a href=
-"https://github.com/StreamPy/StreamPy/blob/master/weave_streams.py">
+"https://github.com/StreamPy/StreamPy/blob/master/StreamPy/weave_streams.py">
 <i>weave_streams.py</i></a>
 
 <pre><code>
@@ -459,7 +459,7 @@ first j elements of <code>x</code>. </p>
 <p>
 <b>Solution</b> see
 <a
-href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_average_of_stream.py">
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_average_of_stream.py">
   <i>tutorial_average_of_stream.py</i><a>
 
 <p>The state of the agent is a list <code>[n, cumulative]</code> where
@@ -521,7 +521,7 @@ np.mean</code> and <code>alpha=0.5</code>.
 
 <p> <b>Solution</b> see
 <a
-href="https://github.com/StreamPy/StreamPy/blob/master/tutorial_exponential_smoothing.py">
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_exponential_smoothing.py">
 <i>tutorial_exponential_smoothing.py</i></a>
 
 <p>The state of the agent is <code>y[j]</code> and is initially
@@ -555,8 +555,9 @@ single data items. In other cases, however, an agent needs to process
 data as soon as possible, rather than wait for unprocessed data to
 batch up, to reduce response time.</p>
 
-You can trigger an agent by sending it a message on any of its 
-<code>call_streams</code>.
+<p> You can wake up, or "trigger" or "call" an agent by sending it a
+message on any of its <code>call_streams</code> which are described
+below.  </p>
 
 <div class="boxed">
 <pre><code>
@@ -569,24 +570,52 @@ ef(inputs, outputs, f, state=None, call_streams=None, **kwargs)
 
 <p> If <code>call_streams</code> is <code>None</code> (or equivalently
 if no value is assigned to the parameter <code>call_streams</code>),
-then the agent executes when data becomes available for it to
-process. If <code>call_streams</code> is not <code>None</code> then
-<code>call_streams</code> must be a <i>list</i> of streams. Note that
-even if an agent has only a single call stream,
-<code>call_streams</code> must be a list, in this case a list
-consisting of a single stream. When <code>call_streams</code> is a
-list of streams, the agent remains asleep, allowing unprocessed data
-to batch up, until a message arrives on any of its
-<code>call_streams</code>; at that point, the agent wakes up and
-processes all the batched-up unprocessed data.  </p>
+then the agent executes whenever data becomes available for it to
+process. When <code>call_streams</code> is a list of streams, the
+agent remains asleep, allowing unprocessed data to batch up, until a
+message arrives on any of its <code>call_streams</code>; at that
+point, the agent wakes up and processes all its unprocessed data. The
+sole purpose of a message in a call stream of an agent is to "call" or
+wake up the agent; the message content is irrelevant.</p>
+
+<p> If <code>call_streams</code> is not <code>None</code> then
+<code>call_streams</code> must be a <i>list</i> of streams. If an
+agent has only a single call stream, then <code>call_streams</code> is
+a list consisting of a single stream.</p>
 
 <p>Note: If an agent sleeps forever --- for example, if the agent has
-call_streams which never get any messages --- and if unprocessed data
+call_streams that remain empty forever --- and if unprocessed data
 continues to batch up for this agent, without bound, then eventually a
 memory-overflow error will occur. We will discuss implementations of
 streams and memory-management later.</p>
 
+<h2>Example of call_streams</h2>
 
+<p> <b>Problem</b> <code>x</code>, <code>y</code> and <code>z</code>
+are streams. Create agents that put the sine of <code>x</code> into
+<code>y</code> and clipped <code>x</code> into <code>z</code>, where
+execution of these two agents are triggered by placing values into the
+two streams <code>trigger_1</code> and <code>trigger_2</code>,
+respectively. </p>
+
+<p> Note: <code>clip([0, ..., 9], a_min=2, a_max=8)</code> is
+<code>[2, 2, 2, 3, 4, 5, 6, 7, 8, 8]</code> because values below
+<code>a_min</code> are set to <code>a_min</code> and values above
+<code>a_max</code> are set to <code>a_max</code>.  </p>
+
+<p><b>Solution</b> see <a
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_call_streams.py">
+<i>tutorial_call_streams.py</i></a>
+
+<div class="boxed">
+<pre><code>
+ef(x, y, np.sin, call_streams=[trigger_1])
+ef(x, z, np.clip, call_streams=[trigger_2], a_min=2, a_max=8)
+</code></pre></div>
+
+<p> Note: call_streams must be entered as a keyword, rather than a
+positional parameter (because no parameter is entered for
+<code>state</code>). </p>
 
 
 </body>
