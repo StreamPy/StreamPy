@@ -16,23 +16,28 @@ body {
 <center><h1>Encapsulating functions on lists: List wrappers</h1></center>
 
 <h1>List wrappers</h1>
+<p>
 A list wrapper is similar to an element wrapper, except that the
 function-type parameter <code>f_type</code> in
 <code>stream_agent</code> is "list" rather than "element", and:
-<ol>
-  <li>For an element wrapper, <code>f</code> is a function from
-  elements of input streams to elements of output streams.</li>
-  <li> For a list wrapper, <code>f</code> is a function from
-  <i>lists of</i> elements of input streams to <i>lists of
-  elements</i> of output streams.</li>
-</ol>
-<div class="boxed">
-<b>Element wrapper</b>:
+<br>
+  <b>element wrapper</b>. <code>f</code>:
+elements of input streams -> elements of output streams.
+<br>
+  <b>list wrapper</b>. <code>f</code>:
+  <i>lists of</i> elements of input streams -> <i>lists of
+  elements</i> of output streams.
+
+</p>
+
+<p><b>Functional form of list and element wrappers</b>
+<br>
+Element wrapper:
 <code>
 stream_agent(inputs, outputs, f_type='element',f)
 </code>
 <br>
-<b>List wrapper</b>:
+List wrapper:
 <code>
 stream_agent(inputs, outputs, f_type='list',f)
 </code>
@@ -42,7 +47,7 @@ stream_agent(inputs, outputs, f_type='list',f)
 <p><b>Problem</b>: <code>x</code>, <code>y</code> and <code>z</code>
 are streams. Write agents using the element and list encapsulators to
 make elements of <code>y</code> and <code>z</code> double the
-corresponding elements of code>x</code>.</p>
+corresponding elements of <code>x</code>.</p>
 
 <div class="boxed">
 <b>Solution using the element wrapper</b>
@@ -50,27 +55,35 @@ corresponding elements of code>x</code>.</p>
 def double_element(element): return 2*element
 stream_agent(inputs=x, outputs=y, f_type='element', f=double_element)
 </code></pre>
-<b>Solution using the list wrapper</b>
+<a
+  href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_list_simplest.py">
+  <b>Solution using the list wrapper</b></a>
 <pre><code>
 def double_list(lst): return [2*element for element in lst]
 stream_agent(inputs=x, outputs=z, f_type='list', f=double_list)
   </code></pre></div>
+
+  
 <p>
 The parameter for <code>double_list</code> is a list of elements and
-it returns a list. In general, if <code>g</code> is a function with a
+it returns a list. </p>
+
+  
+<p>In general, if <code>g</code> is a function with a
 single parameter that is an element and that returns an element, then
---- generalizing the above example --- <code>y</code> and
+in the next example --- <code>y</code> and
   <code>z</code>  will have the same values:
   
 <div class="boxed">
 <b>Solution using the element wrapper</b>
 <pre><code>
-stream_agent(inputs=x, outputs=y, f_type='element', f=g)
+stream_agent(inputs=x, outputs=y, f_type='element',
+             f=g)
 </code></pre>
 <b>Solution using the list wrapper</b>
 <pre><code>
-def g_list(lst): return [g(element) for element in lst]
-stream_agent(inputs=x, outputs=z, f_type='list', f=g_list)
+stream_agent(inputs=x, outputs=z, f_type='list',
+             f=lambda u: [g(v) for v in u])
 </code></pre></div>
 </p>
 
@@ -107,11 +120,15 @@ array([ 0.        ,  0.84147098,  0.90929743])
 This feature allows us to use the same NumPy function with element
 and list wrappers:
 <div class="boxed">
-<b>Solution using the element wrapper</b>
+<a
+  href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_sine.py">
+  <b>Solution using the element wrapper</b></a>
 <pre><code>
 stream_agent(inputs=x, outputs=y, f_type='element', f=np.sin)
 </code></pre>
-<b>Solution using the list wrapper</b>
+<a
+  href='https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_list_numpy_sine.py'>
+  <b>Solution using the list wrapper</b></a>
 <pre><code>
 stream_agent(inputs=x, outputs=z, f_type='list', f=np.sin)
 </code></pre></div>
@@ -124,18 +141,16 @@ element wrapper loops through each element of the list, executing
 <p>List wrappers are usually used with call_streams so that an agent
 is woken up to process backlogs of large lists of unprocessed data; in
 this case list operations can provide better efficiency than looping
-through multiple element operations.  </p>
+through many element operations.  </p>
 
 <h2>Simple example of the list wrapper with call streams</h2>
 
-<p><b>Problem</b>: <code>x</code>, <code>y</code> and <code>z</code>
-are streams. Write agents using the list and element encapsulators to
-make elements of <code>y</code> and <code>z</code> the sine of the
-corresponding values of <code>x</code>. Trigger execution of the
-<code>y</code>-agent (i.e. the agent that puts values into the
-<code>y</code> stream) and <code>z</code>-agent by putting values into
-the streams <code>trigger_1</code> and <code>trigger_2</code>,
-respectively.<p>
+<p><b>Problem</b>: <code>x</code> and <code>y</code>
+are streams. Write a function that creates an agent using the list encapsulators to
+make elements of <code>y</code> the sine of the
+corresponding elements of <code>x</code>. Trigger execution of the
+the agent by putting elements into
+the stream <code>trigger_1</code>. </p>
 
 
 <div class="boxed">
@@ -146,15 +161,15 @@ respectively.<p>
 <pre><code>
 stream_agent(inputs=x, outputs=y, f_type='list', f=np.sin,
              call_streams=[trigger_1])
-stream_agent(inputs=x, outputs=z, f_type='element', f=np.sin,
-             call_streams=[trigger_2])
 </code></pre></div>
 
 <h1>lf: Alternative form of the list wrapper</h1>
 <code>lf</code> stands for <b>l</b>ist <b>f</b>unction, and is analogous to
 <code>ef</code> for element function. You can use <code>lf</code> in
-place of <code>stream_agent</code> with <code>f_type='list'</code>,
-and you can add keyword arguments to function <code>f</code>.
+place of <code>stream_agent</code> with <code>f_type='list'</code>. 
+The function <code>f</code> that is encapsulated using <code>lf</code>
+can have arguments in addition to lists of elements of input streams;
+these additional arguments appear as keyword arguments in <code>lf</code>.
 <div class="boxed">
 <pre><code>
 stream_agent(inputs, outputs, f_type='list', f)
@@ -164,7 +179,7 @@ lf(inputs, outputs, f, **kwargs)
 
 <h1>Parameters of the list wrapper: Review</h1>
 <p>For completeness, we describe the types of the parameters of the list
-wrapper. The analogy to the element wrapper is self-evident.</p>
+wrapper, emphasizing the analogy to the element wrapper.</p>
 
 <h3>Inputs to function <code>f</code> for the list wrapper</h3>
 <ul>
@@ -185,6 +200,211 @@ wrapper. The analogy to the element wrapper is self-evident.</p>
   <i>m</i>-th stream in <code>outputs</code>.</li>
 </ul>
 
+<h2>Review of functional forms of the list function</h2>
+In the following <code>w</code>, <code>x</code>, <code>y</code>,
+<code>z</code> are streams.
+<ol>
+  <li><b>Single input, single output.</b> Wrapped function
+  <code>h</code> takes a single list as input and returns a single
+  list. Create an agent with a single input stream <code>x</code> and
+  single output stream <code>y</code>:
+  <pre><code>
+lf(x, y, h)
+  </code></pre>
+  </li>
+  <li><b>Merge: multiple inputs, single output.</b> Wrapped function
+  <code>h</code> takes a <i>list of lists</i> as input and returns a
+  single list. Create an agent with two input streams <code>x</code>
+  and <code>y</code> and single output stream <code>z</code>:
+  <pre><code>
+lf([x,y], z, h)
+  </code></pre>
+  </li>
+  <li><b>Split: single input, multiple outputs.</b> Wrapped function
+  <code>h</code> takes a single list as input and returns a list or
+  tuple of lists. Create an agent with a single input stream
+  <code>x</code> and two output streams <code>y</code> and
+  <code>z</code>:
+  <pre><code>
+lf(x, [y,z], h)
+  </code></pre>
+  </li>
+  
+  <li><b>Multiple inputs, multiple outputs.</b> Wrapped function
+  <code>h</code> takes a <i>list of lists</i> as input and returns a
+  list or tuple of lists. With two input streams <code>w</code> and
+  <code>x</code>, and two output streams <code>y</code> and
+  <code>z</code>:
+  <pre><code>
+lf([w,x], [y,z], h)
+  </code></pre>
+  </li>
+</ol>
+
+
+<h1>List function examples</h1>
+
+<h2>Example: Lists with single input, single output</h2>
+<p><b>Problem</b>: The following function outputs even elements of
+list <code>x</code> into list <code>y</code>.
+<pre><code>
+def evens(x):
+    return [v for v in x if v%2 == 0]
+</code></pre>
+Write a function that creates an agent that outputs even elements of
+a stream <code>x</code> into a stream <code>y</code>.
+
+<div class="boxed">
+<a
+  href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_list_simplest.py">
+  <b>Solution</b></a>
+<pre><code>
+lf(x, y, evens)
+</code></pre>
+</div>
+</p>
+
+<h2>Example: Split using lists - single input, multiple outputs</h2>
+
+<p><b>Problem</b>: You are given the following function that splits a
+single list into two lists based on whether they satisfy a boolean
+function, <code>bool_func</code>. 
+<pre><code>
+# x is a list
+# bool_func is a function from elements of x to booleans.
+def split_on_func(x, bool_func):
+    y = list()
+    z = list()
+    for v in x:
+        if bool_func(v):
+            y.append(v)
+        else:
+            z.append(v)
+    return (y, z)
+</code></pre>
+</p>
+
+<p> The parameters <code>x</code> and <code>bool_func</code> are a
+list and a function that takes a single argument and that returns a
+boolean. The function <code>split_on_func</code> returns a tuple of
+two lists: <code>y</code> is the list consisting of elements of
+<code>x</code> for which <code>bool_func</code> returns
+<code>True</code> and <code>z</code> is the list consisting of
+elements of <code>x</code> for which <code>bool_func</code> returns
+<code>False</code>. The function returns a list consisting of the two
+lists <code>y</code> and <code>z</code>.  </p>
+
+<p> You are also given the following function:
+<pre><code>
+def g(v): return v > 5
+def h(v): return v%2 == 0
+</code></pre>
+</p>
+
+<p>Now, given <i>streams</i> <code>x</code>, <code>y</code>,
+<code>z</code>, write a function that creates an agent that makes the
+stream version of <code>split_on_func</code>, i.e., it puts elements
+of <code>x</code> for which <code>g</code> returns <code>True</code>
+into <code>y</code> and elements of <code>x</code> for which
+<code>g</code> returns <code>False</code> into <code>z</code>. Repeat
+for the case where <code>bool_func=h</code>, putting elements of
+<code>x</code> for which <code>h</code> returns <code>True</code> into
+stream <code>a</code> and elements of <code>x</code> for which
+<code>h</code> returns <code>False</code> into stream
+<code>b</code>.</p>
+
+<div class="boxed">
+<p><b>Solution</b>: see
+<a href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_list_simple_split.py">
+<i>tutorial_list_simple_split.py</i></a>
+<pre>
+<code>
+lf(x, [y, z], split_on_func, bool_func=g)
+lf(x, [a, b], split_on_func, bool_func=h)
+</code></pre>
+</div>
+
+<h2>Example: Merge using lists - single input, multiple outputs</h2>
+
+<p><b>Problem</b>: You are given the following function where
+<code>u</code> is a list of two lists, and the function returns a list
+containing <code>2*x[j]+y[j]</code> where <code>x[j]</code> is the j-th element of the first
+list in the pair of lists, and <code>y[j]</code> is the j-th element of the second
+list in the pair, for 0 <= j < min(len(x), len(y)). For example, if
+<code>u = [[100, 101, 102, 103], [0, 1, 2, 3, 4]]</code>, then the
+function returns the list: <code>[200, 203, 206, 209]</code>.
+
+<pre><code>
+def h(u):
+    return [2*v[0]+v[1] for v in zip(*u)]
+</code></pre>
+  
+Write a function that creates an agent that makes the stream version
+of <code>h</code>, i.e., the function has an input parameter which is
+a list of two streams and an output parameter <code>z</code> which is
+a single stream whose j-th element is <code>2*x[j]+y[j]</code> where
+<code>x[j]</code> is the j-th element of the first stream in the pair
+of streams, and <code>y[j]</code> is the j-th element of the second
+stream in the pair. </p>
+<div class="boxed">
+<a href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_list_simple_merge.py">
+<b>Solution</b></a>
+<pre><code>
+lf([x,y], z, h)
+</code></pre></div>
+
+
+<h2>Example: List function with multiple input, multiple outputs</h2>
+
+<p><b>Problem</b>: You are given the following function where
+<code>x</code> is a list of lists of numbers, <code>weights</code> is
+a list of numbers, and <code>threshold</code> is a number.  The
+function returns a tuple of two lists <code>above</code> and
+<code>below</code>. The function takes the dot product of
+<code>weights</code> with j-th element of each list in <code>x</code>,
+and outputs the result in lists <code>above</code> or
+<code>below</code> depending on whether the result is greater than the
+threshold or not.</p>
+
+<pre><code>
+def h(x, weights, threshold):
+    lst = [sum([weights[i]*v[i]
+                for i in range(min(len(weights), len(x)))])
+           for v in zip(*x)]
+    above = [v for v in lst if v > threshold]
+    below = [v for v in lst if v <= threshold]
+    return (above, below)
+</code></pre>
+
+<p>For example, if <code>x = [[2, 4, 7], [3, 7, 1, 9]]</code> and
+<code>weights = [5, 10]</code>, and <code>threshold=50</code> then
+<pre><code>
+lst = [5*2+10*3, 5*4+10*7, 5*7+10*1] = [40, 90, 45]
+above = [90]
+below = [40, 45]
+</code></pre>
+</p>
+
+<p>Given streams <code>u</code>, <code>v</code>, <code>w</code>,
+<code>a</code>, <code>b</code>, and a list <code>weights = [2, 5,
+1]</code>, and <code>threshold=10</code>, write a function that
+creates an agent that outputs the dot product of <code>weights</code>
+with the list <code>u[j], v[j], w[j]</code> for all j, into stream
+<code>a</code> if the dot product is above the threshold and into
+stream <code>b</code> otherwise.  </p>
+
+<div class="boxed">
+<a
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_list_simple_multi_in_multi_out.py">
+<b>Solution</b></a>
+<pre><code>
+lf([u,v,w], [a,b], h, weights=[2,5,1], threshold=10)
+</code></pre></div>
+
+
+  
+
+<h1>NumPy examples</h1>
 
 <h2>Example: NumPy reduce with multiple inputs, single output </h2>
 
@@ -203,7 +423,7 @@ a[j] = u[j]+v[j]+w[j]
 for all j.
 
 <div class="boxed">
-<p><b>Solution</b>: see <a href=" ">
+<p><b>Solution</b>: see <a href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/merge_func_numpy.py">
 <i>merge_func_numpy.py</i></a>
 <pre>
 <code>
@@ -211,6 +431,8 @@ lf(x, a, np.sum, axis=0)
 lf(x, b, np.mean, axis=0)
 </code></pre>
 </div>
+
+
 
 <h2>Example: NumPy with multiple inputs, multiple outputs</h2>
 
@@ -236,7 +458,7 @@ the elements of the list on which the conjunction is taken are
 non-zero. </p>
 
 <div class="boxed">
-<p><b>Solution</b>: see <a href=" ">
+<p><b>Solution</b>: see <a href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/many_to_many_numpy.py">
 <i>many_to_many_np.py</i></a>
 <pre>
 <code>
@@ -244,6 +466,105 @@ lf([x,y,z], [a,b,c,d], execute_list_of_np_func,
    list_of_np_func=[np.sum, np.mean, np.var, np.all])
 </code></pre>
 </div>
+
+
+
+<h1>List functions with state</h1>
+The state appears in the same position as for element functions.
+<pre><code>
+lf(inputs, outputs, f, state, call_streams)
+</code></pre>
+In this case, function <code>f</code> operates on lists and a state and
+returns lists and a state.
+
+<h2>Example of agents with state using NumPy arrays</h2>
+
+<p><b>Problem</b>: <code>x</code> and <code>y</code> are streams of numbers. Write
+an agent that sets:
+<pre><code>
+y[j] = sum([x[i] for i in range(j+1)])
+</code></pre>
+For example:
+y[0] = x[0]; y[1] = x[0] + x[1]; y[2] = x[0] + x[1] + x[2].
+</p>
+
+<p> The state of the agent is the sum of the <code>x</code> elements
+read so far. The state transition takes a list of new elements of
+<code>x</code> and the sum so far and returns the sequence of sums and
+the next state, i.e., the new final sum.
+<pre><code>
+def cumulative(a, state):
+    b = np.array(a)
+    b[0] += state
+    b = np.cumsum(b)
+    return (b, b[-1])
+</code></pre>
+For example, if <code>a = [0, 1, 2, 3]</code> and <code>state=100</code>
+then <code>cumulative(a, state)</code> returns:
+<pre><code>
+(array([100, 101, 103, 106]), 106)
+</code></pre>
+so that the sequence of cumulative outputs becomes: [100+0, 100+0+1,
+100+0+1+2, 100+0+1+2+3], and the new state is 100+0+1+2+3.
+</p>
+
+<div class="boxed">
+<a
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_list_state_numpy_sum.py">
+<b>Solution:</b></a>
+<pre><code>
+lf(x, z, cumulative, 0.0)
+</code></pre>
+</div>
+
+
+<p>
+Note: The state transition functions should not modify the input
+stream. In the above example, the function <code>cumulative</code>
+must not modify the parameter <code>a</code>. If the program replaced
+the statement <code>b = np.array(a)</code> with <code>b = a</code>
+then the execution of the function would modify <code>a</code> since
+lists are mutable.
+</p>
+
+
+<p><b>Problem</b>: <code>x</code> and <code>y</code> are streams of numbers. Write
+an agent that sets:
+<pre><code>
+y[j] = np.mean([x[i] for i in range(j+1)])
+</code></pre>
+For example:
+y[0] = x[0]/1.0; y[1] = (x[0] + x[1])/2.0; y[2] = (x[0] + x[1] + x[2])/3.0.
+</p>
+
+<p>
+The state is a pair <code>(n, cum)</code) where <code>n</code> is the
+number of elements of the input stream processed so far and
+<code>cum</code> is the sum of these elements. The function
+<code>average</code> given below operates on a list of numbers and
+returns the running average and the final state.
+</p>
+
+<div class="boxed">
+<a href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_list_state_average.py">
+<b>Solution:</b></a>
+<pre><code>
+def average(a, state):
+        n, cum = state
+        b = np.array(a)
+        b[0] += cum
+        b = np.cumsum(b)
+        n_array = np.arange(n+1, n+len(b)+1, 1)
+        avg = b/np.rint(n_array)
+        state = (n_array[-1], b[-1])
+        return (avg, state)
+# Initial state is (0, 0.0).
+lf(x, z, average, (0, 0.0))
+</code></pre>
+</div>
+
+<a href="">
+<h1>Encapsulation of window functions: the window wrapper</h1></a>
 
 </body>
 </html>
