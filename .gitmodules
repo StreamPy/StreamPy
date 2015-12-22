@@ -1,0 +1,4 @@
+[submodule "tutorials"]
+	path = tutorials
+	url = https://github.com/StreamPy/StreamPy
+	branch = gh-pages
