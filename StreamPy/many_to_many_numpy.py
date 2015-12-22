@@ -42,7 +42,4 @@ def execute_list_of_np_func(v, list_of_np_func):
 lf([x,y,z], [a,b,c,d], execute_list_of_np_func,
    list_of_np_func=[np.sum, np.mean, np.var, np.all])
 
-
-
-
     
