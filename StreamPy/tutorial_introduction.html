@@ -129,7 +129,7 @@ wrapper.</p>
 href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/Agent.py">Agent
 class</a> later.</p>
 
-<h1>The element wrapper</h1>
+<a name="element_wrapper"><h1>The element wrapper</h1></a>
 
 <p>We begin by describing the required parameters of a wrapper
 function and  postpone discussion of optional parameters. The element
@@ -220,9 +220,10 @@ In the examples, <code>np</code> represents
 <h3>Example of <i>stream operator</i>: single input stream, single output
 stream.</h3>
 
-<p> <b>Problem</b>: <code>x</code> and <code>y</code> are streams. Write
-an agent that sets the <code>j</code>-th element of <code>y</code> to the <i>sine</i> of the
-<code>j</code>-th element of <code>x</code>, for all <code>j</code>.</p>
+<p> <b>Problem</b>: <code>x</code> and <code>y</code> are
+streams. Write an agent that sets the <code>j</code>-th element of
+<code>y</code> to the <i>sine</i> of the <code>j</code>-th element of
+<code>x</code>, for all <code>j</code>. </p>
 
 <p>
 <div class="boxed">
@@ -616,6 +617,10 @@ ef(x, z, np.clip, call_streams=[trigger_2], a_min=2, a_max=8)
 <p> Note: call_streams must be entered as a keyword, rather than a
 positional parameter (because no parameter is entered for
 <code>state</code>). </p>
+
+<a
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_list_wrappers.html">
+<h1>Encapsulation list functions: the list wrapper</h1></a>
 
 
 </body>
