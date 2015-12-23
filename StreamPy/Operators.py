@@ -188,9 +188,10 @@ def list_agent(f, inputs, outputs, state, call_streams,
     assert_is_list_of_streams_or_None(call_streams)
 
     def transition(in_lists, state):
+        num_outputs = len(outputs)
         smallest_list_length = min(v.stop - v.start for v in in_lists)
         input_lists = [v.list[v.start:v.start+smallest_list_length] for v in in_lists]
-        if not input_lists:
+        if not input_lists or not smallest_list_length:
             return ([[]]*num_outputs, state, [v.start for v in in_lists])
         if state is None:
             output_lists = f(input_lists)
@@ -1307,34 +1308,60 @@ def stream_agent(inputs, outputs, f_type, f,
             # Multiple input and output streams
             return many_to_many_agent(f_type, f, inputs, outputs,
                                 state, call_streams, window_size, step_size)
+    
         
 ####################################################
 # ef
 ####################################################
 # Passes **kwargs to the element function, ef
-def ef(inputs, outputs, func, state=None, call_streams=None, **kwargs):
-        def g(v, state=None):
-            if state is not None:
-                return func(v, state, **kwargs)
-            else:
-                return func(v, **kwargs)
-        stream_agent(
-            inputs, outputs, 'element', g, state, call_streams)
+def ef(inputs, outputs, func, state=None,
+       call_streams=None, **kwargs):
 
-        
+    def g(v, state=None):
+        if state is not None:
+            return func(v, state, **kwargs)
+        else:
+            return func(v, **kwargs)
+    stream_agent(
+        inputs, outputs, 'element', g, state, call_streams)
+
+
 ####################################################
 # lf
 ####################################################
-# Passes **kwargs to the element function, ef
-def lf(inputs, outputs, func, state=None, call_streams=None, **kwargs):
-        def g(v, state=None):
-            if state is not None:
-                return func(v, state, **kwargs)
-            else:
-                return func(v, **kwargs)
-        stream_agent(
-            inputs, outputs, 'list', g, state, call_streams)
+# Passes **kwargs to the element function, lf
+def lf(inputs, outputs, func, state=None,
+       call_streams=None, **kwargs):
 
+    def g(v, state=None):
+        if state is not None:
+            return func(v, state, **kwargs)
+        else:
+            return func(v, **kwargs)
+    stream_agent(
+        inputs, outputs, 'list', g, state, call_streams)
+
+        
+####################################################
+# wf
+####################################################
+# Passes **kwargs to the element function, wf
+def wf(inputs, outputs, func, window_size, step_size,
+       state=None, call_streams=None, **kwargs):
+    print 'inputs', inputs
+    print 'outputs', outputs
+    print 'window_size', window_size
+    print 'step_size', step_size
+    print 'func', func
+    
+    def g(v, state=None):
+        if state is not None:
+            return func(v, state, **kwargs)
+        else:
+            return func(v, **kwargs)
+    stream_agent(
+        inputs, outputs, 'window', g, state, call_streams,
+        window_size, step_size)
 
 def main():
     def squares(l):
