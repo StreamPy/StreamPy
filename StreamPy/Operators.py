@@ -1348,11 +1348,6 @@ def lf(inputs, outputs, func, state=None,
 # Passes **kwargs to the element function, wf
 def wf(inputs, outputs, func, window_size, step_size,
        state=None, call_streams=None, **kwargs):
-    print 'inputs', inputs
-    print 'outputs', outputs
-    print 'window_size', window_size
-    print 'step_size', step_size
-    print 'func', func
     
     def g(v, state=None):
         if state is not None:
