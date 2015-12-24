@@ -25,7 +25,7 @@ The module consists of three functions:
 (2) make_output_manager, which makes an agent that we call
 'output manager'
 (3) make_process, which sets up the data structures for
-input and output managers and calls func which creates 
+input and output managers and calls func which creates
 a network of agents that processes input streams and produces
 output streams.
 
@@ -40,16 +40,21 @@ from Stream import Stream, _close, _no_value
 from Operators import stream_agent, stream_agent
 from multiprocessing import Process, Queue
 from RemoteQueue import RemoteQueue
+import socket
+import thread
 import json
 import time
+from server import create_server_thread
+import logging
 
+logging.basicConfig(filename="make_process_log.log", filemode='w', level=logging.INFO)
 
 def make_input_manager(input_queue, input_stream_names,
-                       map_name_to_input_stream):
+                       map_name_to_input_stream, finished_execution):
     """ Makes an object that waits continuously for a
     message arriving on input_queue and then sends the message
     to the stream with the name specified on the message.
-    
+
     Parameters
     ----------
     input_queue: queue
@@ -57,7 +62,7 @@ def make_input_manager(input_queue, input_stream_names,
                         StreamPy.RemoteQueue
     input_stream_names: list of str
                   The list of names of the input streams.
-    
+
     map_name_to_input_stream : dict
                 key : str
                       Name of an input stream.
@@ -86,7 +91,7 @@ def make_input_manager(input_queue, input_stream_names,
     is attached to the log.
     The input manager continues execution until all its input streams
     are closed, and then stops.
-    
+
     """
 
     # Initially, by default, all streams are open
@@ -102,9 +107,9 @@ def make_input_manager(input_queue, input_stream_names,
         try:
             message = input_queue.get()
             message = json.loads(message)
-            print 'make_input_manager, message = ', message
+            logging.info('make_input_manager, message = ' + str(message))
         except Exception, err:
-            print 'Error', err
+            logging.error(err)
             return
         # This message_content is to be appended to the
         # stream with name stream_name.
@@ -116,7 +121,7 @@ def make_input_manager(input_queue, input_stream_names,
 
         # Message arrived for a closed stream. Error!
         if input_stream.closed:
-            print 'WARNING: inserting values into a closed stream!'
+            logging.warning('inserting values into a closed stream!')
             return
 
         # Append message_content to input_stream. Note message_content
@@ -137,7 +142,7 @@ def make_input_manager(input_queue, input_stream_names,
                    map_name_to_input_stream.values()])
 
 
-def make_output_manager(output_streams, output_queues_list):
+def make_output_manager(output_streams, output_conn_list):
     """ Creates an agent, called the output manager, that
     receives messages on streams and inserts these messages
     into queues. The output manager receives messages on all
@@ -184,13 +189,13 @@ def make_output_manager(output_streams, output_queues_list):
                                  processes that receive the specified stream.
                    stream_index: int
                                  The slot of the sending stream in the list
-                                 output_stream_names_list. 
+                                 output_stream_names_list.
 
         """
         message_content, stream_index = msg_content_and_stream_index_tuple
         # receiver_queue_list is the list of queues to
         # which this message is copied.
-        receiver_queue_list = output_queues_list[stream_index]
+        receiver_conn_list = output_conn_list[stream_index]
         # output_streams[stream_index] is the output stream
         # on which this message arrived.
         # output_stream_name is the name of the stream on which
@@ -199,7 +204,7 @@ def make_output_manager(output_streams, output_queues_list):
 
         # The messages in the queue must be serializable. The
         # object _close is not serializable; so convert it into a
-        # string '_close'. The receiving agent will convert this  
+        # string '_close'. The receiving agent will convert this
         # string back into the object _close.
         if message_content is _close:
             message_content = '_close'
@@ -207,15 +212,21 @@ def make_output_manager(output_streams, output_queues_list):
         # a tuple (name of the stream, content of the message).
         message = json.dumps((output_stream_name, message_content))
 
-        for receiver_queue in receiver_queue_list:
+        for receiver_conn in receiver_conn_list:
+            host, port = receiver_conn
             try:
-                print 'make_output_manager. send_message_to_queue'
-                print 'put message', message
-                receiver_queue.put(message)
-                #time.sleep(0.1)
-            except Exception, err:
-                print 'Error', err
-                return
+                logging.info('make_output_manager. send_message_to_queue')
+                logging.info('put message' + str(message))
+                logging.info("Connecting to {0}:{1}".format(host, port))
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                s.connect((host, port))
+                s.send(message)
+                s.close()
+
+            except socket.error as error_msg:
+                logging.error(error_msg)
+                continue
 
         return _no_value
 
@@ -235,12 +246,12 @@ def make_output_manager(output_streams, output_queues_list):
 
 def make_process(
         input_stream_names, output_stream_names, func,
-        input_queue, output_queues_list):
+        input_queue, output_conn_list, host, port):
     """ Makes a process that gets messages on its single
     input queue, processes the messages and puts messages
     on its output queues. An output queue of this process
     is an input queue of another process.
-    
+
     Parameters
     ----------
     input_stream_names : list of str
@@ -280,7 +291,7 @@ def make_process(
                  name of an input stream
            value : Stream
                  The stream with the specified name.
-    
+
     Notes
     -----
     make_process carries out the following steps:
@@ -289,9 +300,13 @@ def make_process(
     that process messages on its input streams and puts
     messages on its output streams.
     (3) Makes the output and input managers.
-                
+
 
     """
+    logging.info("Running process on {0}:{1}".format(host, port))
+    finished_execution = False
+    create_server_thread(host, port, input_queue, finished_execution)
+    logging.info("Server created. Listening on {0}:{1}".format(host, port))
     # Create input_streams, output_streams and
     # map_name_to_input_stream
     input_streams = [Stream(name) for name in input_stream_names]
@@ -303,24 +318,9 @@ def make_process(
     # map input streams to output streams.
     func(input_streams, output_streams)
 
-    new_output_queues_list = list()
-    for output_queues in output_queues_list:
-        new_output_queues = list()
-        for output_queue in output_queues:
-            if isinstance(output_queue, tuple):
-                SERVER, PORT, DESTINATION = output_queue
-                new_output_queue = RemoteQueue(SERVER, PORT, DESTINATION)
-                new_output_queues.append(new_output_queue)
-            else:
-                new_output_queues.append(output_queue)
-        new_output_queues_list.append(new_output_queues)
-        
-    make_output_manager(output_streams, new_output_queues_list)
+    make_output_manager(output_streams, output_conn_list)
+    make_input_manager(input_queue, input_streams, map_name_to_input_stream, finished_execution)
 
-    if isinstance(input_queue, tuple):
-        SERVER, PORT, DESTINATION = input_queue
-        input_queue = RemoteQueue(SERVER, PORT, DESTINATION)
-    make_input_manager(input_queue, input_streams, map_name_to_input_stream)
 
 
 def main():
@@ -333,7 +333,7 @@ def main():
 
     # Generate a stream with N random numbers and
     # then close the stream.
-    N = 2
+    N = 5
     from random import randint
     def random_ints(input_streams, output_streams):
         # Append random numbers to output_streams[0]
@@ -356,7 +356,7 @@ def main():
     def apply_func_agent(input_streams, output_streams):
         input_stream = input_streams[0]
         output_stream = output_streams[0]
-        
+
         def apply_func(v):
             # When the input stream is closed, return
             # _close to cause the output stream to close.
@@ -364,7 +364,7 @@ def main():
                 return _close
             else:
                 return f(v)
-        
+
         return stream_agent(
             inputs=input_stream,
             outputs=output_stream,
@@ -374,7 +374,7 @@ def main():
     # Print the values received on the input stream.
     def print_agent(input_streams, output_streams):
         input_stream = input_streams[0]
-        
+
         def p(v):
             if v != _close:
                 print 'print_agent', input_stream.name, v
@@ -384,17 +384,17 @@ def main():
             outputs=[],
             f_type='element',
             f=p)
-    
+
     #########################################
     # 2. CREATE QUEUES
 
     #queue_0 = None
+    conn_0 = ('localhost', 8891)
     queue_1 = Queue() # Input queue for process_1
+    conn_1 = ('localhost', 8892)
     #queue_2 = Queue() # Input queue for process_2
-    SERVER = 'pcbunn.cacr.caltech.edu'
-    PORT = 61613
-    DESTINATION='topic/remote_queue_new'
-    queue_2 = (SERVER, PORT, DESTINATION)
+    queue_2 = Queue()
+    conn_2 = ('localhost', 8893)
 
     #########################################
     # 2. CREATE PROCESSES
@@ -407,7 +407,9 @@ def main():
                             ['random_ints_stream'], # list of output stream names
                             random_ints, # func
                             None, # the input queue
-                            [[queue_1]] # list of list of output queues
+                            [[conn_1]], # list of list of output queues
+                            conn_0[0],
+                            conn_0[1]
                             ))
 
     # This process receives simple_stream from process_0.
@@ -419,7 +421,9 @@ def main():
                             ['func_stream'], # list of output stream names
                             apply_func_agent, # func
                             queue_1, # the input queue
-                            [[queue_2]] #list of list of output queues
+                            [[conn_2]], #list of list of output queues
+                            conn_1[0],
+                            conn_1[1]
                             ))
 
     # This process is a sink; it has no output queue.
@@ -432,7 +436,9 @@ def main():
                             [], # list of output stream names
                             print_agent, # func
                             queue_2, # the input queue
-                            [] # list of list of output queues
+                            [], # list of list of output queues
+                            conn_2[0],
+                            conn_2[1]
                             ))
 
     #########################################
@@ -456,7 +462,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-            
-                
-    
