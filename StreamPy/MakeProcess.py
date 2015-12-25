@@ -421,7 +421,7 @@ def main():
                             ['func_stream'], # list of output stream names
                             apply_func_agent, # func
                             queue_1, # the input queue
-                            [[conn_2]], #list of list of output queues
+                            [[conn_1, conn_2]], #list of list of output queues
                             conn_1[0],
                             conn_1[1]
                             ))

@@ -12,20 +12,17 @@ import logging
 
 logging.basicConfig(filename="make_process_log.log", filemode='w', level=logging.INFO)
 
-class AgentProcess(multiprocessing.Process):
+class AgentProcess():
 
-    def __init__(self, id, input_stream_names, output_stream_names, func, output_conn_list, host, port):
-        super(AgentProcess, self).__init__()
+    def __init__(self, id, input_stream_names, output_stream_names, func, output_conn_list):
         self.id = id
         self.input_stream_names = input_stream_names
         self.output_stream_names = output_stream_names
         self.func = func
-        self.input_queue = Queue()
         self.output_conn_list = output_conn_list
-        self.host = host
-        self.port = port
 
     def run(self):
+        self.input_queue = Queue()
         logging.info("Running process on {0}:{1}".format(self.host, self.port))
         self.finished_execution = False
         create_server_thread(self.host, self.port, self.input_queue, self.finished_execution)
@@ -42,6 +39,15 @@ class AgentProcess(multiprocessing.Process):
 
         self.make_output_manager()
         self.make_input_manager()
+
+    def start(self, host, port):
+        self.host = host
+        self.port = port
+        self.process = Process(target=self.run,
+                            args=())
+        self.process.start()
+    def join(self):
+        self.process.join()
 
     def make_input_manager(self):
         """ Makes an object that waits continuously for a
@@ -109,8 +115,9 @@ class AgentProcess(multiprocessing.Process):
             stream_name, message_content = message
             # Get the input_stream to which the message must
             # be appended.
+            print stream_name, self.id
             input_stream = self.map_name_to_input_stream[stream_name]
-
+            print stream_name, input_stream, self.id
             # Message arrived for a closed stream. Error!
             if input_stream.closed:
                 logging.warning('inserting values into a closed stream!')
@@ -208,7 +215,7 @@ class AgentProcess(multiprocessing.Process):
                 try:
                     logging.info('make_output_manager. send_message_to_queue')
                     logging.info('put message' + str(message))
-                    logging.info("Connecting to {0}:{1}".format(host, port))
+                    logging.info("Server {0}:{1} (process {2}) connecting to {3}:{4}".format(self.host, self.port, self.id, host, port))
                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                     s.connect((host, port))
@@ -313,62 +320,43 @@ def main():
 
     # This process is a source; it has no input queue
     # This process sends simple_stream to queue_1
-    process_0 = AgentProcess(id=0, input_stream_names=[], output_stream_names=['random_ints_stream'], func=random_ints, output_conn_list=[[conn_1]], host=conn_0[0], port=conn_0[1])
+    process_0 = AgentProcess(id=0,
+                             input_stream_names=[],
+                             output_stream_names=['random_ints_stream'],
+                             func=random_ints,
+                             output_conn_list=[[conn_1]])
 
-    """process_0 = Process(target=make_process,
-                        args= (
-                            [], # list of input stream names
-                            ['random_ints_stream'], # list of output stream names
-                            random_ints, # func
-                            None, # the input queue
-                            [[conn_1]], # list of list of output queues
-                            conn_0[0],
-                            conn_0[1]
-                            ))
-    """
     # This process receives simple_stream from process_0.
     # It sends double_stream to process_2.
     # It receives messages on queue_1 and sends messages to queue_2.
 
-    process_1 = AgentProcess(id=1, input_stream_names=['random_ints_stream'], output_stream_names=['func_stream'], func=apply_func_agent, output_conn_list=[[conn_2]], host=conn_1[0], port=conn_1[1])
-    """process_1 = Process(target=make_process,
-                        args= (
-                            ['random_ints_stream'], # list of input stream names
-                            ['func_stream'], # list of output stream names
-                            apply_func_agent, # func
-                            queue_1, # the input queue
-                            [[conn_2]], #list of list of output queues
-                            conn_1[0],
-                            conn_1[1]
-                            ))
-    """
+    process_1 = AgentProcess(id=1,
+                             input_stream_names=['random_ints_stream'],
+                             output_stream_names=['func_stream'],
+                             func=apply_func_agent,
+                             output_conn_list=[[conn_2]])
+
 
     # This process is a sink; it has no output queue.
     # This process receives double_stream from process_1.
     # It prints the messages it receives.
     # This process prints [0, 2, ... , 8]
 
-    process_2 = AgentProcess(id=2, input_stream_names=['func_stream'], output_stream_names=[], func=print_agent, output_conn_list=[], host=conn_2[0], port=conn_2[1])
-    """
-    process_2 = Process(target=make_process,
-                        args= (
-                            ['func_stream'], # list of input stream names
-                            [], # list of output stream names
-                            print_agent, # func
-                            queue_2, # the input queue
-                            [], # list of list of output queues
-                            conn_2[0],
-                            conn_2[1]
-                            ))
-    """
+    process_2 = AgentProcess(id=2,
+                             input_stream_names=['func_stream'],
+                             output_stream_names=[],
+                             func=print_agent,
+                             output_conn_list=[])
+
 
     #########################################
+
     # 3. START PROCESSES
-    process_2.start()
+    process_2.start(conn_2[0], conn_2[1])
     #time.sleep(0.1)
-    process_1.start()
+    process_1.start(conn_1[0], conn_1[1])
     #time.sleep(0.1)
-    process_0.start()
+    process_0.start(conn_0[0], conn_0[1])
 
     #########################################
     # 4. JOIN PROCESSES
