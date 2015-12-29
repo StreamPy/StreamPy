@@ -306,7 +306,7 @@ def window_agent(f, inputs, outputs, state, call_streams,
         # num_steps is the number of window operations that can be
         # carried out with the given numbers of unprocessed elements
         # in the input streams.
-        num_steps = (smallest_list_length - window_size)/step_size
+        num_steps = 1+(smallest_list_length - window_size)/step_size
         for i in range(num_steps):
             # Calculate the output, 'increments', for this window operation.
             # windows is a list with a window for each input stream.
