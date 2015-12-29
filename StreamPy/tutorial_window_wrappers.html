@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head><title>Window wrappers</title></head>
+<style type="text/css">
+body {
+  background-color: white ;
+  color: black ;
+  font-family: Arial, Helvetica, sans-serif ;
+}
+.boxed {
+  border: 4px solid green ;
+}
+</style>
+<body>
+
+<center><h1>Encapsulating window functions on lists: List wrappers</h1></center>
+
+<h1>Window wrappers</h1>
+
+<p> An agent created using the window wrapper operates on moving
+windows specified by <code>window_size</code> and
+<code>step_size</code>, both of which must be positive integers. A
+window is a slice of elements in a stream. The n-th window slice is:
+
+<pre><code> [n*step_size : n*step_size + window_size] </code></pre>
+
+<p><b>Example</b> window_size=2; step_size=2</p>
+<p>Sequence of slices: x[0:2], x[2:4], x[4:6], x[6:8], ...  </p>
+
+<p><b>Example</b> window_size=4; step_size=2</p>
+<p>
+Sequence of slices: x[0:4], x[2:6], x[4:8], x[6:10], ...
+</p>
+
+<p><b>Example</b> window_size=1; step_size=5</p>
+<p>
+Sequence of slices: x[0:1], x[5:6], x[10:11], x[15:16], ...
+</p>
+<p>
+A window wrapper is similar to element and list wrappers with the
+following differences.</p>
+<ul>
+<li><i>Functional form of element, list and window wrappers</i>
+<br>
+Element wrapper:
+<code>
+stream_agent(inputs, outputs, f_type='element', f)
+</code>
+<br>
+List wrapper:
+<code>
+stream_agent(inputs, outputs, f_type='list', f)
+</code>
+<br>
+Window wrapper:
+<code>
+stream_agent(inputs, outputs, f_type='window', f)
+</code>
+</li>
+
+<li><i>Alternative forms</i>
+<br>
+Element wrapper: ef
+<br>
+List wrapper: lf
+<br>
+Window wrapper: wf
+</li>
+
+<li><i>Types of function <code>f</code></i>
+<br>
+Element wrapper:
+elements of input streams -> elements of output streams
+<br>
+List wrapper:
+<i>lists of</i> elements of input streams -> <i>lists</i> of
+  elements of output streams
+<br>
+Window wrapper:
+<i>lists of</i> elements of input streams -> elements of output streams
+</li>
+</ul>
+
+<p>All input streams to an window-wrapping agent have the same window
+and step sizes. The agent takes its n-th step by operating on the n-th
+window slices of each of its input streams: an operation on a single
+list for an agent with a single input stream, or an operation on a
+list of lists for an agent with multiple input streams. The agent
+outputs a single element on each of its output streams.</p>
+
+<h2>Example</h2>
+
+<p><b>Problem</b>: In some cases a sensor produces data at a higher
+rate than we want backend processes to work with. We want to
+down-sample the sensor stream by replacing each window by a single
+value. For example, the sensor rate is 250 samples/second, and we want
+the backend processes to work with streams at the rate of 50
+samples/second; so we replace each 5-sample window in the sensor
+stream by its median (or max, min, mean, or some other statistic).  In
+the following <code>x</code> is the sensor stream and <code>y</code>
+and <code>z</code> are down-sampled streams.  </p>
+
+<p> In the following <code>x</code> is the sensor stream and
+<code>y</code> and <code>z</code> are down-sampled streams. You can
+see the <code>stream_agent</code> and <code>wf</code> versions. </p>
+
+<div class="boxed">
+<a
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_window_simplest.py">
+<b>Solution</b></a>
+<pre><code>
+stream_agent(inputs=x, outputs=y, f_type='window', f=np.mean,
+             window_size=5, step_size=5)
+</code></pre>
+</div>
+
+<p> A window function (wf) version of the same function with an ouput
+stream of <code>wf</code> is:
+<div class="boxed">
+<a
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_window_simplest.py">
+<b>wf version</b>:</a>
+<pre><code>
+wf(x, z, np.mean, 5, 5)
+</code></pre>
+</div>
+
+<h2>Sampling streams</h2>
+<p><b>Problem</b>: Write an agent with input stream <code>x</code> and
+output stream <code>y</code> which contains the <code>n</code>-th
+elements of <code>x</code>, i.e.
+<br>
+<code>
+y[j] = x[j*n]
+</code> for all j.
+
+<div class="boxed">
+<a href=""><b>Solution</b>:</a>
+<pre><code>
+wf(x, z, lambda u: u[0], n, 1)
+</code></pre>
+</div>
+
+<h1>Parameters of the window wrapper: Review</h1>
+<p>For completeness, we describe the types of the parameters of the window
+wrapper, emphasizing the analogy to the element and list wrappers.</p>
+
+<h3>Inputs to function <code>f</code> for the window wrapper (same as
+for the list wrapper)</h3>
+<ul>
+  <li> If <code>inputs</code> is a single stream then the input to <code>f</code>
+  is a single list consisting of elements of <code>inputs</code>.</li>
+  <li> If <code>inputs</code> is a list of <i>n</i> streams then the input to <code>f</code>
+  is a list of <i>n</i> lists, with the <i>m</i>-th of the
+  <i>n</i> lists consisting of elements from the <i>m</i>-th stream in <code>inputs</code>.</li>
+</ul>
+
+<h3>Outputs of function <code>f</code> for the window wrapper (same as
+for the element wrapper)</h3>
+<ul>
+  <li> If <code>outputs</code> is a single stream then <code>f</code>
+  returns an element of <code>outputs</code>.</li>
+  
+  <li> If <code>outputs</code> is a list of <i>n</i> streams then
+  <code>f</code> returns a list of <i>n</i> elements, with the
+  <i>m</i>-th element for the <i>m</i>-th stream in
+  <code>outputs</code>.</li>
+</ul>
+
+<h2>Review of functional forms of the window function</h2>
+In the following <code>w</code>, <code>x</code>, <code>y</code>,
+<code>z</code> are streams. <code>window_size</code> and
+<code>step_size</code> are positive integers.
+<ol>
+  <li><b>Single input, single output.</b> Wrapped function
+  <code>h</code> takes a single list as input and returns a single
+  element. Create an agent with a single input stream <code>x</code> and
+  single output stream <code>y</code>:
+  <pre><code>
+wf(x, y, h)
+  </code></pre>
+  </li>
+  <li><b>Merge: multiple inputs, single output.</b> Wrapped function
+  <code>h</code> takes a <i>list of lists</i> as input and returns a
+  single element. Create an agent with two input streams <code>x</code>
+  and <code>y</code> and single output stream <code>z</code>:
+  <pre><code>
+wf([x,y], z, h)
+  </code></pre>
+  </li>
+  <li><b>Split: single input, multiple outputs.</b> Wrapped function
+  <code>h</code> takes a single list as input and returns a list or
+  tuple of elements. Create an agent with a single input stream
+  <code>x</code> and two output streams <code>y</code> and
+  <code>z</code>:
+  <pre><code>
+wf(x, [y,z], h)
+  </code></pre>
+  </li>
+  
+  <li><b>Multiple inputs, multiple outputs.</b> Wrapped function
+  <code>h</code> takes a <i>list of lists</i> as input and returns a
+  list or tuple of elements. With two input streams <code>w</code> and
+  <code>x</code>, and two output streams <code>y</code> and
+  <code>z</code>:
+  <pre><code>
+wf([w,x], [y,z], h)
+  </code></pre>
+  </li>
+</ol>
+
+
+<h1>Window function examples</h1>
+
+<h2>Example: single input, single output</h2>
+
+<p><b>Problem</b>: Write a function that creates an agent takes the
+mean of clips of windows, where <a
+href="http://docs.scipy.org/doc/numpy-1.10.0/reference/generated/numpy.clip.html">
+<code>clip(a_min, a_max)</code></a> replaces elements less than
+<code>a_min </code> by <code>a_min </code> and elements greater than
+<code>a_max </code> by <code>a_max </code>. In this example,
+<code>a_min=0</code> and <code>a_min=100</code>. The output
+down-samples the input, with an output rate 1/5 the input rate. So, 
+<code>window_size=5</code> and <code>step_size=5</code>.</p>
+
+<p> The first argument, <code>lst</code> of function <code>h</code> is a list
+and the function returns an element of the output list. The remaining
+arguments, <code>arg_min</code> and <code>arg_max</code> are passed to
+<code>wf</code> as keyword arguments.</p>
+
+<div class="boxed">
+<a
+  href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_list_simplest.py">
+  <b>Solution</b></a>
+<pre><code>
+def h(lst, a_min, a_max):
+    return np.mean(np.clip(lst, a_min, a_max))
+
+wf(x, y, h, 5, 5, a_min=0, a_max=100)
+</code></pre>
+</div>
+</p>
+
+<h2>Example: Split with windows - single input, multiple outputs</h2>
+
+<p><b>Problem</b>:
+<p><b>Problem</b>: You are given the following function:
+<pre><code>
+def execute_list_of_func(v, list_of_func):
+    return ([f(v) for f in list_of_func])
+</code></pre>
+
+<p> The first argument, <code>v</code> of function <code>h</code> is
+an element of the input stream and the function returns a list with
+one element for each output stream. The remaining argument,
+<code>list_of_func</code>, is passed to <code>wf</code> as a keyword
+argument.</p>
+
+
+You are given streams <code>x</code>, <code>y</code> and
+<code>z</code> where <code>x</code> is a stream of floats. Write a
+function that creates an agent that sets elements of <code>y</code> to
+the max of a moving window and elements of
+<code>z</code> to the min of the same moving window. The window
+size is <code>w</code> and the step_size is <code>s</code>.  </p>
+
+
+<div class="boxed">
+<a href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_list_simple_merge.py">
+<b>Solution</b></a>
+<pre><code>
+wf(x, [y,z], execute_list_of_func, w, s, list_of_func=[max, min])
+</code></pre></div>
+
+
+
+<h2>Example: Merge with windows - single input, multiple outputs</h2>
+
+<p><b>Problem</b>: Given a list <code>x</code> of streams and a stream
+<code>y</code>. Create an agent that puts the maximum of standard
+deviations of each of the windows into streams of <code>x</code> into
+stream <code>y</code>. The window size is <code>w</code> and the
+step_size is <code>s</code>.</p>
+
+<div class="boxed">
+<a href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_list_simple_merge.py">
+<b>Solution</b></a>
+<pre><code>
+def h(list_of_lists):
+    return max([np.std(lst) for lst in list_of_lists])
+
+wf(x, y, h, w, s)
+</code></pre></div>
+
+
+<h2>Example: Windows function with multiple inputs and multiple outputs</h2>
+
+<p><b>Problem</b>: Given a list <code>x</code> of streams and streams
+<code>y</code> and <code>z</code>. Create an agent that puts the
+maximum of standard deviations of each of the windows of streams of
+<code>x</code> into stream <code>y</code> and the minimum into
+<code>z</code>. The window size is <code>w</code> and the step_size is
+<code>s</code>.</p>
+
+<div class="boxed">
+<a href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_list_simple_merge.py">
+<b>Solution</b></a>
+<pre><code>
+def g(list_of_lists):
+    return (max([np.std(lst) for lst in list_of_lists]),
+            min([np.std(lst) for lst in list_of_lists]))
+
+wf(x, [y, z], g, w, s)
+</code></pre></div>
+
+
+<a href="">
+<h1>Encapsulation of window functions: the window wrapper</h1></a>
+
+</body>
+</html>
