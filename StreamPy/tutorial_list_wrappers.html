@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<head><title>Encapsulating functions that operate on lists</title></head>
+<head><title>List wrappers</title></head>
 <style type="text/css">
 body {
   background-color: white ;
@@ -221,8 +221,8 @@ lf([x,y], z, h)
   </code></pre>
   </li>
   <li><b>Split: single input, multiple outputs.</b> Wrapped function
-  <code>h</code> takes a single list as input and returns a list or
-  tuple of lists. Create an agent with a single input stream
+  <code>h</code> takes a single list as input and returns a <i>list or
+  tuple of lists</i>. Create an agent with a single input stream
   <code>x</code> and two output streams <code>y</code> and
   <code>z</code>:
   <pre><code>
@@ -232,7 +232,7 @@ lf(x, [y,z], h)
   
   <li><b>Multiple inputs, multiple outputs.</b> Wrapped function
   <code>h</code> takes a <i>list of lists</i> as input and returns a
-  list or tuple of lists. With two input streams <code>w</code> and
+  <i>list or tuple of lists</i>. With two input streams <code>w</code> and
   <code>x</code>, and two output streams <code>y</code> and
   <code>z</code>:
   <pre><code>
@@ -354,7 +354,7 @@ lf([x,y], z, h)
 </code></pre></div>
 
 
-<h2>Example: List function with multiple input, multiple outputs</h2>
+<h2>Example: List function with multiple inputs, multiple outputs</h2>
 
 <p><b>Problem</b>: You are given the following function where
 <code>x</code> is a list of lists of numbers, <code>weights</code> is
