@@ -13,11 +13,10 @@ def create_client(host, port, msg):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     clients.append(s)
 
-    try:
-        s.connect((host, port))
-    except socket.error as msg:
-        print msg
-        sys.exit()
+    while s.connect_ex((host, port)) != 0:
+        print "Trying to connect to {0}:{1}".format(host, port)
+        time.sleep(1)
+        pass
 
     server_name = s.getpeername()
     print "Connected to server at {0}:{1}".format(server_name[0], server_name[1])
@@ -78,7 +77,7 @@ def main():
             client.close()
         sys.exit(0)
 
-    signal.signal(signal.SIGINT, signal_handler)
+    # signal.signal(signal.SIGINT, signal_handler)
 
     create_server_thread(HOST, PORT)
     time.sleep(1)
