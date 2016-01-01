@@ -13,9 +13,7 @@ body {
 </style>
 <body>
 
-<center><h1>Encapsulating window functions on lists: List wrappers</h1></center>
-
-<h1>Window wrappers</h1>
+<center><h1>Encapsulating window functions on lists: window wrappers</h1></center>
 
 <p> An agent created using the window wrapper operates on moving
 windows specified by <code>window_size</code> and
@@ -135,7 +133,9 @@ y[j] = x[j*n]
 </code> for all j.
 
 <div class="boxed">
-<a href=""><b>Solution</b>:</a>
+<a
+  href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_window_sample_stream.py">
+  <b>Solution</b>:</a>
 <pre><code>
 wf(x, z, lambda u: u[0], n, 1)
 </code></pre>
@@ -231,7 +231,7 @@ arguments, <code>arg_min</code> and <code>arg_max</code> are passed to
 
 <div class="boxed">
 <a
-  href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_list_simplest.py">
+  href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_window_single_in_single_out.py">
   <b>Solution</b></a>
 <pre><code>
 def h(lst, a_min, a_max):
@@ -267,7 +267,7 @@ size is <code>w</code> and the step_size is <code>s</code>.  </p>
 
 
 <div class="boxed">
-<a href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_list_simple_merge.py">
+<a href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_window_single_in_multi_out.py">
 <b>Solution</b></a>
 <pre><code>
 wf(x, [y,z], execute_list_of_func, w, s, list_of_func=[max, min])
@@ -284,7 +284,7 @@ stream <code>y</code>. The window size is <code>w</code> and the
 step_size is <code>s</code>.</p>
 
 <div class="boxed">
-<a href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_list_simple_merge.py">
+<a href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_window_multi_in_single_out.py">
 <b>Solution</b></a>
 <pre><code>
 def h(list_of_lists):
@@ -304,7 +304,7 @@ maximum of standard deviations of each of the windows of streams of
 <code>s</code>.</p>
 
 <div class="boxed">
-<a href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_list_simple_merge.py">
+<a href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_window_multi_in_multi_out.py">
 <b>Solution</b></a>
 <pre><code>
 def g(list_of_lists):
