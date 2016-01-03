@@ -377,8 +377,17 @@ def dynamic_window_agent(f, input_stream, output_stream, state,
     # The system is in steady state if and only if
     # the current window size is equal to its max value.
 
-    # When the function f resets the window size the window size
-    # is reset to its min value.
+    # When the function f resets the window size, by returning
+    # reset=True, the current window size is reset to its min value
+    # if the system is in steady state.
+
+    # If f returns reset=True while not in steady state, then
+    # when the system next enters steady state, the current window
+    # size is reset to the minimum window size.
+
+    # Note that if f returns reset=True while not in steady state,
+    # then reset only has an effect AFTER the system next reaches steady
+    # state.
 
     # This function produces a single output stream.
     num_outputs = 1
@@ -409,7 +418,7 @@ def dynamic_window_agent(f, input_stream, output_stream, state,
         stop = input_in_list.stop
         input_list = input_in_list.list[start:stop]
         input_length = stop - start
-        # input_list and input_length remains unchanged hereafter.
+        # input_list and input_length remain unchanged hereafter.
 
         # The current window is:
         # input[start_increment:start_increment+current_window_size]
@@ -449,18 +458,29 @@ def dynamic_window_agent(f, input_stream, output_stream, state,
             # (a) the start of the window increases and
             # (b) window size is set to its min value. So the system is no
             # longer in steady state.
+            # (c) reset is set to False.
             # CASE 4:
             # If the system is not in steady state before the iteration,
             # and reaches steady state after the transition because the
-            # window size is increased to its max value, then after
-            # the iteration:
+            # window size is increased to its max value, and if
+            # reset is False, then after the iteration:
             # (a) the start of the window may increase, and 
             # (b) window size is its max value. So the system is now
             # in steady state.
-            # The only case in which the end of the window, i.e.,
-            # start_increment + current_window_size, does NOT increase, is
-            # case 3. In case 3, the end of the window does not move, but its
-            # start increases. In the next iteration, after the reset, the
+            # CASE 5:
+            # If the system is not in steady state before the iteration,
+            # and reaches steady state after the transition because the
+            # window size is increased to its max value, and if
+            # reset is True, then after the iteration, Case 3 applies, i.e.,
+            # (a) the start of the window increases, and 
+            # (b) window size is set to its min value, and
+            # (c) reset is set to False.
+            # The only cases in which the end of the window, i.e.,
+            # start_increment + current_window_size,
+            # does NOT increase, are cases 3 and 5, i.e., the cases in
+            # which reset changes from True to False.
+            # In these cases, the end of the window does not move, but its
+            # start increases. In the next iteration, the
             # end of the window will move, and this ensures that the loop
             # terminates.
             
@@ -475,7 +495,7 @@ def dynamic_window_agent(f, input_stream, output_stream, state,
             # Note: function f MUST return state (where state[0]
             # is the current_window_size and state[1] indicates whether
             # the steady state, i.e., current window size equals max value,
-            # has been reached.
+            # has been reached, and state[2], the reset value).
             # Update the state to reflect the new value of current_window_size
             state[0] = current_window_size
             state[1] = steady_state
@@ -485,10 +505,10 @@ def dynamic_window_agent(f, input_stream, output_stream, state,
             output_increment, state = f(input_window, state)
             
             # Get the new window parameters from the new state.
-            # state[0] and state[1] should not normall be changed
+            # state[0] and state[1] should not normally be changed
             # by f().
-            current_window_size = state[0]
-            steady_state = state[1]
+            #current_window_size = state[0]
+            #steady_state = state[1]
             reset = state[2]
 
             #################################
@@ -521,18 +541,22 @@ def dynamic_window_agent(f, input_stream, output_stream, state,
             # by step size.
             if not steady_state:
                 # CASE 1 or CASE 4
-                if current_window_size >= max_window_size - step_size:
-                    # CASE 4:
-                    # Reached steady state because:
-                    # current_window_size + step_size >= max_window_size
+                if current_window_size + step_size >= max_window_size:
+                    # CASE 4 or CASE 5:
+                    # Reaches steady state after this iteration.
                     steady_state = True
                     # Move the starting point of the window forwards.
                     # If current_window_size == max_window_size - step_size then
                     # the starting point of the window doesn't change.
                     # If current_window_size == max_window_size then
                     # the starting point of the window moves forward by step_size.
-                    start_increment += current_window_size - (max_window_size - step_size)
+                    start_increment += current_window_size + step_size - max_window_size
                     current_window_size = max_window_size
+                    # If reset is True then CASE 5 holds. The actions for
+                    # CASE 5 appear later, see "if reset and steady_state:"
+                    # If reset is False, then CASE 4 holds and no further action occurs
+                    # in this iteration.
+                    continue
                 else:
                     # CASE 1:
                     # Have not reached steady state yet.
@@ -541,11 +565,12 @@ def dynamic_window_agent(f, input_stream, output_stream, state,
                     current_window_size += step_size
 
 
-            # CASE 3: IN STEADY STATE, AND RESET.
+            # CASE 3: IN STEADY STATE, AND RESET. or
+            # CASE 5: REACHED STEADY STATE, AND RESET.
             # Since reset is True, the agent has determined that
             # the window size should be reset to its minimum value.
 
-            if reset:
+            if reset and steady_state:
                 steady_state = False
                 reset = False
                 # Assume the previous window was slice A:B.  Then
@@ -561,10 +586,9 @@ def dynamic_window_agent(f, input_stream, output_stream, state,
                 # Move the start of the window forward by this amount.
                 start_increment += current_window_size - min_window_size
                 current_window_size = min_window_size
-                continue
 
-            # CASE 4: IN STEADY STATE, AND NO RESET.
-            else:
+            # CASE 2: IN STEADY STATE, AND NO RESET.
+            if (not reset) and steady_state:
                 # Assert: not reset and steady_state
                 # Move the window forward by step_size without changing
                 # its size which remains max_window_size
@@ -584,6 +608,7 @@ def dynamic_window_agent(f, input_stream, output_stream, state,
         state[0] = current_window_size
         state[1] = steady_state
         state[2] = reset
+
 
         return ([output_list], state, [start])
 
