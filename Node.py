@@ -7,17 +7,20 @@ from NodeServer import run_server
 
 class Node():
 
-    def __init__(self, port, debug=False):
+    def __init__(self, host, port, debug=False):
         self.processPorts = {}
         self.processes = {}
         self.processInputQueues = {}
         self.processCommandQueues = {}
         self.port = port
         self.next_available_port = 9000
-        if debug:
-            self.host = 'localhost'
+        if host is None:
+            if debug:
+                self.host = 'localhost'
+            else:
+                self.host = socket.gethostbyname(socket.getfqdn())
         else:
-            self.host = socket.gethostbyname(socket.getfqdn())
+            self.host = host
 
         self.initServer()
 
