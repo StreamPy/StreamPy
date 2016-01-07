@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head><title>Window wrappers</title></head>
+<style type="text/css">
+body {
+  background-color: white ;
+  color: black ;
+  font-family: Arial, Helvetica, sans-serif ;
+}
+.boxed {
+  border: 4px solid green ;
+}
+</style>
+<body>
+
+<center><h1>Adjustable windows</h1></center>
+<p>
+The window and step sizes for most sliding-window applications are
+constant. Some applications, however, require window and step sizes to
+change, depending on the values in streams. Machine learning
+applications may need the window size to increase, while the starting
+point of the window doesn't move, until prediction error drops below a
+threshold. Adjustable windows allow you to write applications that
+change window and step sizes.
+</p>
+
+<p><b>Step size must be nonnegative</b> If the step size is negative
+then the agent is reading elements backwards (earlier) in the stream;
+and those elements may have been moved from main memory to archival
+storage. Later, you will write code to access this archival storage,
+but for the time being, we will write code that only uses data in main
+memory. </p>
+
+<p><b>Step size should become positive eventually</b> If the step size
+remains zero forever, then the entire stream from that point remains
+in main memory forever, and this could cause memory overflow if the
+stream grows. </p>
+
+<p> In some applications, the step size stays zero for some time and
+then increases, but does not stay zero forever. While the step size
+remains zero, the starting point of the window does not move. The
+starting point of the window moves forward by step size when the step
+size is positive.</p>
+
+<p><b>Window size must be positive</b> The agent operates on a window
+(i.e., a list) of size, <code>window_size</code>, and this list must
+be nonempty.</p> 
+
+<p>
+The adjustable window function, <i>awf</i> is similar to the window
+function <i>wf</i>. The function, <code>func</code> that is wrapped in
+<code>awf</code> is passed the current window and step sizes as
+parameters and <code>func</code> returns the new window and step
+sizes. By contrast, the function wrapped in <code>wf</code> is not
+passed, nor does it return, window and step sizes because they are
+constants. The signatures for <code>awf</code> and <code>wf</code> are
+identical.
+<pre><code>
+awf(inputs, outputs, func, window_size, step_size,
+       state=None, call_streams=None, **kwargs)
+
+wf(inputs, outputs, func, window_size, step_size,
+       state=None, call_streams=None, **kwargs)
+</code></pre>
+
+The signatures for <code>func</code> are different.
+<br>
+<i>awf</i>:
+<code>
+func(x, window_size, step_size)
+</code>
+<br>
+<i>wf</i>: 
+<code>
+func(x)
+</code>
+<br>
+where <code>x</code> is either a list (a window into a single input
+stream) or a list of lists (a list of windows into multiple input
+streams).
+</p>
+
+<p><b>Return values</b>
+<br>
+<i>awf</i>:
+<code>
+(y, window_size, step_size)
+</code>
+<br>
+<i>wf</i>: 
+<code>
+y
+</code>
+<br>
+where <code>y</code> is either a single element of a stream for a
+single output stream) or a list (an element for each output stream for
+an agent with multiple output streams).
+</p>
+
+<h2>Example illustrating keyword arguments</h2>
+
+<p><b>Problem</b>: Write a function that creates an agent with a
+single input stream, <code>x</code>, and a single output stream,
+<code>y</code>. If the sum of elements in the current window into
+stream <code>x</code> exceeds <code>threshold</code> then the window
+and step sizes are decreased; otherwise the window and step sizes are
+increased.  </p>
+
+<p>The parameters to the wrapped function <code>h</code> are:
+<code>window, window_size, step_size, threshold</code> where
+<code>threshold</code> is a keyword parameter. The value for
+<code>threshold</code> is passed to <code>awf</code> as a keyword
+argument: <code>threshold=40</code> </p>
+
+<div class="boxed">
+<a
+  href="https://github.com/StreamPy/StreamPy/commit/ce4dfa08e9182e370390d516ef573eff0e847bf1">
+  <b>Solution</b>:</a>
+<pre><code>
+def h(window, window_size, step_size, threshold):
+    if sum(window) > threshold:
+        window_size -= 1
+        step_size -= 1
+    else:
+        window_size += 1
+        step_size += 1
+    return (sum(window), window_size, step_size)
+
+initial_window_size = 5
+initial_step_size = 5
+awf(x, y, h, initial_window_size, initial_step_size, threshold=40)
+</code></pre>
+</div>
+
+
+<h2>Example illustrating state</h2>
+
+<p><b>Problem</b>: Write a function that creates an agent with a two
+input streams, <code>u</code> and <code>v</code>, and a single output
+stream, <code>y</code>. The agent calculates the standard deviation of
+the windows into each of the input streams and the agent's next output
+is the maximum of the standard deviations. If this next output is
+greater than a percent increase over the last output, i.e. if
+<br><br>
+<code>
+next_output > (1 + percent_increase/100.0) * last_output
+</code>
+<br><br>
+then the window size and step size are increased; otherwise the window
+and step sizes are decreased, provided that they do not decrease below
+<code>min_window_size</code> ( which is set to 4 in this example).
+The initial window and step sizes are 5, and the initial value of the
+last output is 0.</p>
+
+<p><a href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_adjustable_window_multi_in_single_out.py">
+<b>Solution</b>:</a>
+The state of the computation is the last output. It is entered here as a
+positional parameter after inputs <code>[u,v]</code>, outputs
+<code>y</code>, func <code>h</code>, window_size <code>initial_window_size</code>,
+step_size <code>initial_step_size</code>:
+<br><br><code>
+awf([u,v], y, h, initial_window_size, initial_step_size,
+    last_output,..)
+</code>
+<br><br>
+The remaining parameters, <code>percent_increase</code> and
+<code>min_window_size</code> are keyword arguments and are passed to
+<code>awf</code> as keyword parameters:
+<pre><code>
+awf([u,v], y, h, initial_window_size, initial_step_size, last_output,
+    percent_increase=5.0, min_window_size=4)
+</code></pre><br>
+
+<div class="boxed">
+
+<pre><code>
+def h(list_of_windows, window_size, step_size, last_output,
+      percent_increase, min_window_size):
+    next_output =  max([np.std(window) for window in list_of_windows])
+    if next_output > (1 + percent_increase/100.0) * last_output:
+        window_size += 1
+        step_size += 1
+    elif window_size > min_window_size:
+        window_size -= 1
+        step_size -= 1
+    # return output, next window size, next step size, next state
+    return (next_output, window_size, step_size, next_output)
+
+initial_window_size = 5
+initial_step_size = 5
+last_output = 0
+
+awf([u,v], y, h, initial_window_size, initial_step_size, last_output,
+    percent_increase=5.0, min_window_size=4)
+</code></pre>
+</div>
+
+<h2>Example: Split - single input multiple outputs</h2>
+
+<p><b>Problem</b>: Write a function that creates an agent with a single
+input stream, <code>w</code> and three output streams <code>x</code>,
+<code>y</code>, and <code>z</code> which contain the maximum, the
+minimum, and the spread (maximum - minimum) of values into a window of
+the input stream. If the spread (<code>dif</code> in the code) is less
+<code>threshold</code> then the window size is increased; otherwise
+the window size is decreased provided it exceeds
+<code>min_window_size</code>. 
+
+
+<div class="boxed">
+<a
+  href="https://github.com/StreamPy/StreamPy/commit/5d03f9418ceba4bcb9b5d904cbb399a036b6b51b">
+  <b>Solution</b>:</a>
+<pre><code>
+def h(window, window_size, step_size, threshold, min_window_size):
+    mx = max(window)
+    mn =  min(window)
+    dif = mx - mn
+    if dif < threshold:
+        window_size += 1
+        step_size += 1
+    elif window_size > min_window_size:
+        window_size -= 1
+        step_size -= 1
+
+    return ([mx, mn, dif], window_size, step_size)
+
+initial_window_size = 6
+initial_step_size = 6
+
+awf(w, [x,y,z], h, initial_window_size, initial_step_size,
+    threshold=15, min_window_size=1)
+</code></pre>
+</div>
+
+
+<h2>Example illustrating call streams</h2>
+
+<p><b>Problem</b>: Write a function that creates an agent with two
+input streams <code>u</code> and <code>v</code> and two output streams
+<code>y</code> and <code>z</code> and a call stream
+<code>a</code>. The agent takes a step only when it reads a new value
+in the call stream.
+</p>
+
+<p>The agent computes the mean and the standard
+deviation for the window of each of its input streams. An element of
+<code>y</code> is the mean over all input streams of the window means:
+<br><code>
+np.mean([np.mean(window) for window in list_of_windows])
+</code><br>
+and an element of <code>z</code> is the mean over all input streams of
+the window standard deviations:
+<br><code>
+np.mean([np.std(window) for window in list_of_windows])
+</code><br>
+If the ratio of the standard deviation
+to the mean exceeds a parameter <code>ratio</code> then the window and
+step sizes are increased; otherwise they are decreased.  </p>
+
+<p>The point made by this example is that until the call stream
+<code>a</code> gets a value, the agent does nothing even though its
+input streams, <code>u</code> and <code>v</code>, have unprocessed
+values. When the agent reads the first element in <code>a</code> it
+processes the unprocessed elements in its input streams. Then more
+elements are added to the agent's input streams and the agent remains
+idle. When the agent reads the next element in <code>a</code> it
+processes these unprocessed elements in its input streams. Thus, the
+points at which elements are added to <code>a</code> controls the
+points at which the agent processes its unprocessed elements. </p>
+
+<div class="boxed">
+<a
+  href="https://github.com/StreamPy/StreamPy/commit/23124c93b510e7fd3704d48791a3027b78e175ba">
+  <b>Solution</b>:</a>
+<pre><code>
+def h(list_of_windows, window_size, step_size,
+      ratio, min_window_size):
+    avg = np.mean([np.mean(window) for window in list_of_windows])
+    std = np.mean([np.std(window) for window in list_of_windows])
+    if std > ratio * avg:
+        window_size += 1
+        step_size += 1
+    elif window_size > min_window_size:
+        window_size -= 1
+        step_size -= 1
+    return ([avg, std], window_size, step_size)
+
+initial_window_size = 6
+initial_step_size = 6
+
+awf([u,v], [y,z], h, initial_window_size, initial_step_size,
+    call_streams=[a], ratio=0.6, min_window_size=4)
+</code></pre>
+</div>
+
+
+
+<hr>
+<address></address>
+<!-- hhmts start -->Last modified: Wed Jan  6 21:23:27 PST 2016 <!-- hhmts end -->
+</body> </html>
