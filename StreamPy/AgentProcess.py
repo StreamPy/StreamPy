@@ -2,6 +2,7 @@ from Stream import Stream, _close, _no_value
 from Operators import stream_agent, stream_agent
 import multiprocessing
 from multiprocessing import Process, Queue
+import threading
 from RemoteQueue import RemoteQueue
 import socket
 import thread
@@ -14,19 +15,22 @@ logging.basicConfig(filename="make_process_log.log", filemode='w', level=logging
 
 class AgentProcess():
 
-    def __init__(self, id, input_stream_names, output_stream_names, func, output_conn_list):
+    def __init__(self, id, input_stream_names, output_stream_names, func, output_process_list):
         self.id = id
         self.input_stream_names = input_stream_names
         self.output_stream_names = output_stream_names
         self.func = func
-        self.output_conn_list = output_conn_list
+        self.output_process_list = output_process_list
+        self.process_conns = {}
 
     def run(self):
-        self.input_queue = Queue()
         logging.info("Running process on {0}:{1}".format(self.host, self.port))
         self.finished_execution = False
+        self.wait = True
         create_server_thread(self.host, self.port, self.input_queue, self.finished_execution)
         logging.info("Server created. Listening on {0}:{1}".format(self.host, self.port))
+
+        threading.Thread(target=self.runCommands).start()
 
         self.input_streams = [Stream(name) for name in self.input_stream_names]
         self.output_streams = [Stream(name) for name in self.output_stream_names]
@@ -35,14 +39,27 @@ class AgentProcess():
             self.map_name_to_input_stream[stream.name] = stream
         # Call the function that creates a network of agents that
         # map input streams to output streams.
+
+        while self.wait:
+            pass
+
         self.func(self.input_streams, self.output_streams)
 
         self.make_output_manager()
         self.make_input_manager()
 
-    def start(self, host, port):
+    def runCommands(self):
+        while True:
+            message = self.command_queue.get()
+            if message == 'start':
+                self.wait = False
+
+    def start(self, host, port, input_queue, command_queue, node):
         self.host = host
         self.port = port
+        self.input_queue = input_queue
+        self.command_queue = command_queue
+        self.node = node
         self.process = Process(target=self.run,
                             args=())
         self.process.start()
@@ -104,9 +121,11 @@ class AgentProcess():
         while not self.finished_execution:
             try:
                 message = self.input_queue.get()
+                print "Process {0} received message {1}".format(self.id, message)
                 message = json.loads(message)
                 logging.info('make_input_manager, message = ' + str(message))
             except Exception, err:
+                print "Error"
                 logging.error(err)
                 return
             # This message_content is to be appended to the
@@ -130,6 +149,7 @@ class AgentProcess():
             # serialized.
             if message_content == '_close':
                 message_content = _close
+            print "Appending message to stream"
             input_stream.append(message_content)
 
             # Terminate execution of the input manager when all its
@@ -193,7 +213,7 @@ class AgentProcess():
             message_content, stream_index = msg_content_and_stream_index_tuple
             # receiver_queue_list is the list of queues to
             # which this message is copied.
-            receiver_conn_list = self.output_conn_list[stream_index]
+            receiver_process_list = self.output_process_list[stream_index]
             # output_streams[stream_index] is the output stream
             # on which this message arrived.
             # output_stream_name is the name of the stream on which
@@ -210,21 +230,14 @@ class AgentProcess():
             # a tuple (name of the stream, content of the message).
             message = json.dumps((output_stream_name, message_content))
 
-            for receiver_conn in receiver_conn_list:
-                host, port = receiver_conn
-                try:
-                    logging.info('make_output_manager. send_message_to_queue')
-                    logging.info('put message' + str(message))
-                    logging.info("Server {0}:{1} (process {2}) connecting to {3}:{4}".format(self.host, self.port, self.id, host, port))
-                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                    s.connect((host, port))
-                    s.send(message)
-                    s.close()
-
-                except socket.error as error_msg:
-                    logging.error(error_msg)
-                    continue
+            for process_id in receiver_process_list:
+                if process_id not in self.process_conns:
+                    self.process_conns[process_id] = self.node.create_process_conn(process_id)
+                print "Process {0} sending message {1} to process {2}".format(self.id, message, process_id)
+                self.process_conns[process_id].send(message)
+                self.process_conns[process_id].close()
+                del self.process_conns[process_id]
+                print "Success!"
 
             return _no_value
 
@@ -352,11 +365,18 @@ def main():
     #########################################
 
     # 3. START PROCESSES
-    process_2.start(conn_2[0], conn_2[1])
+    x = Queue()
+    y = Queue()
+    z = Queue()
+    process_2.start(conn_2[0], conn_2[1], x)
     #time.sleep(0.1)
-    process_1.start(conn_1[0], conn_1[1])
+    process_1.start(conn_1[0], conn_1[1], y)
     #time.sleep(0.1)
-    process_0.start(conn_0[0], conn_0[1])
+    process_0.start(conn_0[0], conn_0[1], z)
+
+    z.put('start')
+    y.put('start')
+    x.put('start')
 
     #########################################
     # 4. JOIN PROCESSES

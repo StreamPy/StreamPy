@@ -106,6 +106,7 @@ def make_input_manager(input_queue, input_stream_names,
     while not finished_execution:
         try:
             message = input_queue.get()
+            print "Received message {0}".format(message)
             message = json.loads(message)
             logging.info('make_input_manager, message = ' + str(message))
         except Exception, err:
