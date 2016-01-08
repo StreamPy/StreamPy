@@ -111,13 +111,13 @@ process_2 = AgentProcess(id=2,
                          output_process_list=[])
 
 processes = [process_0, process_1, process_2]
-host = socket.gethostbyname(socket.getfqdn())
+host = "131.215.220.165" # socket.gethostbyname(socket.getfqdn())
 conns = [(host, 8990), (host, 8991), (host, 8992)]
 
 open_conns = []
 for conn in conns:
     if conn not in open_conns:
-        os.system("osascript -e \'tell application \"Terminal\" to do script \"cd $HOME/Documents/Projects/StreamPy/StreamPy/;python testNode.py {0}\"\'".format(conn[1]))
+        os.system("osascript -e \'tell application \"Terminal\" to do script \"cd $HOME/Documents/Projects/stream-py-networking/;python testNode.py {0} {1}\"\'".format("131.215.220.165", conn[1]))
         open_conns.append(conn)
 time.sleep(1)
-m = Master(processes, conns, 9999, debug=False)
+m = Master(processes, conns, 9999, host="131.215.220.165", debug=False)

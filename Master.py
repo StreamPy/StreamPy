@@ -7,14 +7,16 @@ from MasterServer import run_server
 class Master():
 
 
-    def __init__(self, processes, conns, port, debug=False):
+    def __init__(self, processes, conns, port, host=None, debug=False):
         self.processes = processes
         self.conns = conns
-
-        if debug:
-            self.host = 'localhost'
+        if host is None:
+            if debug:
+                self.host = 'localhost'
+            else:
+                self.host = socket.gethostbyname(socket.getfqdn())
         else:
-            self.host = socket.gethostbyname(socket.getfqdn())
+            self.host = host
 
         self.port = port
         self.processConns = {}
