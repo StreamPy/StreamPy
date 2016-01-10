@@ -22,7 +22,8 @@ print_stream(z)
 def h(list_of_timed_windows, threshold):
     return sum([sum([w.value for w in timed_window])
              for timed_window in list_of_timed_windows])
-
+# list of input streams = [x,y]
+# single output stream z
 tf([x,y], z, h, 10, 10, threshold=20)
 
 x.extend([TimeAndValue(2, 10), TimeAndValue(6, 11),
