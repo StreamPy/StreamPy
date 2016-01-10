@@ -626,6 +626,113 @@ def dynamic_window_func(f, inputs, state,
     return output_stream
 
 
+
+def adjustable_window_agent(
+        f, inputs, outputs, state, call_streams=None,
+        window_size=None, step_size=None):
+    # Here state is the combined state:
+    # [window_size, step_size, user_state, ...]
+
+    num_outputs = len(outputs)
+
+    def transition(in_lists, state):
+        # Note: state is the combined state:
+        # [window_size, step_size, user_state, ...]
+        assert len(state) >= 2
+        # Get window and step sizes from state
+        window_size = state[0]
+        step_size = state[1]
+        
+        range_out = range((num_outputs))
+        range_in = range(len(in_lists))
+        # This function will set the k-th element of output_lists
+        # to the value to be output on the k-th output stream.
+        output_lists = list()
+        for _ in range_out:
+            output_lists.append([])
+
+        # window_starts is the list of starting indices for the
+        # window in each input stream.
+        window_starts = [in_list.start for in_list in in_lists]
+
+        smallest_list_length = min(v.stop - v.start for v in in_lists)
+
+        # window_begin is the index into the current list where the
+        # window begins.
+        # window_end is the index into the current list where the
+        # window ends.
+        # window_begin and window_end are relative to the current list
+        # whereas window_starts is the index into the entire stream.
+        # window_starts is used only for "garbage collection", i.e. to
+        # determine what part of the stream can be removed from main
+        # memory.
+        window_begin = 0
+        window_end = window_begin + window_size
+
+        ###########################################
+        #            MAJOR LOOP                   #
+        ###########################################
+        while window_end <= smallest_list_length:
+
+            # Calculate the output, 'increments', for this window operation.
+            # windows is a list with a window for each input stream.
+            # increments is a list with an element for each output stream.
+            # increments[k] will be appended to the k-th output stream
+            # by this function.
+            # The window for the j-th input stream starts at window_starts[j]
+            # and ends at window_starts[j]+window_size.
+            # in_lists[j].list is the list of messages on the j-th input stream.
+            windows = [in_lists[j].list[window_starts[j]:window_starts[j]+window_size] \
+                       for j in range_in]
+
+            # Get output and new state
+            increments, state = f(windows, state)
+
+            # Update window and step sizes.
+            window_size = state[0]
+            step_size = state[1]
+            # user_state = state[2:]
+                
+            # Remove _no_value and open up _multivalue elements in
+            # each [increments[k]].
+            # For example, _multivalue([11, 5, 9]) object will be
+            # added to the stream as three separate messages,
+            # 11, 5 and 9.
+            # Note that increments[k] is a value to be appended to
+            # the output stream. The function remove_novalue has
+            # a parameter which is a list. So we call the function
+            # with parameter [increments[k]] rather than increments[k]
+            # and we extend output_lists[k] rather than append to it.
+            for k in range_out:
+                output_lists[k].extend(
+                    remove_novalue_and_open_multivalue([increments[k]]))
+
+            window_starts = [v+step_size for v in window_starts]
+            window_begin += step_size
+            window_end = window_begin + window_size
+        ###########################################
+        #        END OF MAJOR LOOP                #
+        ###########################################
+
+        return (output_lists, state, window_starts)
+
+    ###########################################
+    #        END OF TRANSITION                #
+    ###########################################
+
+    # Create agent
+    #output_streams = [Stream() for v in range(num_outputs)]
+    Agent(inputs, outputs, transition, state, call_streams)
+    #return output_streams
+
+def adjustable_window_func(f, inputs, num_outputs, state, call_streams,
+                window_size, step_size):
+    outputs = [Stream() for i in range(num_outputs)]
+    adjustable_window_agent(f, inputs, outputs, state, call_streams,
+                  window_size, step_size)
+    return outputs
+
+
 ####################################################
 # OPERATIONS ON TIMED WINDOWS
 ####################################################
@@ -1013,6 +1120,8 @@ def h_agent(f_type, *args):
         return timed_agent(*args)
     elif f_type is 'asynch_element':
         return asynch_element_agent(*args)
+    elif f_type is 'adjustable_window':
+        return adjustable_window_agent(*args)
     else:
         return 'no match'
 
@@ -1476,6 +1585,96 @@ def wf(inputs, outputs, func, window_size, step_size,
             return func(v, **kwargs)
     stream_agent(
         inputs, outputs, 'window', g, state, call_streams,
+        window_size, step_size)
+
+
+####################################################
+# awf
+####################################################
+# Passes **kwargs to the element function, awf
+# awf: adjustable windows function
+# user calls function:
+# func(lst, window_size, step_size, state=None,..)
+# which returns output, window_size, step_size, state)
+# where output is placed in the output streams, and
+# window_size, step_size are their new values which
+# are used for the next window.
+def awf(inputs, outputs, func, window_size, step_size,
+       state=None, call_streams=None, **kwargs):
+    # state in this parameter list is the user-defined 
+    # state which does not include window_size and step_size.
+    # Make the combined state.
+    # combined_state =
+    #  [window_size, step_size, user_defined_state]
+    # if user_defined_state is not empty
+    # and is:
+    # [window_size, step_size]
+    # if user_defined_state is empty.
+    if state is not None:
+        combined_state = range(3)
+        combined_state[2] = state
+    else:
+        combined_state = range(2)
+
+    combined_state[0] = window_size
+    combined_state[1] = step_size
+
+    state = combined_state
+    
+    def g(v, state):
+        # The state in this parameter list is
+        # the combined state.
+        assert (isinstance(state, list) or
+                isinstance(state, tuple))
+        assert len(state) >= 2
+
+        # Get the window and step sizes, and
+        # the user state from the combined state.
+        # Then call func() which returns the output
+        # and the new window and step sizes.
+        window_size = state[0]
+        step_size = state[1]
+        if len(state) == 2:
+            user_state = None
+            # In this case user_state is not a parameter
+            # of func, and func does not return a new
+            # user state.
+            (output, new_window_size, new_step_size) = \
+              func(v, window_size, step_size, **kwargs)
+        else:
+            # In this case user_state is a parameter
+            # of func, and func returns a new
+            # user state.
+            user_state = state[2]
+            (output, new_window_size, new_step_size, new_user_state) = \
+             func(v, window_size, step_size, user_state, **kwargs)
+            state[2] = new_user_state
+
+        # Put the new window and step sizes into the combined
+        # state which is returned.
+        state[0] = new_window_size
+        state[1] = new_step_size
+        return (output, state)
+        
+    stream_agent(
+        inputs, outputs, 'adjustable_window', g, state, call_streams,
+        window_size, step_size)
+
+        
+####################################################
+# tf
+####################################################
+# Passes **kwargs to the element function, wf
+def tf(inputs, outputs, func, window_size, step_size,
+       state=None, call_streams=None, **kwargs):
+    
+    def g(v, state=None):
+        if state is not None:
+            return func(v, state, **kwargs)
+        else:
+            return func(v, **kwargs)
+    stream_agent(
+        inputs, outputs, 'timed', g, state, call_streams,
         window_size, step_size)
 
 def main():
