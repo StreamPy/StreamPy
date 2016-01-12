@@ -1,5 +1,5 @@
 from Stream import Stream, TimeAndValue
-from Operators import stream_agent, tf
+from Operators import stream_agent, tf, stream_func, ef
 from examples_element_wrapper import print_stream
 import numpy as np
 from random import randint
@@ -11,6 +11,17 @@ values are used in this example so that you can
 check the results easily.
 
 """
+class tv(object):
+    def __init__(self, time, value):
+        self.time = time
+        self.value = value
+
+def print_stream_tv(stream):
+    def print_element(v, count):
+        print '{0}[{1}] time = {2}, value = {3}'.format(stream.name, count, v.time, v.value)
+        return (count+1)
+
+    ef(inputs=stream, outputs=None, func=print_element, state=0)
 
 x = Stream('x')
 y = Stream('y')
@@ -20,18 +31,10 @@ print_stream(y)
 print_stream(z)
 
 def h(list_of_timed_windows, threshold):
-    return sum([sum([w.value for w in timed_window])
+    return sum([sum([w[1] for w in timed_window])
              for timed_window in list_of_timed_windows])
-# list of input streams = [x,y]
-# single output stream z
+
 tf([x,y], z, h, 10, 10, threshold=20)
 
-x.extend([TimeAndValue(2, 10), TimeAndValue(6, 11),
-          TimeAndValue(12, 12), TimeAndValue(14, 13),
-          TimeAndValue(19, 12), TimeAndValue(22, 13),
-          TimeAndValue(60, 23)])
-
-y.extend([TimeAndValue(3, 11), TimeAndValue(4, 15),
-          TimeAndValue(14, 12), TimeAndValue(16, 13),
-          TimeAndValue(21, 12), TimeAndValue(22, 13),
-          TimeAndValue(50, 23)])
+x.extend([(2, 10), (6, 11), (12, 12), (14, 13), (19, 12), (22, 13), (60, 23)])
+y.extend([(3, 11), (4, 15), (14, 12), (16, 13), (21, 12), (22, 13), (50, 23)])
