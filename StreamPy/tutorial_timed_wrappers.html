@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head><title>Timed window wrappers</title></head>
+<style type="text/css">
+body {
+  background-color: white ;
+  color: black ;
+  font-family: Arial, Helvetica, sans-serif ;
+}
+.boxed {
+  border: 4px solid green ;
+}
+</style>
+<body>
+
+<center><h1>Timed window wrappers</h1></center>
+
+<p> An agent created using the timed window wrapper operates on moving
+time-windows specified by <code>window_size</code> and
+<code>step_size</code>, both of which must be positive numbers (floats
+or integers) in units of time, typically seconds. An element
+<code>e</code> of an input stream of the agent is a tuple or list, and
+<code>e[0]</code> is a timestamp. The only assumption about input
+streams is that for any input stream, the sequence of elements in the
+stream have increasing timestamps.</p>
+
+<p>Consider an input stream with elements (5, 'a'), (9, 'b'), (12,
+'c'), (14, 'd'), (16, 'e'), (31, 'f'), (40 'g')... If the window and
+step sizes are 10, then the sequence of windows into this stream
+contain elements:
+
+<ol>
+  <li>Window [0, 10]: [(5, 'a'), (9, 'b')]</li>
+  <li>Window [10, 20]: [(12, 'c'), (14, 'd'), (16, 'e')]</li>
+  <li>Window [20, 30]: [] </li>
+</ol>
+
+The operation of timed windows is similar to ordinary, untimed windows
+except that, as described above, the windows are different. Timed
+windows are based on time and hence the number of elements in a timed
+window may vary. </p>
+
+<p> The function for the <b>t</b>imed window <b>f</b>unction is
+<b>tf</b>,  with the signature:
+<pre><code>
+tf(inputs, outputs, func, window_size, step_size,
+   state=None, call_streams=None, **kwargs)
+</code></pre>
+where all the parameters have the same meaning as for the window
+function <b>tf</b>.
+
+
+<h2>Examples</h2>
+
+<p><b>Problem</b>: Given an input stream <code>x</code> and an output
+stream <code>y</code>, write a function that creates a timed window
+agent with window and step sizes of 10 and that returns sums of the
+values of each of the windows. Elements of the input stream are tuples
+<code>e</code> where <code>e[0]</code> is the timestamp and
+<code>e[1]</code> is the value
+
+<div class="boxed">
+<a
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_window_simplest.py">
+<b>Solution</b></a>
+<pre><code>
+def h(window):
+    return sum(v[1] for v in window)
+
+tf(inputs=x, outputs=y, func=h, window_size=10, step_size=10)
+</code></pre>
+</div>
+
+
+<p><b>Problem</b>: Given input streams <code>x</code> and
+<code>y</code> and an output
+stream <code>z</code>, write a function that creates a timed window
+agent with window and step sizes of 10 and that returns sums of the
+values of the windows into <code>x</code> and
+<code>y</code>. Elements of the input stream are tuples
+<code>e</code> where <code>e[0]</code> is the timestamp and
+<code>e[1]</code> is the value.
+
+<div class="boxed">
+<a
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_window_simplest.py">
+<b>Solution</b></a>
+<pre><code>
+def h(list_of_timed_windows, threshold):
+    return sum([sum([w[1] for w in timed_window])
+             for timed_window in list_of_timed_windows])
+
+tf(inputs=[x,y], outputs=z, func=h, window_size=10, step_size=10)
+</code></pre>
+</div>
+
+
+
+<p><b>Problem</b>: Given input stream <code>x</code> and output
+streams <code>y</code> and <code>z</code>, write a function that
+creates a timed window agent with window and step sizes of 10 and that
+puts sums of the values of the windows in <code>x</code> into stream
+<code>y</code> if the sums exceed a threshold and into stream
+<code>z</code> otherwise. In the example, the threshold is
+20. Elements of the input stream are tuples <code>e</code> where
+<code>e[0]</code> is the timestamp and <code>e[1]</code> is the value.
+
+<div class="boxed">
+<a
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_window_simplest.py">
+<b>Solution</b></a>
+<pre><code>
+def h(timed_window, threshold):
+    v = sum([w[1] for w in timed_window])
+    if v > threshold: return (v, 0)
+    else: return (0, v)
+
+tf(x, [y,z], h, 10, 10, threshold=20)
+</code></pre>
+</div>
+
+
+
+</body>
+</html>
