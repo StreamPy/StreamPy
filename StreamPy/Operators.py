@@ -761,7 +761,7 @@ def list_index_for_timestamp(in_list, start_index, timestamp):
         i <= in_list.stop  and
         (in_list[start_index] >= timestamp
         or
-        in_list.list[i-2].time < timestamp <= in_list.list[i-1].time
+        in_list.list[i-2][0] < timestamp <= in_list.list[i-1][0]
         )
         
         )
@@ -790,7 +790,7 @@ def list_index_for_timestamp(in_list, start_index, timestamp):
     
     for i in range(start_index, in_list.stop):
         # assert i <= in_list.stop-1
-        if in_list.list[i].time >= timestamp:
+        if in_list.list[i][0] >= timestamp:
             # Found an index i with a sufficiently large time.
             return i
         
@@ -884,7 +884,8 @@ def timed_agent(f, inputs, outputs, state, call_streams,
             # window end time; so, all the messages on all the output streams
             # associated with this input time-window have the same time-value. 
             for k in range_out:
-                output_lists[k].append(TimeAndValue(window_end_time, increments[k]))
+                #output_lists[k].append(TimeAndValue(window_end_time, increments[k]))
+                output_lists[k].append((window_end_time, increments[k]))
 
             # Increment the window start and end times by step size (which is also
             # in units of time).
