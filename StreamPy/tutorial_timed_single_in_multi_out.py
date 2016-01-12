@@ -20,15 +20,10 @@ print_stream(y)
 print_stream(z)
 
 def h(timed_window, threshold):
-    v = sum([w.value for w in timed_window])
-    if v > threshold:
-        return (v, 0)
-    else:
-        return (0, v)
+    v = sum([w[1] for w in timed_window])
+    if v > threshold: return (v, 0)
+    else: return (0, v)
 
 tf(x, [y,z], h, 10, 10, threshold=20)
 
-x.extend([TimeAndValue(2, 10), TimeAndValue(6, 11),
-          TimeAndValue(12, 12), TimeAndValue(14, 13),
-          TimeAndValue(19, 12), TimeAndValue(22, 13),
-          TimeAndValue(49, 23), TimeAndValue(51, 33)])
+x.extend([(2, 10), (6, 11), (12, 12), (14, 13), (19, 12), (22, 13), (49, 23), (51, 33)]) 
