@@ -32,11 +32,11 @@ def timed_merge_agent(list_of_input_streams, single_output_stream, call_streams=
     assert isinstance(single_output_stream, Stream)
 
     def transition(in_lists, last_time):
-        smallest_list_length = min(v.stop - v.start for v in in_lists)
-        input_lists = [v.list[v.start:v.start+smallest_list_length] for v in in_lists]
+        input_lists = [v.list[v.start:v.stop] for v in in_lists]
         output, last_time, indices = timed_merge(input_lists, last_time)
         in_lists_start_values = [in_lists[j].start + indices[j]
                                  for j in range(len(in_lists))]
+        print 'in_lists_start_values', in_lists_start_values
         return ([output], last_time, in_lists_start_values)
     
     # Create agent
@@ -46,14 +46,15 @@ def timed_merge_agent(list_of_input_streams, single_output_stream, call_streams=
 
 def timed_merge(input_lists, last_time):
     assert all([
-        (not input_list or input_list[0][0] > last_time
+        ((not input_list) or input_list[0][0] >= last_time
          for input_list in input_lists)])
     output = list()
     range_in = range(len(input_lists))
+
+    # MERGE SORT
     # input_lists[j][indices[j]] is the element inspected
     # for the j-th input stream, at each iteration.
     indices = [0 for _ in range_in]
-    # A merge sort.
     # The iteration has already output input_lists[j][k] for
     # k < indices[j]. It now inspects input_lists[j][indices[j]].
     while all([len(input_lists[j]) > indices[j] for j in range_in]):
@@ -65,6 +66,7 @@ def timed_merge(input_lists, last_time):
             if input_lists[j][indices[j]][0] == last_time:
                 output.append(input_lists[j][indices[j]])
                 indices[j] += 1
+
     return (output, last_time, indices)
 
 def main():
@@ -74,12 +76,28 @@ def main():
     print_stream(x)
     print_stream(y)
     print_stream(z)
-
+    
     timed_merge_agent([x,y], z)
 
-    x.extend([(1, 0), (3, 1), (9, 2), (15, 3)])
-    y.extend([(2, 0), (7, 1), (8, 2), (11, 3)])
-    
+    x.extend([(1, 'a'), (3, 'b'), (3, 'c'), (10, 'd'), (15, 'e'), (17, 'f')])
+    y.extend([(2, 'A'), (3, 'B'), (3, 'C'), (9, 'D'), (20, 'E')])
 
+    t = Stream('t')
+    u = Stream('u')
+    v = Stream('v')
+    w = Stream('w')
+    print_stream(t)
+    print_stream(u)
+    print_stream(v)
+    print_stream(w)
+    
+    timed_merge_agent([u,v], w, call_streams=[t])
+
+    u.extend([(1, 'a'), (3, 'b'), (3, 'c'), (10, 'd'), (15, 'e'), (17, 'f')])
+    v.extend([(2, 'A'), (3, 'B'), (3, 'C'), (9, 'D'), (20, 'E')])
+    t.append(0)
+    u.extend([(21, 'g'), (23, 'h'), (33, 'i'), (40, 'j'), (50, 'K')])
+    v.extend([(22, 'F'), (23, 'G'), (43, 'H'), (51, 'I'), (59, 'J')])
+    t.append(0)
 if __name__ == '__main__':
     main()
