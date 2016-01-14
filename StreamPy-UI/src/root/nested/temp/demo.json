@@ -1,0 +1,224 @@
+{
+    "properties": {
+        "name": "demo",
+        "project": "noflo-browser-app",
+        "id": "noflo-browser-app/demo",
+        "environment": {
+            "type": "noflo-browser",
+            "content": ""
+        },
+        "changed": true,
+        "description": "file reading and filtering",
+        "icon": ""
+    },
+    "inports": {},
+    "outports": {},
+    "groups": [],
+    "processes": {
+        "browser-app/delta_xyigb": {
+            "component": "browser-app/delta",
+            "metadata": {
+                "label": "browser-app/delta",
+                "x": 396,
+                "y": 180,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "browser-app/readfile_imypm": {
+            "component": "browser-app/readfile",
+            "metadata": {
+                "label": "browser-app/readfile",
+                "x": 216,
+                "y": 252,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "browser-app/properties_of_table_q8yn2": {
+            "component": "browser-app/properties_of_table",
+            "metadata": {
+                "label": "browser-app/properties_of_table",
+                "x": 612,
+                "y": 540,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "browser-app/properties_of_rows_90js9": {
+            "component": "browser-app/properties_of_rows",
+            "metadata": {
+                "label": "browser-app/properties_of_rows",
+                "x": 612,
+                "y": 72,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "browser-app/properties_of_rows_4mtrc": {
+            "component": "browser-app/properties_of_rows",
+            "metadata": {
+                "label": "browser-app/properties_of_rows",
+                "x": 612,
+                "y": 180,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "browser-app/properties_of_rows_y3k95": {
+            "component": "browser-app/properties_of_rows",
+            "metadata": {
+                "label": "browser-app/properties_of_rows",
+                "x": 612,
+                "y": 396,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "browser-app/properties_of_rows_uxbib": {
+            "component": "browser-app/properties_of_rows",
+            "metadata": {
+                "label": "browser-app/properties_of_rows",
+                "x": 612,
+                "y": 288,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "browser-app/printer_qm469": {
+            "component": "browser-app/printer",
+            "metadata": {
+                "label": "browser-app/printer",
+                "x": 936,
+                "y": 252,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "connections": [
+        {
+            "src": {
+                "process": "browser-app/readfile_imypm",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "browser-app/delta_xyigb",
+                "port": "input"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "browser-app/readfile_imypm",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "browser-app/properties_of_table_q8yn2",
+                "port": "table"
+            },
+            "metadata": {
+                "route": 0
+            }
+        },
+        {
+            "src": {
+                "process": "browser-app/delta_xyigb",
+                "port": "rows_added"
+            },
+            "tgt": {
+                "process": "browser-app/properties_of_rows_90js9",
+                "port": "rows"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "browser-app/delta_xyigb",
+                "port": "rows_deleted"
+            },
+            "tgt": {
+                "process": "browser-app/properties_of_rows_4mtrc",
+                "port": "rows"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "browser-app/delta_xyigb",
+                "port": "rows_changed"
+            },
+            "tgt": {
+                "process": "browser-app/properties_of_rows_uxbib",
+                "port": "rows"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "browser-app/delta_xyigb",
+                "port": "rows_unchanged"
+            },
+            "tgt": {
+                "process": "browser-app/properties_of_rows_y3k95",
+                "port": "rows"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "browser-app/properties_of_rows_90js9",
+                "port": "properties"
+            },
+            "tgt": {
+                "process": "browser-app/printer_qm469",
+                "port": "input"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "browser-app/properties_of_rows_4mtrc",
+                "port": "properties"
+            },
+            "tgt": {
+                "process": "browser-app/printer_qm469",
+                "port": "input"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "browser-app/properties_of_rows_uxbib",
+                "port": "properties"
+            },
+            "tgt": {
+                "process": "browser-app/printer_qm469",
+                "port": "input"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "browser-app/properties_of_rows_y3k95",
+                "port": "properties"
+            },
+            "tgt": {
+                "process": "browser-app/printer_qm469",
+                "port": "input"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "browser-app/properties_of_table_q8yn2",
+                "port": "properties"
+            },
+            "tgt": {
+                "process": "browser-app/printer_qm469",
+                "port": "input"
+            },
+            "metadata": {}
+        }
+    ]
+}

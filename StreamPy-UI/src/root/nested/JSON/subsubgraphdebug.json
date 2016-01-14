@@ -1,0 +1,142 @@
+{
+    "properties": {
+        "name": "subsubgraphdebug",
+        "project": "noflo-customname",
+        "id": "noflo-customname/subsubgraphdebug",
+        "environment": {
+            "type": "noflo-browser"
+        },
+        "changed": true
+    },
+    "inports": {
+        "in": {
+            "process": "customname/multiply_elements_stream_w107x",
+            "port": "in",
+            "metadata": {
+                "x": 576,
+                "y": 324,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "in1": {
+            "process": "customname/multiply_elements_stream_8dswa",
+            "port": "in",
+            "metadata": {
+                "x": 540,
+                "y": 144,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "outports": {
+        "out": {
+            "process": "customname/multiply_elements_stream_w107x",
+            "port": "out",
+            "metadata": {
+                "x": 864,
+                "y": 324,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "groups": [],
+    "processes": {
+        "customname/print_value_stream_9by79": {
+            "component": "customname/print_value_stream",
+            "metadata": {
+                "label": "customname/print_value_stream",
+                "x": 1044,
+                "y": 144,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "customname/multiply_elements_stream_w107x": {
+            "component": "customname/multiply_elements_stream",
+            "metadata": {
+                "label": "customname/multiply_elements_stream",
+                "x": 720,
+                "y": 324,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "customname/multiply_elements_stream_8dswa": {
+            "component": "customname/multiply_elements_stream",
+            "metadata": {
+                "label": "customname/multiply_elements_stream",
+                "x": 684,
+                "y": 144,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "customname/print_value_stream_n23y2": {
+            "component": "customname/print_value_stream",
+            "metadata": {
+                "label": "customname/print_value_stream",
+                "x": 900,
+                "y": 36,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "connections": [
+        {
+            "src": {
+                "process": "customname/multiply_elements_stream_8dswa",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "customname/print_value_stream_9by79",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "customname/multiply_elements_stream_8dswa",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "customname/print_value_stream_n23y2",
+                "port": "in"
+            },
+            "metadata": {
+                "route": 0
+            }
+        },
+        {
+            "data": "0",
+            "tgt": {
+                "process": "customname/print_value_stream_n23y2",
+                "port": "state"
+            }
+        },
+        {
+            "data": "0",
+            "tgt": {
+                "process": "customname/print_value_stream_9by79",
+                "port": "state"
+            }
+        },
+        {
+            "data": "2",
+            "tgt": {
+                "process": "customname/multiply_elements_stream_8dswa",
+                "port": "multiplier"
+            }
+        },
+        {
+            "data": "100",
+            "tgt": {
+                "process": "customname/multiply_elements_stream_w107x",
+                "port": "multiplier"
+            }
+        }
+    ]
+}

@@ -1,0 +1,1281 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>nested package &mdash; StreamsPy UI 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="StreamsPy UI 1.0 documentation" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="nested-package">
+<h1>nested package<a class="headerlink" href="#nested-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-nested.Agent">
+<span id="nested-agent-module"></span><h2>nested.Agent module<a class="headerlink" href="#module-nested.Agent" title="Permalink to this headline">¶</a></h2>
+<p>This module contains the Agent class. The Agent
+and Stream classes are the building blocks of
+PythonStreams.</p>
+<dl class="class">
+<dt id="nested.Agent.Agent">
+<em class="property">class </em><code class="descclassname">nested.Agent.</code><code class="descname">Agent</code><span class="sig-paren">(</span><em>in_streams</em>, <em>out_streams</em>, <em>transition</em>, <em>state=None</em>, <em>call_streams=None</em>, <em>stream_manager=None</em>, <em>name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Agent.Agent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>An agent is an automaton: a state-transition machine.
+An agent is initialized in __init__ and a state
+transition is executed by next().</p>
+<p>An agent has lists of input streams, output streams
+and call streams. Streams are described in Stream.py.</p>
+<p>During a state transition an agent may read values from
+its input streams, append values to its output streams,
+change its state and carry out operations on other objects.</p>
+<p>When a call stream is modified the agent&#8217;s next() method
+is called which causes the agent to execute a state transition.</p>
+<p>The default is that every input stream is also a call stream,
+i.e., the agent executes a state transition when any of its
+input streams is modified. For performance reasons, we
+may not want the agent to execute state transitions when some
+input streams are modified; in this case, the sets of call
+and input streams will be different.</p>
+<dl class="docutils">
+<dt>InList <span class="classifier-delimiter">:</span> <span class="classifier">a named_tuple with arguments:</span></dt>
+<dd><p class="first">list, start, stop
+An InList defines the list slice:</p>
+<blockquote class="last">
+<div>list[start:stop]</div></blockquote>
+</dd>
+</dl>
+<p>in_streams : list of streams
+out_streams : list of streams
+call_streams : list of streams</p>
+<blockquote>
+<div>When a new value is added to a stream in this list
+a state transition is invoked.
+This the usual way (but not the only way) in which
+state transitions occur.</div></blockquote>
+<dl class="docutils">
+<dt>state: object</dt>
+<dd>The state of the agent. The state is updated after
+a transition.</dd>
+<dt>transition: function</dt>
+<dd>This function is called by next() which
+is the state-transition operation for this agent.
+An agent&#8217;s state transition is specified by
+its transition function.</dd>
+<dt>stream_manager <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
+<dd>Each stream has management variables, such as whether
+the stream is open or closed. After a state-transition
+the agent executes the stream_manager function
+to modify the management variables of the agent&#8217;s output
+and call streams.</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd>name of this agent</dd>
+</dl>
+<dl class="docutils">
+<dt>_in_lists: list of InList</dt>
+<dd>InList defines the slice of a list.
+The j-th element of _in_lists is an InList
+that defines the slice of the j-th input stream
+that may be read by this agent in a state
+transition.</dd>
+<dt>_out_lists: list</dt>
+<dd>The j-th element of the list is the list of
+values to be appended to the j-th output
+stream after the state transition.</dd>
+</dl>
+<dl class="docutils">
+<dt>next(stream_name=None)</dt>
+<dd><dl class="first last docutils">
+<dt>Execute a state transition. The method has 3 parts:</dt>
+<dd><ol class="first last lowerroman">
+<li><p class="first">set up the data structures to execute
+a state transition,</p>
+</li>
+<li><p class="first">call transition to:
+(a) get the values to be appended to output streams,
+(b) get the next state, and
+(c) update pointers into input streams identifying what</p>
+<blockquote>
+<div><p>parts of the stream may be read in the future.</p>
+</div></blockquote>
+</li>
+<li><p class="first">update data structures after the transition.</p>
+</li>
+</ol>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="method">
+<dt id="nested.Agent.Agent.next">
+<code class="descname">next</code><span class="sig-paren">(</span><em>stream_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Agent.Agent.next" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute the next state transition.</p>
+<p>This function does the following:
+Part 1: set up data structures for the state transition.
+Part 2: execute the state transition by calling self.transition
+Part 3: update data structures after the transition.</p>
+<p>This method can be called by any agent and is
+called whenever a value is appended to any
+stream in call_streams</p>
+<dl class="docutils">
+<dt>stream_name <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd>A new value was appended to the stream with name
+stream_name as a result of which this agent
+executes a state transition.</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="nested.Agent.InList">
+<em class="property">class </em><code class="descclassname">nested.Agent.</code><code class="descname">InList</code><span class="sig-paren">(</span><em>list</em>, <em>start</em>, <em>stop</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Agent.InList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">tuple</span></code></p>
+<dl class="attribute">
+<dt id="nested.Agent.InList.list">
+<code class="descname">list</code><a class="headerlink" href="#nested.Agent.InList.list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="nested.Agent.InList.start">
+<code class="descname">start</code><a class="headerlink" href="#nested.Agent.InList.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="nested.Agent.InList.stop">
+<code class="descname">stop</code><a class="headerlink" href="#nested.Agent.InList.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-nested.Animation">
+<span id="nested-animation-module"></span><h2>nested.Animation module<a class="headerlink" href="#module-nested.Animation" title="Permalink to this headline">¶</a></h2>
+<p>Using a JSON file in my special format,
+this module generates the Javascript data structures
+for the animation:</p>
+<ol class="arabic">
+<li><dl class="first docutils">
+<dt>The graph</dt>
+<dd><p class="first last">ie. how are the nodes/edges arranged?</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>The animation sequence</dt>
+<dd><p class="first last">ie. which values are at each edge at each time step</p>
+</dd>
+</dl>
+</li>
+</ol>
+<dl class="function">
+<dt id="nested.Animation.make_graph">
+<code class="descclassname">nested.Animation.</code><code class="descname">make_graph</code><span class="sig-paren">(</span><em>agent_descriptor_dict</em>, <em>stream_names_tuple</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Animation.make_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the 2 strings whose values are
+the edge and node arrays for the JS file</p>
+<dl class="docutils">
+<dt>agent_descriptor_dict <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first">Dict form of JSON in our special format.
+Component names paired with the associated:</p>
+<blockquote class="last">
+<div>in streams, out streams, function,
+parameters, type, state</div></blockquote>
+</dd>
+<dt>stream_names_tuple <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>List of all stream names.</dd>
+</dl>
+<dl class="docutils">
+<dt>nodes <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>String representation of the &#8216;nodes&#8217; array for Cytoscape JS
+to create a graph</dd>
+<dt>edges <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>String representation of the &#8216;edges&#8217; array for Cytoscape JS
+to create a graph</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="nested.Animation.make_js">
+<code class="descclassname">nested.Animation.</code><code class="descname">make_js</code><span class="sig-paren">(</span><em>json_file</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Animation.make_js" title="Permalink to this definition">¶</a></dt>
+<dd><p>Using a JSON file of my format, generate Javascript text
+the fills in a template .js file with:</p>
+<blockquote>
+<div>graph configuration (draws the graph)
+animation sequence (animates graph)</div></blockquote>
+<p>Opens default browser to display animation.</p>
+<dl class="docutils">
+<dt>json_file <span class="classifier-delimiter">:</span> <span class="classifier">json</span></dt>
+<dd>JSON file object of a JSON in my special format</dd>
+</dl>
+<p>None</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="nested.Animation.make_seq">
+<code class="descclassname">nested.Animation.</code><code class="descname">make_seq</code><span class="sig-paren">(</span><em>agent_descriptor_dict</em>, <em>stream_names_tuple</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Animation.make_seq" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>Executes graph. All components are fired at every time step
+and value/edge pairs are stored and returned
+to populate the JS file.</p>
+<dl class="docutils">
+<dt>agent_descriptor_dict <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first">Dict form of JSON in our special format.
+Component names paired with the associated:</p>
+<blockquote class="last">
+<div>in streams, out streams, function,
+parameters, type, state</div></blockquote>
+</dd>
+<dt>stream_names_tuple <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>List of all stream names.</dd>
+</dl>
+<p>stream_str + &#8216;</p>
+</div></blockquote>
+<p>&#8216; +  selector_str + &#8216;
+&#8216; + val_str : str</p>
+<blockquote>
+<div><p>String representation of 3 JS arrays of
+(# of time steps) * (# of streams) elements,
+where elements at each index correspond to each other</p>
+<p>&#8216;stream_str&#8217;: &#8216;stream_name&#8217; array with names of all streams
+&#8216;selector_str&#8217;: &#8216;edge&#8217; array is &#8216;stream_name&#8217; array but</p>
+<blockquote>
+<div>formatted as Cytoscape edge selectors</div></blockquote>
+<p>&#8216;val_str&#8217;: &#8216;value&#8217; array with stream values</p>
+</div></blockquote>
+</dd></dl>
+
+</div>
+<div class="section" id="module-nested.MakeNetwork">
+<span id="nested-makenetwork-module"></span><h2>nested.MakeNetwork module<a class="headerlink" href="#module-nested.MakeNetwork" title="Permalink to this headline">¶</a></h2>
+<p>Handle JSON &lt;&#8211;&gt; agent descriptor dict -&gt; Streams network</p>
+<dl class="function">
+<dt id="nested.MakeNetwork.JSON_to_descriptor_dict_and_stream_names">
+<code class="descclassname">nested.MakeNetwork.</code><code class="descname">JSON_to_descriptor_dict_and_stream_names</code><span class="sig-paren">(</span><em>my_json_file_name</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.MakeNetwork.JSON_to_descriptor_dict_and_stream_names" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.MakeNetwork.make_agent_descriptor_dict">
+<code class="descclassname">nested.MakeNetwork.</code><code class="descname">make_agent_descriptor_dict</code><span class="sig-paren">(</span><em>instance_dict</em>, <em>comp_list</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.MakeNetwork.make_agent_descriptor_dict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.MakeNetwork.make_my_JSON">
+<code class="descclassname">nested.MakeNetwork.</code><code class="descname">make_my_JSON</code><span class="sig-paren">(</span><em>instance_dict</em>, <em>comp_list</em>, <em>json_data</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.MakeNetwork.make_my_JSON" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.MakeNetwork.make_network">
+<code class="descclassname">nested.MakeNetwork.</code><code class="descname">make_network</code><span class="sig-paren">(</span><em>stream_names_tuple</em>, <em>agent_descriptor_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.MakeNetwork.make_network" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function makes a network of agents given the names
+of the streams in the network and a description of the
+agents in the network.</p>
+<dl class="docutils">
+<dt>stream_names_tuple: tuple of lists</dt>
+<dd>A tuple consisting of names of streams in the network.
+Each stream in the network must have a unique name.</dd>
+<dt>agent_descriptor_dict: dict of tuples</dt>
+<dd><p class="first">The key is an agent name
+The value is a tuple:</p>
+<blockquote class="last">
+<div><p>in_list, out_list, f, f_type, f_args, state
+where:</p>
+<blockquote>
+<div>in_list: list of input stream names
+out_list: list of output stream names
+f: function associated with the agent
+f_type: &#8216;element&#8217;, &#8216;list&#8217;, &#8216;window&#8217;, etc
+f_args: tuple of arguments for functions f
+state: the state associated with this agent.</div></blockquote>
+</div></blockquote>
+</dd>
+</dl>
+<dl class="docutils">
+<dt>stream_dict: dict</dt>
+<dd>key: stream name
+value: Stream</dd>
+<dt>agent_dict: dict</dt>
+<dd><p class="first">key: agent name
+value: agent with the specified description:</p>
+<blockquote class="last">
+<div>in_list, out_list, f, f_type, f_args, state,
+call_streams=[timer_stream]
+where one timer stream is associated with
+each agent.</div></blockquote>
+</dd>
+<dt>agent_timer_dict: dict</dt>
+<dd>key: agent_name
+value: Stream
+The value is the timer stream associated with the
+agent. When the timer stream has a message, the
+agent is made to execute a step.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="nested.MakeNetwork.make_stream_names_tuple">
+<code class="descclassname">nested.MakeNetwork.</code><code class="descname">make_stream_names_tuple</code><span class="sig-paren">(</span><em>instance_dict</em>, <em>comp_list</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.MakeNetwork.make_stream_names_tuple" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<div class="section" id="module-nested.Operators">
+<span id="nested-operators-module"></span><h2>nested.Operators module<a class="headerlink" href="#module-nested.Operators" title="Permalink to this headline">¶</a></h2>
+<p>This module has functions that convert operations on standard Python data structures
+to operations on streams.</p>
+<p>The module has three collections of functions:
+(1) functions that convert operations on standard Python data structures
+to operations on streams. These functions operate on a list of input
+streams to generate a list of output streams. The functions deal with
+the following data structures: lists, elements of lists, (moving)
+windows, and timed windows.
+(2) functions that map the general case of multiple input streams and
+multiple output streams described above to the following special cases:</p>
+<blockquote>
+<div><ol class="loweralpha simple">
+<li>merge: an arbitrary number of input streams and a single output stream.</li>
+<li>split: a single input stream and an arbitrary number of output streams.</li>
+<li>op: a single input stream and a single output stream.</li>
+<li>source: no input and an arbitrary number of output streams.</li>
+</ol>
+<p>(e) sink: no ouput and an arbitrary number of input streams.
+These special cases simplify that functions that need to be written
+for standard Python data structures. You can always use the arbitrary
+number of inputs and outputs case even if there is only one or zero input
+or output streams. The functions for merge, split, op, source, and sink
+are simpler than the general case; so use them, where appropriate.</p>
+</div></blockquote>
+<p>(3) a function that provides a single common signature for converting
+operations on Python structures to operations on streams regardless of
+whether the function has no inputs, a single input stream, a list of
+input streams, or no outputs, a single output stream or a list of output
+streams.</p>
+<dl class="function">
+<dt id="nested.Operators.assert_is_list">
+<code class="descclassname">nested.Operators.</code><code class="descname">assert_is_list</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.assert_is_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.assert_is_list_of_lists">
+<code class="descclassname">nested.Operators.</code><code class="descname">assert_is_list_of_lists</code><span class="sig-paren">(</span><em>x</em>, <em>list_size=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.assert_is_list_of_lists" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.assert_is_list_of_streams">
+<code class="descclassname">nested.Operators.</code><code class="descname">assert_is_list_of_streams</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.assert_is_list_of_streams" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.assert_is_list_of_streams_or_None">
+<code class="descclassname">nested.Operators.</code><code class="descname">assert_is_list_of_streams_or_None</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.assert_is_list_of_streams_or_None" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.assert_is_list_or_None">
+<code class="descclassname">nested.Operators.</code><code class="descname">assert_is_list_or_None</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.assert_is_list_or_None" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.asynch_element_agent">
+<code class="descclassname">nested.Operators.</code><code class="descname">asynch_element_agent</code><span class="sig-paren">(</span><em>f</em>, <em>inputs</em>, <em>outputs</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.asynch_element_agent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.asynch_element_func">
+<code class="descclassname">nested.Operators.</code><code class="descname">asynch_element_func</code><span class="sig-paren">(</span><em>f</em>, <em>inputs</em>, <em>num_outputs</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.asynch_element_func" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.element_agent">
+<code class="descclassname">nested.Operators.</code><code class="descname">element_agent</code><span class="sig-paren">(</span><em>f</em>, <em>inputs</em>, <em>outputs</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.element_agent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.element_func">
+<code class="descclassname">nested.Operators.</code><code class="descname">element_func</code><span class="sig-paren">(</span><em>f</em>, <em>inputs</em>, <em>num_outputs</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.element_func" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.h">
+<code class="descclassname">nested.Operators.</code><code class="descname">h</code><span class="sig-paren">(</span><em>f_type</em>, <em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.h" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.h_agent">
+<code class="descclassname">nested.Operators.</code><code class="descname">h_agent</code><span class="sig-paren">(</span><em>f_type</em>, <em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.h_agent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.list_agent">
+<code class="descclassname">nested.Operators.</code><code class="descname">list_agent</code><span class="sig-paren">(</span><em>f</em>, <em>inputs</em>, <em>outputs</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.list_agent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.list_func">
+<code class="descclassname">nested.Operators.</code><code class="descname">list_func</code><span class="sig-paren">(</span><em>f</em>, <em>inputs</em>, <em>num_outputs</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.list_func" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.list_index_for_timestamp">
+<code class="descclassname">nested.Operators.</code><code class="descname">list_index_for_timestamp</code><span class="sig-paren">(</span><em>in_list</em>, <em>start_index</em>, <em>timestamp</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.list_index_for_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>A helper function for timed operators.
+The basic idea is to return the earliest index in
+in_list.list with a time field that is greater than
+or equal to timestamp. If no such index exists then
+return a negative number.</p>
+<p>Returns positive integer i where:
+either: &#8216;FOUND TIME WINDOW IN IN_LIST&#8217;</p>
+<blockquote>
+<div>i &gt; start_index and
+i &lt;= in_list.stop  and
+in_list.list[i-1].time &gt;= timestamp and
+(i == start_index+1 or in_list.list[i-2].time &lt; timestamp)</div></blockquote>
+<dl class="docutils">
+<dt>or: &#8216;NO TIME WINDOW IN IN_LIST&#8217;</dt>
+<dd><dl class="first last docutils">
+<dt>i &lt; 0 and</dt>
+<dd><dl class="first docutils">
+<dt>(in_list.list[in_list.stop-1] &lt;= timestamp</dt>
+<dd>or</dd>
+</dl>
+<p class="last">(in_list.start = in_list.stop)</p>
+</dd>
+</dl>
+</dd>
+<dt>Requires:</dt>
+<dd>start_index &gt;= in_list.start and
+start_index &lt; in_list.stop</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.main">
+<code class="descclassname">nested.Operators.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.many_outputs_source">
+<code class="descclassname">nested.Operators.</code><code class="descname">many_outputs_source</code><span class="sig-paren">(</span><em>f_type</em>, <em>f</em>, <em>num_outputs</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.many_outputs_source" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.many_outputs_source_agent">
+<code class="descclassname">nested.Operators.</code><code class="descname">many_outputs_source_agent</code><span class="sig-paren">(</span><em>f_type</em>, <em>f</em>, <em>f_args</em>, <em>outputs</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.many_outputs_source_agent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.many_to_many">
+<code class="descclassname">nested.Operators.</code><code class="descname">many_to_many</code><span class="sig-paren">(</span><em>f_type</em>, <em>f</em>, <em>in_streams</em>, <em>num_outputs</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.many_to_many" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.many_to_many_agent">
+<code class="descclassname">nested.Operators.</code><code class="descname">many_to_many_agent</code><span class="sig-paren">(</span><em>f_type</em>, <em>f</em>, <em>f_args</em>, <em>in_streams</em>, <em>out_streams</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.many_to_many_agent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.merge">
+<code class="descclassname">nested.Operators.</code><code class="descname">merge</code><span class="sig-paren">(</span><em>f_type</em>, <em>f</em>, <em>in_streams</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.merge" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.merge_agent">
+<code class="descclassname">nested.Operators.</code><code class="descname">merge_agent</code><span class="sig-paren">(</span><em>f_type</em>, <em>f</em>, <em>f_args</em>, <em>in_streams</em>, <em>out_stream</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.merge_agent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.op">
+<code class="descclassname">nested.Operators.</code><code class="descname">op</code><span class="sig-paren">(</span><em>f_type</em>, <em>f</em>, <em>in_stream</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.op" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.op_agent">
+<code class="descclassname">nested.Operators.</code><code class="descname">op_agent</code><span class="sig-paren">(</span><em>f_type</em>, <em>f</em>, <em>f_args</em>, <em>in_stream</em>, <em>out_stream</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.op_agent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.remove_novalue_and_open_multivalue">
+<code class="descclassname">nested.Operators.</code><code class="descname">remove_novalue_and_open_multivalue</code><span class="sig-paren">(</span><em>l</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.remove_novalue_and_open_multivalue" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function returns a list which is the
+same as the input parameter l except that
+(1) _no_value elements in l are deleted and
+(2) each _multivalue element in l is opened</p>
+<blockquote>
+<div>i.e., for an object _multivalue(list_x)
+each element of list_x appears in the
+returned list.</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.single_output_source">
+<code class="descclassname">nested.Operators.</code><code class="descname">single_output_source</code><span class="sig-paren">(</span><em>f_type</em>, <em>f</em>, <em>num_outputs</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.single_output_source" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.single_output_source_agent">
+<code class="descclassname">nested.Operators.</code><code class="descname">single_output_source_agent</code><span class="sig-paren">(</span><em>f_type</em>, <em>f</em>, <em>f_args</em>, <em>out_stream</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.single_output_source_agent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.sink">
+<code class="descclassname">nested.Operators.</code><code class="descname">sink</code><span class="sig-paren">(</span><em>f_type</em>, <em>f</em>, <em>in_stream</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.sink" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.sink_agent">
+<code class="descclassname">nested.Operators.</code><code class="descname">sink_agent</code><span class="sig-paren">(</span><em>f_type</em>, <em>f</em>, <em>f_args</em>, <em>in_stream</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.sink_agent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.split">
+<code class="descclassname">nested.Operators.</code><code class="descname">split</code><span class="sig-paren">(</span><em>f_type</em>, <em>f</em>, <em>in_stream</em>, <em>num_outputs</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.split" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.split_agent">
+<code class="descclassname">nested.Operators.</code><code class="descname">split_agent</code><span class="sig-paren">(</span><em>f_type</em>, <em>f</em>, <em>f_args</em>, <em>in_stream</em>, <em>out_streams</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.split_agent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.stream_agent">
+<code class="descclassname">nested.Operators.</code><code class="descname">stream_agent</code><span class="sig-paren">(</span><em>inputs</em>, <em>outputs</em>, <em>f_type</em>, <em>f</em>, <em>f_args</em>, <em>state=None</em>, <em>call_streams=None</em>, <em>window_size=None</em>, <em>step_size=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.stream_agent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides a common signature for converting functions f on standard
+Python data structures to streams.</p>
+<dl class="docutils">
+<dt>f_type <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;element&#8217;, &#8216;list&#8217;, &#8216;window&#8217;, &#8216;timed&#8217;, &#8216;asynch_element&#8217;}</span></dt>
+<dd>f_type identifies the type of function f where f is the next parameter.</dd>
+</dl>
+<p>f : function
+inputs : {Stream, list of Streams}</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>When stream_func has:</dt>
+<dd>no input streams, inputs is None
+a single input Stream, inputs is a single Stream
+multiple input Streams, inputs is a list of Streams.</dd>
+</dl>
+</div></blockquote>
+<p>outputs : list of Streams
+state : object</p>
+<blockquote>
+<div>state is None or is an arbitrary object. The state captures
+all the information necessary to continue processing the input
+streams.</div></blockquote>
+<dl class="docutils">
+<dt>call_streams <span class="classifier-delimiter">:</span> <span class="classifier">None or list of Stream</span></dt>
+<dd>If call_streams is None then the program sets it to inputs
+(converting inputs to a list of Stream if necessary).
+This function is called when, and only when any stream in
+call_streams is modified.</dd>
+<dt>window_size <span class="classifier-delimiter">:</span> <span class="classifier">None or int</span></dt>
+<dd>window_size must be a positive integer if f_type is &#8216;window&#8217;
+or &#8216;timed&#8217;. window_size is the size of the moving window on
+which the function operates.</dd>
+<dt>step_size <span class="classifier-delimiter">:</span> <span class="classifier">None or int</span></dt>
+<dd>step_size must be a positive integer if f_type is &#8216;window&#8217;
+or &#8216;timed&#8217;. step_size is the number of steps by which the
+moving window moves on each execution of the function.</dd>
+</dl>
+<p>None</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.stream_func">
+<code class="descclassname">nested.Operators.</code><code class="descname">stream_func</code><span class="sig-paren">(</span><em>inputs</em>, <em>f_type</em>, <em>f</em>, <em>num_outputs</em>, <em>state=None</em>, <em>call_streams=None</em>, <em>window_size=None</em>, <em>step_size=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.stream_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides a common signature for converting functions f on standard
+Python data structures to streams.</p>
+<dl class="docutils">
+<dt>f_type <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;element&#8217;, &#8216;list&#8217;, &#8216;window&#8217;, &#8216;timed&#8217;, &#8216;asynch_element&#8217;}</span></dt>
+<dd>f_type identifies the type of function f where f is the next parameter.</dd>
+</dl>
+<p>f : function
+inputs : {Stream, list of Streams}</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>When stream_func has:</dt>
+<dd>no input streams, inputs is None
+a single input Stream, inputs is a single Stream
+multiple input Streams, inputs is a list of Streams.</dd>
+</dl>
+</div></blockquote>
+<dl class="docutils">
+<dt>num_outputs <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>A nonnegative integer which is the number of output streams of
+this function.</dd>
+<dt>state <span class="classifier-delimiter">:</span> <span class="classifier">object</span></dt>
+<dd>state is None or is an arbitrary object. The state captures
+all the information necessary to continue processing the input
+streams.</dd>
+<dt>call_streams <span class="classifier-delimiter">:</span> <span class="classifier">None or list of Stream</span></dt>
+<dd>If call_streams is None then the program sets it to inputs
+(converting inputs to a list of Stream if necessary).
+This function is called when, and only when any stream in
+call_streams is modified.</dd>
+<dt>window_size <span class="classifier-delimiter">:</span> <span class="classifier">None or int</span></dt>
+<dd>window_size must be a positive integer if f_type is &#8216;window&#8217;
+or &#8216;timed&#8217;. window_size is the size of the moving window on
+which the function operates.</dd>
+<dt>step_size <span class="classifier-delimiter">:</span> <span class="classifier">None or int</span></dt>
+<dd>step_size must be a positive integer if f_type is &#8216;window&#8217;
+or &#8216;timed&#8217;. step_size is the number of steps by which the
+moving window moves on each execution of the function.</dd>
+</dl>
+<dl class="docutils">
+<dt>list of Streams</dt>
+<dd>Function f is applied to the appropriate data structure in
+the input streams to put values in the output streams.
+stream_func returns the output streams.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.timed_agent">
+<code class="descclassname">nested.Operators.</code><code class="descname">timed_agent</code><span class="sig-paren">(</span><em>f</em>, <em>inputs</em>, <em>outputs</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.timed_agent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.timed_func">
+<code class="descclassname">nested.Operators.</code><code class="descname">timed_func</code><span class="sig-paren">(</span><em>f</em>, <em>inputs</em>, <em>num_outputs</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.timed_func" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.window_agent">
+<code class="descclassname">nested.Operators.</code><code class="descname">window_agent</code><span class="sig-paren">(</span><em>f</em>, <em>inputs</em>, <em>outputs</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.window_agent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.Operators.window_func">
+<code class="descclassname">nested.Operators.</code><code class="descname">window_func</code><span class="sig-paren">(</span><em>f</em>, <em>inputs</em>, <em>num_outputs</em>, <em>state</em>, <em>call_streams</em>, <em>window_size</em>, <em>step_size</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Operators.window_func" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+<div class="section" id="module-nested.Stream">
+<span id="nested-stream-module"></span><h2>nested.Stream module<a class="headerlink" href="#module-nested.Stream" title="Permalink to this headline">¶</a></h2>
+<p>This module contains the Stream class. The
+Stream and Agent classes are the building blocks
+of PythonStreams.</p>
+<dl class="class">
+<dt id="nested.Stream.Stream">
+<em class="property">class </em><code class="descclassname">nested.Stream.</code><code class="descname">Stream</code><span class="sig-paren">(</span><em>name='No Name'</em>, <em>proc_name='Unkown Process'</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Stream.Stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>A stream is a sequence of values. Agents can:
+(1) Append values to the tail of stream. 
+(2) Read a stream.
+(3) Subscribe to be notified when a
+value is added to a stream.</p>
+<p>The ONLY way in which a stream can be
+modified is that values can be appended to its
+tail. The length of a stream (number of elements
+in its sequence) can stay the same or increase,
+but never decreases. If at some point, the length
+of a stream is k, then from that point onwards, the
+first k elements of the stream remain unchanged.</p>
+<p>A stream is written by only one agent. Any
+number of agents can read a stream, and any
+number of agents can subscribe to a stream.
+An agent can be a reader and a subscriber and
+a writer of the same stream.</p>
+<p>If agent x is a subscriber to a stream s then
+x.next() &#8212; a state transition of x &#8212; is
+invoked whenever s is modified.</p>
+<p>READING A STREAM
+An agent can read a stream only after it registers
+with the stream as a reader. An agents r registers
+with a stream s by executing s.reader(r).</p>
+<p>After a reader of a stream s reads the first k
+values s, the reader may determine that from that
+point onwards, it will no longer read the
+first j values of the stream for some j where
+j &lt;= k.
+A reader r of a stream s can inform s at a point
+in the computation that from that point onwards
+r will no longer read the first j values of the
+stream, for some j. Stream s uses this information
+to manage its memory.</p>
+<p>Associated with each stream s is a list s.recent
+which consists of the most recent elements of s.
+s.recent is a tailing subsequence (or suffix) of
+s.
+If the value of s is a sequence s[0], ..., s[n-1],
+at a point in a computation then at that point,
+s.recent is a list s[m], .., s[n-1] for some m.</p>
+<p>The length of s.recent is large enough so that at
+each point in a computation, all readers of stream
+s only read elements of s that are in s.recent. 
+Operations on streams are implemented as operations
+on lists. A reader reads a stream s by reading the
+list s.recent.</p>
+<p>Associated with a reader r of stream s is an
+integer s.start[r]. Reader r can only read the slice
+s.recent[s.start[r] : ] of the list recent.
+Reader r informs stream s that it will only
+read values in the list recent with indexes
+greater than or equal to j by calling</p>
+<blockquote>
+<div>s.set_start(r, j)</div></blockquote>
+<p>which causes s.start[r] to be set to j.</p>
+<p>For readers r1 and r2 of a stream s the values
+s.start[r1] and s.start[r2] may be different.</p>
+<p>WRITING A STREAM
+An agent adds elements to a stream s by calling
+s.append(value) or s.extend(value_list); these
+operations are similar to operations on lists.
+s.append(value) appends the single value to the
+tail of the list and s.extend(value_list) extends
+the stream by the sequence of values in the list
+value_list.</p>
+<p>SUBSCRIBE TO BE CALLED WHEN A STREAM IS MODIFIED
+An agent x subscribes to a stream s by executing</p>
+<blockquote>
+<div>s.call(x).</div></blockquote>
+<p>Then, when stream s is modified, s calls x.next(s)
+where next() executes a state-transition.
+An agent x unsubscribe from a stream s by executing</p>
+<blockquote>
+<div>s.delete_caller(x)</div></blockquote>
+<p>CLOSING A STREAM
+A stream can be closed or open (i.e., not closed).
+Initially a stream is open. The agent that writes a
+stream s can close s by executing s.close().
+A closed stream cannot be modified.</p>
+<p>Associated with a stream s is:
+(1) a list, s.recent. 
+(2) a nonnegative integer s.stop  where:</p>
+<blockquote>
+<div>(a) the slice s.recent[:s.stop] contains
+the most recent values of stream s, and
+(b) the slice s.recent[s.stop:] is
+padded with padding values (either 0 or 0.0).</div></blockquote>
+<ol class="arabic" start="3">
+<li><dl class="first docutils">
+<dt>a nonnegative integer s.offset where</dt>
+<dd><dl class="first last docutils">
+<dt>recent[i] = stream[i + offset]</dt>
+<dd><p class="first last">for 0 &lt;= i &lt; s.stop</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</li>
+</ol>
+<p>For example, if the stream s consists of range(950),
+i.e., 0, 1, .., 949, and s.offset is 900, then
+s.recent[i] = s[900+i] for i in range(50).</p>
+<p>Note that the number of entries in stream s is:
+s.offset + s.stop</p>
+<dl class="docutils">
+<dt>name: str (optional)</dt>
+<dd>name of the stream. Though the name is optional
+a named stream helps with debugging.</dd>
+</dl>
+<dl class="docutils">
+<dt>recent: list</dt>
+<dd>A list of the most recent values of the stream.</dd>
+<dt>stop:   index into the list recent.</dt>
+<dd>s.recent[:s.stop] contains the s.stop most recent
+values of stream s.
+s.recent[s.stop:] contains padded values.</dd>
+<dt>offset: index into the stream.</dt>
+<dd>For a stream s:
+s.recent[i] = s[i + offset] for i in range(s.stop)</dd>
+<dt>start: dict of readers.</dt>
+<dd>key = reader
+value = start index of the reader
+Reader r can read the slide recent[start[r] : ]</dd>
+<dt>subscribers_set: set</dt>
+<dd>the set of subscribers for this stream, agents to be notified when an
+element is added to the stream.</dd>
+<dt>closed: boolean</dt>
+<dd>True if and only if the stream is closed.
+A closed stream is not modified.</dd>
+<dt>_buffer_size: nonnegative integer</dt>
+<dd>Used to manage the recent list.</dd>
+<dt>_begin: index into the list recent</dt>
+<dd>recent[_begin:] mqy be read by some reader.
+recent[:_begin] is not being accessed by any reader;
+therefore recent[:_begin] can be safely deleted.</dd>
+</dl>
+<dl class="method">
+<dt id="nested.Stream.Stream.append">
+<code class="descname">append</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Stream.Stream.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append a single value to the end of the
+stream.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nested.Stream.Stream.call">
+<code class="descname">call</code><span class="sig-paren">(</span><em>agent</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Stream.Stream.call" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a subscriber for this stream.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nested.Stream.Stream.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nested.Stream.Stream.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close this stream.&#8221;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nested.Stream.Stream.delete_caller">
+<code class="descname">delete_caller</code><span class="sig-paren">(</span><em>agent</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Stream.Stream.delete_caller" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a subscriber for this stream.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nested.Stream.Stream.delete_reader">
+<code class="descname">delete_reader</code><span class="sig-paren">(</span><em>reader</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Stream.Stream.delete_reader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete this reader from this stream.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nested.Stream.Stream.extend">
+<code class="descname">extend</code><span class="sig-paren">(</span><em>value_list</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Stream.Stream.extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extend the stream by the list of values, value_list.</p>
+<blockquote>
+<div>value_list: list</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="nested.Stream.Stream.print_recent">
+<code class="descname">print_recent</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nested.Stream.Stream.print_recent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="nested.Stream.Stream.reader">
+<code class="descname">reader</code><span class="sig-paren">(</span><em>reader</em>, <em>start=0</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Stream.Stream.reader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a reader.</p>
+<p>The newly registered reader starts reading list recent
+from index start, i.e., reads the slice
+recent[start:s.stop]
+If reader has already been registered with this stream
+its start value is updated to the parameter in the call.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nested.Stream.Stream.set_name">
+<code class="descname">set_name</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Stream.Stream.set_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="nested.Stream.Stream.set_start">
+<code class="descname">set_start</code><span class="sig-paren">(</span><em>reader</em>, <em>start</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Stream.Stream.set_start" title="Permalink to this definition">¶</a></dt>
+<dd><p>The reader tells the stream that it is only accessing
+elements of the list recent with index start or higher.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="nested.Stream.StreamArray">
+<em class="property">class </em><code class="descclassname">nested.Stream.</code><code class="descname">StreamArray</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Stream.StreamArray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nested.Stream.Stream" title="nested.Stream.Stream"><code class="xref py py-class docutils literal"><span class="pre">nested.Stream.Stream</span></code></a></p>
+<dl class="method">
+<dt id="nested.Stream.StreamArray.extend">
+<code class="descname">extend</code><span class="sig-paren">(</span><em>a</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Stream.StreamArray.extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extend the stream by an numpy ndarray.</p>
+<blockquote>
+<div>a: np.ndarray or list</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="nested.Stream.StreamSeries">
+<em class="property">class </em><code class="descclassname">nested.Stream.</code><code class="descname">StreamSeries</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Stream.StreamSeries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nested.Stream.Stream" title="nested.Stream.Stream"><code class="xref py py-class docutils literal"><span class="pre">nested.Stream.Stream</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="nested.Stream.StreamTimed">
+<em class="property">class </em><code class="descclassname">nested.Stream.</code><code class="descname">StreamTimed</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Stream.StreamTimed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nested.Stream.Stream" title="nested.Stream.Stream"><code class="xref py py-class docutils literal"><span class="pre">nested.Stream.Stream</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="nested.Stream.TimeAndValue">
+<em class="property">class </em><code class="descclassname">nested.Stream.</code><code class="descname">TimeAndValue</code><span class="sig-paren">(</span><em>time</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Stream.TimeAndValue" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">tuple</span></code></p>
+<dl class="attribute">
+<dt id="nested.Stream.TimeAndValue.time">
+<code class="descname">time</code><a class="headerlink" href="#nested.Stream.TimeAndValue.time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="nested.Stream.TimeAndValue.value">
+<code class="descname">value</code><a class="headerlink" href="#nested.Stream.TimeAndValue.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-nested.Subgraph">
+<span id="nested-subgraph-module"></span><h2>nested.Subgraph module<a class="headerlink" href="#module-nested.Subgraph" title="Permalink to this headline">¶</a></h2>
+<p>This module handles unwrapping nested subgraphs,
+provided the JSON files of each graph.</p>
+<dl class="function">
+<dt id="nested.Subgraph.make_json">
+<code class="descclassname">nested.Subgraph.</code><code class="descname">make_json</code><span class="sig-paren">(</span><em>json_file_name</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Subgraph.make_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks and converts input JSON file to a JSON file
+in my special format if it&#8217;s not already</p>
+<dl class="docutils">
+<dt>json_file_name <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Path to JSON file to be converted</dd>
+</dl>
+<dl class="docutils">
+<dt>my_json_file_name <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Path to converted JSON file</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="nested.Subgraph.unwrap_subgraph">
+<code class="descclassname">nested.Subgraph.</code><code class="descname">unwrap_subgraph</code><span class="sig-paren">(</span><em>my_json_file_name</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.Subgraph.unwrap_subgraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recursively exposes nested subgraphs to be executed for the animation.</p>
+<dl class="docutils">
+<dt>my_json_file_name <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Path to JSON file of my special format to be converted</dd>
+</dl>
+<dl class="docutils">
+<dt>&#8220;json_file.json&#8221; <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>json_file.json is the name of the file with the
+fully exposed graph</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-nested.SystemParameters">
+<span id="nested-systemparameters-module"></span><h2>nested.SystemParameters module<a class="headerlink" href="#module-nested.SystemParameters" title="Permalink to this headline">¶</a></h2>
+<p>SYSTEM_PARAMETERS</p>
+</div>
+<div class="section" id="module-nested.components">
+<span id="nested-components-module"></span><h2>nested.components module<a class="headerlink" href="#module-nested.components" title="Permalink to this headline">¶</a></h2>
+<p>This module holds all the basic Python functions that
+each component represents.
+Include your own functions here.</p>
+<dl class="function">
+<dt id="nested.components.consecutive_ints">
+<code class="descclassname">nested.components.</code><code class="descname">consecutive_ints</code><span class="sig-paren">(</span><em>state</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.components.consecutive_ints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.components.generate_of_random_integers">
+<code class="descclassname">nested.components.</code><code class="descname">generate_of_random_integers</code><span class="sig-paren">(</span><em>f_args=(100</em>, <em>)</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.components.generate_of_random_integers" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate_of_random_integers() generates
+a random integer</p>
+<dl class="docutils">
+<dt>f_args <span class="classifier-delimiter">:</span> <span class="classifier">tuple</span></dt>
+<dd>First element is the maximum integer generated</dd>
+</dl>
+<dl class="docutils">
+<dt>randint(0, max_integer) <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Integer between 0 and &#8216;max_integer&#8217;</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="nested.components.make_circles">
+<code class="descclassname">nested.components.</code><code class="descname">make_circles</code><span class="sig-paren">(</span><em>curr_num</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.components.make_circles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.components.make_rectangles">
+<code class="descclassname">nested.components.</code><code class="descname">make_rectangles</code><span class="sig-paren">(</span><em>curr_num</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.components.make_rectangles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.components.make_triangles">
+<code class="descclassname">nested.components.</code><code class="descname">make_triangles</code><span class="sig-paren">(</span><em>curr_num</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.components.make_triangles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.components.multiply_elements">
+<code class="descclassname">nested.components.</code><code class="descname">multiply_elements</code><span class="sig-paren">(</span><em>v</em>, <em>f_args</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.components.multiply_elements" title="Permalink to this definition">¶</a></dt>
+<dd><p>multiply_elements() returns the product of
+2 numbers</p>
+<dl class="docutils">
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int/float</span></dt>
+<dd>Number, potentially from a stream</dd>
+<dt>f_args <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>First element is another number.
+Constant parameter.</dd>
+</dl>
+<dl class="docutils">
+<dt>multiplier * v <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>Product</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="nested.components.print_value">
+<code class="descclassname">nested.components.</code><code class="descname">print_value</code><span class="sig-paren">(</span><em>v</em>, <em>index</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.components.print_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>print_value() prints out to console the value it was passed.</p>
+<dl class="docutils">
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">any</span></dt>
+<dd>Value to be printed</dd>
+<dt>index <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Index of the value in the stream</dd>
+</dl>
+<dl class="docutils">
+<dt>index + 1 <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Index of next element to be printed</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="nested.components.show">
+<code class="descclassname">nested.components.</code><code class="descname">show</code><span class="sig-paren">(</span><em>curr_num</em>, <em>stop_num</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.components.show" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nested.components.split">
+<code class="descclassname">nested.components.</code><code class="descname">split</code><span class="sig-paren">(</span><em>m</em>, <em>f_args</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.components.split" title="Permalink to this definition">¶</a></dt>
+<dd><p>split() returns the input number as the
+second value in a 2-element list, where the first value
+is &#8216;_no_value_&#8217; based on whether it&#8217;s a multiple
+of the argument parameter</p>
+<dl class="docutils">
+<dt>m <span class="classifier-delimiter">:</span> <span class="classifier">int/float</span></dt>
+<dd>Number, potentially from a stream</dd>
+<dt>f_args <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>List where 1st element is a number that you&#8217;re
+comparing &#8216;m&#8217; to</dd>
+</dl>
+<dl class="docutils">
+<dt>[_no_value, m] or [m, _no_value] <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>m is sorted into the 1st or 2nd element
+of the list</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="nested.components.split_into_even_odd">
+<code class="descclassname">nested.components.</code><code class="descname">split_into_even_odd</code><span class="sig-paren">(</span><em>m</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.components.split_into_even_odd" title="Permalink to this definition">¶</a></dt>
+<dd><p>split_into_even_off() returns an even number as the
+second value in a 2-element list, where the first value
+is &#8216;_no_value_&#8217; (vice versa for odd numbers).</p>
+<dl class="docutils">
+<dt>m <span class="classifier-delimiter">:</span> <span class="classifier">int/float</span></dt>
+<dd>Number, potentially from a stream</dd>
+</dl>
+<dl class="docutils">
+<dt>[_no_value, m] or [m, _no_value] <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>m is sorted into the 1st or 2nd element
+of the list based on its parity</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-nested.helper">
+<span id="nested-helper-module"></span><h2>nested.helper module<a class="headerlink" href="#module-nested.helper" title="Permalink to this headline">¶</a></h2>
+<p>Helper functions that aid in renaming streams and components
+and creating data structures that we need to convert from
+the Flowhub UI&#8217;s JSON to my special JSON.</p>
+<dl class="function">
+<dt id="nested.helper.cast">
+<code class="descclassname">nested.helper.</code><code class="descname">cast</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.helper.cast" title="Permalink to this definition">¶</a></dt>
+<dd><p>cast() automatically converts a str to the
+object type associated with its value
+(float, int or str)</p>
+<dl class="docutils">
+<dt>s <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>String of possibly a number</dd>
+</dl>
+<dl class="docutils">
+<dt>s <span class="classifier-delimiter">:</span> <span class="classifier">int/float/str</span></dt>
+<dd>Same thing as input arg but as the appropriate
+object type</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="nested.helper.clean_id">
+<code class="descclassname">nested.helper.</code><code class="descname">clean_id</code><span class="sig-paren">(</span><em>component</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.helper.clean_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>clean_id() splits and returns the component name with id
+in two strings</p>
+<dl class="docutils">
+<dt>component <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Component names with random id</dd>
+</dl>
+<dl class="docutils">
+<dt>label <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Plain component name with no id</dd>
+<dt>cid <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>The id that was appended to the component</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="nested.helper.make_comp_list">
+<code class="descclassname">nested.helper.</code><code class="descname">make_comp_list</code><span class="sig-paren">(</span><em>instance_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.helper.make_comp_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>make_comp_list() creates a dict used for replacing
+the random 4 or 5 char id associated with each
+instance of a component with a shorter integer in
+name_with_new_id()</p>
+<dl class="docutils">
+<dt>instance_dict <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd>Component names with random id&#8217;s paired with
+dict of it&#8217;s &#8216;in&#8217; and &#8216;out&#8217; ports</dd>
+</dl>
+<dl class="docutils">
+<dt>comp_list <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd>Plain component name paired with list of id&#8217;s
+associated with it</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="nested.helper.make_instance_dict">
+<code class="descclassname">nested.helper.</code><code class="descname">make_instance_dict</code><span class="sig-paren">(</span><em>data</em>, <em>instances</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.helper.make_instance_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>make_instance_dict() makes a dict of component names with id
+paired with a dict of streams that go in and out of that
+component instance
+Eg. {component: {&#8216;in&#8217;: [in_stream], &#8216;out&#8217;: [out_stream]}}</p>
+<dl class="docutils">
+<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd>Dict created from a Flowhub UI generated JSON file
+with the key &#8216;connections&#8217;</dd>
+<dt>instances <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>List of each unique component-with-id name</dd>
+</dl>
+<dl class="docutils">
+<dt>instance_dict <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd>Dict of each unique component-with-id with a
+dict of in and out streams</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="nested.helper.name_with_new_id">
+<code class="descclassname">nested.helper.</code><code class="descname">name_with_new_id</code><span class="sig-paren">(</span><em>comp_list</em>, <em>name</em>, <em>id</em><span class="sig-paren">)</span><a class="headerlink" href="#nested.helper.name_with_new_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>name_with_new_id() replaces a component name,
+if there are multiple instances of it,
+with the random id with an integer (1, 2, 3,...)
+based on the index of the random id in
+comp_list.</p>
+<dl class="docutils">
+<dt>comp_list <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd>Dict of each component name paired with
+list of id&#8217;s associated with it</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Plain component name</dd>
+<dt>id: str</dt>
+<dd>Random id attached to component name</dd>
+</dl>
+<dl class="docutils">
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Component name appended with new integer id</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+<div class="section" id="nested-run-module">
+<h2>nested.run module<a class="headerlink" href="#nested-run-module" title="Permalink to this headline">¶</a></h2>
+</div>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">nested package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-nested.Agent">nested.Agent module</a></li>
+<li><a class="reference internal" href="#module-nested.Animation">nested.Animation module</a></li>
+<li><a class="reference internal" href="#module-nested.MakeNetwork">nested.MakeNetwork module</a></li>
+<li><a class="reference internal" href="#module-nested.Operators">nested.Operators module</a></li>
+<li><a class="reference internal" href="#module-nested.Stream">nested.Stream module</a></li>
+<li><a class="reference internal" href="#module-nested.Subgraph">nested.Subgraph module</a></li>
+<li><a class="reference internal" href="#module-nested.SystemParameters">nested.SystemParameters module</a></li>
+<li><a class="reference internal" href="#module-nested.components">nested.components module</a></li>
+<li><a class="reference internal" href="#module-nested.helper">nested.helper module</a></li>
+<li><a class="reference internal" href="#nested-run-module">nested.run module</a></li>
+<li><a class="reference internal" href="#module-nested">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="sources/nested.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, K. Mani Chandy, Ker Lee Yap.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="sources/nested.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

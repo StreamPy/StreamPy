@@ -1,0 +1,91 @@
+{
+    "properties": {
+        "name": "SplitEvenOdd",
+        "project": "demo",
+        "id": "demo/SplitEvenOdd",
+        "environment": {
+            "type": "noflo-browser"
+        },
+        "changed": true
+    },
+    "inports": {},
+    "outports": {},
+    "groups": [],
+    "processes": {
+        "demo/generate_stream_of_random_integers_i6ez0": {
+            "component": "demo/generate_stream_of_random_integers",
+            "metadata": {
+                "label": "demo/generate_stream_of_random_integers",
+                "x": 180,
+                "y": 216,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "demo/split_into_even_odd_stream_5ihh3": {
+            "component": "demo/split_into_even_odd_stream",
+            "metadata": {
+                "label": "demo/split_into_even_odd_stream",
+                "x": 396,
+                "y": 180,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "demo/print_value_stream_3ku4m": {
+            "component": "demo/print_value_stream",
+            "metadata": {
+                "label": "demo/print_value_stream",
+                "x": 648,
+                "y": 144,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "demo/print_value_stream_j5cwr": {
+            "component": "demo/print_value_stream",
+            "metadata": {
+                "label": "demo/print_value_stream",
+                "x": 684,
+                "y": 252,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "connections": [
+        {
+            "src": {
+                "process": "demo/generate_stream_of_random_integers_i6ez0",
+                "port": "output"
+            },
+            "tgt": {
+                "process": "demo/split_into_even_odd_stream_5ihh3",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "demo/split_into_even_odd_stream_5ihh3",
+                "port": "even"
+            },
+            "tgt": {
+                "process": "demo/print_value_stream_3ku4m",
+                "port": "input"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "demo/split_into_even_odd_stream_5ihh3",
+                "port": "odd"
+            },
+            "tgt": {
+                "process": "demo/print_value_stream_j5cwr",
+                "port": "input"
+            },
+            "metadata": {}
+        }
+    ]
+}

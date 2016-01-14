@@ -1,0 +1,74 @@
+{
+    "properties": {
+        "name": "subgraphinnerinner",
+        "project": "noflo-customname",
+        "id": "noflo-customname/subgraphinnerinner",
+        "environment": {
+            "type": "noflo-browser"
+        },
+        "changed": true
+    },
+    "inports": {
+        "multiply_elements_stream_in": {
+            "process": "customname/multiply_elements_stream_jqmq1",
+            "port": "in",
+            "metadata": {
+                "x": 396,
+                "y": 288,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "outports": {},
+    "groups": [],
+    "processes": {
+        "customname/multiply_elements_stream_jqmq1": {
+            "component": "customname/multiply_elements_stream",
+            "metadata": {
+                "label": "customname/multiply_elements_stream",
+                "x": 612,
+                "y": 324,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "customname/print_value_stream_v0aky": {
+            "component": "customname/print_value_stream",
+            "metadata": {
+                "label": "customname/print_value_stream",
+                "x": 720,
+                "y": 324,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "connections": [
+        {
+            "src": {
+                "process": "customname/multiply_elements_stream_jqmq1",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "customname/print_value_stream_v0aky",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "data": "0",
+            "tgt": {
+                "process": "customname/print_value_stream_v0aky",
+                "port": "state"
+            }
+        },
+        {
+            "data": "1",
+            "tgt": {
+                "process": "customname/multiply_elements_stream_jqmq1",
+                "port": "multiplier"
+            }
+        }
+    ]
+}

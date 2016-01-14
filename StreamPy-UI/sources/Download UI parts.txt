@@ -1,0 +1,37 @@
+.. _download_ui:
+Download UI parts
+==================
+
+Get started with Github and Flowhub to use the graph-maker. These graphs will turn into a Python program!
+
+Get our special pre-made components for your graph
+---------------------------------------------------
+#. Go to https://github.com/
+
+#. Sign up for a Github account or log in
+
+#. Copy the files over to your account by going to https://github.com/klyap/StreamPy-UI-components and clicking “Fork” in the top right corner
+
+#. Check that it’s in your account by going to https://github.com/YOURUSERNAME?tab=repositories, where ``YOURUSERNAME`` is your Github username.
+
+
+.. _setup-flowhub:
+
+Set up your Flowhub workspace
+—-------------------------------
+
+#. Go to https://app.flowhub.io/
+
+#. Sign up for an account
+
+#. Import the special pre-made components that you forked onto your Github account by clicking on ‘Github’, then ‘Add a repository’. Enter in the repository name, where ``YOURUSERNAME`` is your Github username:
+	``YOURUSERNAME/StreamPy-UI-components``
+    .. figure::  _static/get_github_repo.jpg
+       :align:   center
+
+#. Grab a local copy of the repository by clicking on the cloud next to the repository’s name.
+
+#. Go to ‘On device’. Your repository should be there, ready for use!
+
+
+Next: :doc:`Use these components in your drag-and-drop graph! </Make graph>`

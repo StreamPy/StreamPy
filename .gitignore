@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 # Compiled files
 *.pyc
 
 # OS X Metadata
+=======
+*.pyc
+>>>>>>> stream/master
 .DS_Store

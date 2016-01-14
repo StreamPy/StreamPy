@@ -1,0 +1,90 @@
+{
+    "properties": {
+        "name": "subgraphdebug",
+        "project": "noflo-customname",
+        "id": "noflo-customname/subgraphdebug",
+        "environment": {
+            "type": "noflo-browser"
+        },
+        "changed": true
+    },
+    "inports": {},
+    "outports": {},
+    "groups": [],
+    "processes": {
+        "customname/generate_stream_of_random_integers_bxhmp": {
+            "component": "customname/generate_stream_of_random_integers",
+            "metadata": {
+                "label": "customname/generate_stream_of_random_integers",
+                "x": 324,
+                "y": 216,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "customname/print_value_stream_mdd4n": {
+            "component": "customname/print_value_stream",
+            "metadata": {
+                "label": "customname/print_value_stream",
+                "x": 1044,
+                "y": 288,
+                "width": 72,
+                "height": 72
+            }
+        },
+        "customname/subsubgraphdebug_m258": {
+            "component": "customname/subsubgraphdebug",
+            "metadata": {
+                "label": "customname/subsubgraphdebug",
+                "x": 720,
+                "y": 180,
+                "width": 72,
+                "height": 72
+            }
+        }
+    },
+    "connections": [
+        {
+            "src": {
+                "process": "customname/generate_stream_of_random_integers_bxhmp",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "customname/subsubgraphdebug_m258",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "src": {
+                "process": "customname/generate_stream_of_random_integers_bxhmp",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "customname/subsubgraphdebug_m258",
+                "port": "in1"
+            },
+            "metadata": {
+                "route": 0
+            }
+        },
+        {
+            "src": {
+                "process": "customname/subsubgraphdebug_m258",
+                "port": "out"
+            },
+            "tgt": {
+                "process": "customname/print_value_stream_mdd4n",
+                "port": "in"
+            },
+            "metadata": {}
+        },
+        {
+            "data": "0",
+            "tgt": {
+                "process": "customname/print_value_stream_mdd4n",
+                "port": "state"
+            }
+        }
+    ]
+}

@@ -260,9 +260,75 @@ print_stream(extent_of_w)
 w.extend([random.random() for _ in range(N)])
 
 
+<<<<<<< HEAD
 #----------
 #STATEFUL
 #----------
+=======
+#_____________________________________________________
+# EXAMPLE 5. LINEAR COMBINATION OF WINDOW ELEMENTS
+#_____________________________________________________
+
+# SPECIFICATION:
+# Write a function combine_window that has two parameters:
+# (1) a single input stream and
+# (2) weights: a list of nonnegative floats that sum to 1.0
+#              where the length of the list is one more than
+#              the length of the window
+# The function returns a stream whose elements are the weights
+# multipled by the window values.
+# Example: window_size is 2. weights=[0.2, 0.3, 0.5]
+# input_stream = [1, 4, 8, 10, 2,......]
+# output_stream = [(1*0.2 + 4*0.3 + 8*0.5),
+#                  (4*0.2, 8*0.3, 10*0.5),
+#                  (8*0.2, 10*0.3, 2*0.5)
+
+# HOW TO DEVELOP THE STREAMING PROGRAM.
+
+# First step:
+# Write a function dot_product_window_with_weights
+# with a single parameter, window_list, which is a
+# list. The function has access to weights which is
+# defined outside the function.
+#
+
+# Second step:
+# Wrap the function using the wrapper, stream_func.
+def combine_windows(input_stream, weights):
+    
+    def dot_product_window_with_weights(window_list):
+        assert len(window_list) == len(weights)
+        return np.dot(window_list, weights)
+    
+    return stream_func(
+        inputs=input_stream, # A single stream
+        f_type='window', # Identifies 'window' wrapper
+        f=dot_product_window_with_weights,
+        num_outputs=1, # Returns a single stream
+        window_size=len(weights),
+        step_size=1 # The window always moves by 1
+        )
+        
+# The input stream for this example is ww
+ww = Stream('ww')
+# The output stream is uu
+uu = combine_windows(input_stream=ww, weights=[0.2, 0.8])
+uu.set_name('Combine_windows_ww')
+print_stream(uu)
+print_stream(ww)
+
+# Drive the example.
+# Add values to stream w.
+ww.extend([10, 5, 25, 20, 40, 5])
+
+
+
+#-----------------------------------------------------
+#-----------------------------------------------------
+#STATEFUL
+#-----------------------------------------------------
+#-----------------------------------------------------
+>>>>>>> stream/master
 
 #_____________________________________________________
 # EXAMPLE 1. MEAN (INCREMENTAL) OF SLIDING WINDOW
