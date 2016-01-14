@@ -31,6 +31,8 @@ class Node():
         self.processPorts[process.id] = self.next_available_port + process.id
 
         self.processes[process.id].start(self.host, self.processPorts[process.id], self.processInputQueues[process.id], self.processCommandQueues[process.id], self)
+        url = "http://{0}:{1}/processes/ready".format(self.masterConn[0], self.masterConn[1])
+        requests.post(url, data=process.id)
 
     def set_master(self, host, port):
         self.masterConn = (host, port)

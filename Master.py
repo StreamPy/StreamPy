@@ -10,6 +10,7 @@ class Master():
     def __init__(self, processes, conns, port, host=None, debug=False):
         self.processes = processes
         self.conns = conns
+        self.processesReady = []
         if host is None:
             if debug:
                 self.host = 'localhost'
@@ -27,6 +28,8 @@ class Master():
         self.initServer()
         self.initializeConnections()
         self.initializeProcesses()
+        while len(self.processes) != len(self.processesReady):
+            pass
         self.startProcesses()
 
     def initializeConnections(self):
@@ -39,6 +42,9 @@ class Master():
         for process in self.processes:
             url = "http://{0}:{1}/processes".format(self.processConns[process.id][0], self.processConns[process.id][1])
             requests.post(url, data=dill.dumps(process))
+
+    def processReady(self, id):
+        self.processesReady.append(id)
 
     def startProcesses(self):
         for conn in self.conns:
