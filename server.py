@@ -6,6 +6,7 @@ import logging
 
 def create_server(host, port, queue, finished_execution):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
     try:
         s.bind((host, port))
@@ -32,7 +33,7 @@ def create_server(host, port, queue, finished_execution):
         conn, addr = s.accept()
         logging.info("Server {0}:{1} connected with {2}:{3} \n".format(host, port, addr[0], addr[1]))
         thread.start_new_thread(clientthread, (conn,))
-
+    s.shutdown()
     s.close()
 
 

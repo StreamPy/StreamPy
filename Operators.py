@@ -56,7 +56,7 @@ def assert_is_list_of_lists(x, list_size=None):
       'Expected {0} to be a list (or tuple) or np.ndarray of lists'.format(x)
     assert list_size is None or list_size == len(x), \
       'Expected len({0}) == {1}, or {1} to be None'.format(x, list_size)
-
+    
 def assert_is_list_or_None(x):
     assert isinstance(x, list) or x is None, \
       'Expected {0} to be a list or None'.format(x)
@@ -94,10 +94,10 @@ def remove_novalue_and_open_multivalue(l):
            [0, 1, 10, 20, 30]
 
     """
-
+    
     if not isinstance(l, list):
         return l
-
+    
     return_list = []
     for v in l:
         if v == _no_value:
@@ -219,7 +219,7 @@ def list_func(f, inputs, num_outputs, state, call_streams,
 ####################################################
 def element_agent(f, inputs, outputs, state, call_streams,
                  window_size, step_size):
-
+    
     assert_is_list_of_streams_or_None(call_streams)
     num_outputs = len(outputs)
 
@@ -302,7 +302,7 @@ def window_agent(f, inputs, outputs, state, call_streams,
             return (output_lists, state, window_starts)
 
         # Each input stream has enough elements for a window operation.
-
+        
         # num_steps is the number of window operations that can be
         # carried out with the given numbers of unprocessed elements
         # in the input streams.
@@ -322,7 +322,7 @@ def window_agent(f, inputs, outputs, state, call_streams,
                 increments = f(windows)
             else:
                 increments, state = f(windows, state)
-
+                
             # Remove _no_value and open up _multivalue elements in
             # each [increments[k]].
             # For example, _multivalue([11, 5, 9]) object will be
@@ -372,7 +372,7 @@ def dynamic_window_agent(f, input_stream, output_stream, state,
 
     # This function produces a single output stream.
     num_outputs = 1
-
+    
     def transition(in_lists, state):
         current_window_size = state[0]
         steady_state = state[1]
@@ -451,7 +451,7 @@ def dynamic_window_agent(f, input_stream, output_stream, state,
                 ## reset_increment += start_increment
                 ## reset_increment += max(0, current_window_size - min_window_size)
                 ## start_increment = 0
-
+            
             if not steady_state:
                 # The start increment does not change because
                 # the starting point of the window remains
@@ -472,7 +472,7 @@ def dynamic_window_agent(f, input_stream, output_stream, state,
                 current_window_size = max_window_size
 
             # Deal with special objects that should not be placed
-            # on the output stream.
+            # on the output stream. 
             output_increment = remove_novalue_and_open_multivalue(
                 [output_increment])
             # Place the output increment on the output list.
@@ -495,7 +495,7 @@ def dynamic_window_agent(f, input_stream, output_stream, state,
     # Create agent
     Agent([input_stream], [output_stream], transition, state)
 
-
+        
 
 def dynamic_window_func(f, inputs, state,
                 min_window_size, max_window_size, step_size):
@@ -513,8 +513,8 @@ def dynamic_window_func(f, inputs, state,
 def list_index_for_timestamp(in_list, start_index, timestamp):
     """ A helper function for timed operators.
     The basic idea is to return the earliest index in
-    in_list.list[start_index:in_list.stop] with a time field
-    that is greater than or equal to timestamp. If no such index
+    in_list.list[start_index:in_list.stop] with a time field  
+    that is greater than or equal to timestamp. If no such index 
     exists then return a negative number.
 
     Parameters
@@ -536,7 +536,7 @@ def list_index_for_timestamp(in_list, start_index, timestamp):
         or
         in_list.list[i-2].time < timestamp <= in_list.list[i-1].time
         )
-
+        
         )
     or: 'NO TIME WINDOW IN IN_LIST'
         i < 0 (negative i indicates no time window) and
@@ -560,13 +560,13 @@ def list_index_for_timestamp(in_list, start_index, timestamp):
         raise Exception('start_index out of range: start_index =', start_index,
                         ' in_list.start = ', in_list.start,
                         ' in_list.stop = ', in_list.stop)
-
+    
     for i in range(start_index, in_list.stop):
         # assert i <= in_list.stop-1
         if in_list.list[i].time >= timestamp:
             # Found an index i with a sufficiently large time.
             return i
-
+        
     # All the times in in_list up to in_list.stop are less
     # than timestamp.
     # assert in_list.list[in_list.stop - 1] < timestamp
@@ -609,7 +609,7 @@ def timed_agent(f, inputs, outputs, state, call_streams,
         # The while loop breaks when the next time window does
         # not span all input streams, i.e. when the time stamps
         # for some input stream aren't greater than or equal
-        # to the end-time of the time window.
+        # to the end-time of the time window.  
         while True:
             # window_end_indexes is a list whose j-th
             # element is either:
@@ -655,7 +655,7 @@ def timed_agent(f, inputs, outputs, state, call_streams,
             # The output list for each output stream contains TimeAndValue objects.
             # The time field associated with increments[k] for all k is the
             # window end time; so, all the messages on all the output streams
-            # associated with this input time-window have the same time-value.
+            # associated with this input time-window have the same time-value. 
             for k in range_out:
                 output_lists[k].append(TimeAndValue(window_end_time, increments[k]))
 
@@ -723,7 +723,7 @@ def asynch_element_agent(
         for _ in range(num_outputs):
             output_lists.append([])
         # If the input data is empty, i.e., if v.stop == v.start for all
-        # v in in_lists, then return empty lists for  each output stream,
+        # v in in_lists, then return empty lists for  each output stream, 
         # and leave the state and the starting point for each input
         # stream unchanged.
         if all(v.stop <= v.start for v in in_lists):
@@ -757,7 +757,7 @@ def asynch_element_agent(
                         # This function has state.
                         output_lists_increment, state = \
                           f((element, stream_number), state)
-
+                    
                     assert len(output_lists_increment) == num_outputs
                     for k in range(num_outputs):
                         # first remove _no_value and open up _multivalue
@@ -765,7 +765,7 @@ def asynch_element_agent(
                           remove_novalue_and_open_multivalue(
                               [output_lists_increment[k]])
                         output_lists[k].extend(output_lists_increment[k])
-
+                    
         return (output_lists, state, [v.stop for v in in_lists])
 
     # Create agent
@@ -775,7 +775,7 @@ def asynch_element_agent(
 def asynch_element_func(
         f, inputs, num_outputs, state, call_streams=None,
         window_size=None, step_size=None):
-
+    
     assert_is_list_of_streams_or_None(call_streams)
 
     def transition(in_lists, state):
@@ -786,7 +786,7 @@ def asynch_element_func(
             return ([[]]*num_outputs, state, [v.start for v in in_lists])
 
         # Assert at least one input stream has unprocessed data.
-
+        
         # output_lists[j] will be sent on output stream j
         output_lists = []
         for _ in range(num_outputs):
@@ -815,10 +815,10 @@ def asynch_element_func(
                           remove_novalue_and_open_multivalue(
                               [output_lists_increment[k]])
                         output_lists[k].extend(output_lists_increment[k])
-
+                        
         return (output_lists, state, [v.stop for v in in_lists])
 
-
+    
     # Create agent
     output_streams = [Stream() for i in range(num_outputs)]
     Agent(inputs, output_streams, transition, state, call_streams)
@@ -945,7 +945,7 @@ def merge_agent(f_type, f, in_streams, out_stream,
     h_agent(f_type, g, in_streams, [out_stream],
             state, call_streams, window_size, step_size)
 
-
+    
 def split(f_type, f, in_stream, num_outputs,
           state, call_streams, window_size, step_size):
     def g(x, state=None):
@@ -1119,7 +1119,7 @@ def stream_func(inputs, f_type, f, num_outputs, state=None, call_streams=None,
     if num_outputs < 0:
         raise ValueError('Expected num_outputs to be nonnegative, not:',
                          num_outputs)
-
+    
     if not((inputs is None) or
            (isinstance(inputs, Stream) or isinstance(inputs, StreamArray) or
            ((isinstance(inputs, list) and
@@ -1143,10 +1143,10 @@ def stream_func(inputs, f_type, f, num_outputs, state=None, call_streams=None,
         if len(call_streams) < 1:
             raise TypeError('Expected call_streams to be a nonempty list of streams, not:',
                         call_streams)
-
+    
         if num_outputs == 0:
             raise TypeError('The function has no input or output streams.')
-
+    
         elif num_outputs == 1:
             # No inputs. Single output stream.
             return single_output_source(f_type, f, num_outputs,
@@ -1226,7 +1226,7 @@ def stream_agent(inputs, outputs, f_type, f,
     -------
     None
     """
-
+    
     # Check types of parameters
     if not((outputs is None) or
            (isinstance(outputs, Stream) or
@@ -1266,10 +1266,10 @@ def stream_agent(inputs, outputs, f_type, f,
         if len(call_streams) < 1:
             raise TypeError('Expected call_streams to be a nonempty list of streams, not:',
                         call_streams)
-
+    
         if num_outputs == 0:
             raise TypeError('The function has no input or output streams.')
-
+    
         elif num_outputs == 1:
             # No inputs. Single output stream.
             return single_output_source_agent(
@@ -1315,11 +1315,11 @@ def main():
         return [v*v for v in l]
     def sums(v, state):
         return (v+state, v+state)
-
+    
     def sums_asynch(v_and_i, state):
         v, i = v_and_i
         return (v+state, v+state)
-
+    
     def max_min(v_and_i, state):
         max_so_far, min_so_far = state
         v, i = v_and_i
@@ -1367,3 +1367,8 @@ def main():
 
 if __name__ == '__main__':
     main()
+    
+
+
+
+
