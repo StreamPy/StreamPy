@@ -1,0 +1,22 @@
+{"processes":{
+    "process_0": {
+        "input_stream_names":[],
+        "output_stream_names": ["random_ints_stream"],
+        "output_process_list": [["process_1"]],
+        "name": "process_0",
+        "function_name": "random_ints"
+    },
+    "process_1": {
+        "input_stream_names": ["random_ints_stream"],
+        "output_stream_names": ["func_stream"],
+        "function_name": "apply_func_agent",
+        "name": "process_1",
+        "output_process_list": [["process_2"]]
+    },
+    "process_2": {"input_stream_names": ["func_stream"],
+        "output_stream_names": [],
+        "output_process_list": [],
+        "name": "process_2",
+        "function_name": "print_agent"
+    }
+}}
