@@ -12,7 +12,7 @@ def get_process(id):
 @route('/processes/ready', method='POST')
 def process_ready():
     data = request.body.read()
-    master.processReady(data)
+    master.processReady(int(data))
 """
 @route('/processes', method='POST')
 def put_process():
