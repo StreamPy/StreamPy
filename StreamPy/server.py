@@ -24,8 +24,13 @@ def create_server(host, port, queue, finished_execution):
             data = conn.recv(1024)
             if not data:
                 break
-            logging.info("Server {0}:{1} received {2} from {3}:{4}".format(host, port, data, client_name[0], client_name[1]))
-            queue.put(data)
+            messages = data.split(";")
+            print messages
+
+            for message in messages:
+                if len(message) > 0:
+                    logging.info("Server {0}:{1} received {2} from {3}:{4}".format(host, port, message, client_name[0], client_name[1]))
+                    queue.put(message)
         conn.close()
 
 

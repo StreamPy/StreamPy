@@ -47,6 +47,9 @@ class AgentProcess():
 
         self.make_output_manager()
         self.make_input_manager()
+        for id in self.process_conns:
+            self.process_conns[id].close()
+            print "Deleted socket for process {0}".format(id)
         self.node.remove_process(self.id)
 
     def runCommands(self):
@@ -135,9 +138,9 @@ class AgentProcess():
             stream_name, message_content = message
             # Get the input_stream to which the message must
             # be appended.
-            print stream_name, self.id
+            # print stream_name, self.id
             input_stream = self.map_name_to_input_stream[stream_name]
-            print stream_name, input_stream, self.id
+            # print stream_name, input_stream, self.id
             # Message arrived for a closed stream. Error!
             if input_stream.closed:
                 logging.warning('inserting values into a closed stream!')
@@ -150,7 +153,7 @@ class AgentProcess():
             # serialized.
             if message_content == '_close':
                 message_content = _close
-            print "Appending message to stream"
+            # print "Appending message to stream"
             input_stream.append(message_content)
 
             # Terminate execution of the input manager when all its
@@ -234,11 +237,11 @@ class AgentProcess():
             for process_id in receiver_process_list:
                 if process_id not in self.process_conns:
                     self.process_conns[process_id] = self.node.create_process_conn(process_id)
-                print "Process {0} sending message {1} to process {2}".format(self.id, message, process_id)
-                self.process_conns[process_id].send(message)
-                self.process_conns[process_id].close()
-                del self.process_conns[process_id]
-                print "Success!"
+                # print "Process {0} sending message {1} to process {2}".format(self.id, message, process_id)
+                self.process_conns[process_id].send(message + ";")
+                # self.process_conns[process_id].close()
+                # del self.process_conns[process_id]
+                # print "Success!"
 
             return _no_value
 
