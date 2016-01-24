@@ -24,4 +24,6 @@ def run_server(m):
     global master
     master = m
     # run(host='localhost', port=m.port, debug=True)
-    threading.Thread(target=run, kwargs=dict(host=m.host, port=m.port)).start()
+    server_thread = threading.Thread(target=run, kwargs=dict(host=m.host, port=m.port))
+    server_thread.daemon = True
+    server_thread.start()

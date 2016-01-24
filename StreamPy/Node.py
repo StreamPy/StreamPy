@@ -2,6 +2,7 @@ import requests
 import time
 from multiprocessing import Queue
 import socket
+import time
 
 from NodeServer import run_server
 
@@ -23,6 +24,8 @@ class Node():
             self.host = host
 
         self.initServer()
+        while True:
+            time.sleep(0.1)
 
     def add_process(self, process):
         self.processes[process.id] = process

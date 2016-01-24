@@ -1,6 +1,7 @@
 import dill
 import requests
 import socket
+import time
 
 from MasterServer import run_server
 
@@ -31,6 +32,8 @@ class Master():
         while len(self.processes) != len(self.processesReady):
             pass
         self.startProcesses()
+        while True:
+            time.sleep(0.1)
 
     def initializeConnections(self):
         conf = self.host + ", " + str(self.port)
