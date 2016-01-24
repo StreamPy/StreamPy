@@ -15,8 +15,9 @@ logging.basicConfig(filename="make_process_log.log", filemode='w', level=logging
 
 class AgentProcess():
 
-    def __init__(self, id, input_stream_names, output_stream_names, func, output_process_list):
+    def __init__(self, id, name, input_stream_names, output_stream_names, func, output_process_list):
         self.id = id
+        self.name = name
         self.input_stream_names = input_stream_names
         self.output_stream_names = output_stream_names
         self.func = func

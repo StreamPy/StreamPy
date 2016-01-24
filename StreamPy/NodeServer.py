@@ -18,6 +18,7 @@ def put_conf():
 def get_process(id):
     print "GET on node server to get process port"
     print "process: " + id
+    print "process name: {0}".format(node.processes[int(id)].name)
     print "port: " + str(node.get_process_port(int(id)))
     return str(node.get_process_port(int(id)))
 
@@ -26,7 +27,7 @@ def get_process(id):
 def put_process():
     process = dill.loads(request.body.read())
     node.add_process(process)
-    print "POST on node server to add process {0}".format(process.id)
+    print "POST on node server to add process {0} with name {1}".format(process.id, process.name)
 
 @route('/start', method='POST')
 def start():

@@ -21,6 +21,8 @@ def createProcesses(processes):
     for name in processes.keys():
         ids[name] = lastUsedId
         lastUsedId += 1
+    import pdb; pdb.set_trace()
+
     # Create processes
     for name in processes.keys():
         process = processes[name]
@@ -34,7 +36,7 @@ def createProcesses(processes):
             for process_name in process_list:
                 process_id_list.append(ids[process_name])
             output_process_list.append(process_id_list)
-        agentProcess = AgentProcess(id=id, input_stream_names=input_stream_names,
+        agentProcess = AgentProcess(id=id, name=name, input_stream_names=input_stream_names,
                                     output_stream_names=output_stream_names,
                                     func=func,
                                     output_process_list=output_process_list)

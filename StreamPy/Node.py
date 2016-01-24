@@ -41,8 +41,8 @@ class Node():
         del self.processPorts[id]
         del self.processInputQueues[id]
         del self.processCommandQueues[id]
-        del self.processes[id]
         print "Deleted process {0}".format(id)
+        del self.processes[id]
 
     def set_master(self, host, port):
         self.masterConn = (host, port)
