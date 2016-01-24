@@ -37,6 +37,13 @@ class Node():
         url = "http://{0}:{1}/processes/ready".format(self.masterConn[0], self.masterConn[1])
         requests.post(url, data=str(process.id))
 
+    def remove_process(self, id):
+        del self.processPorts[id]
+        del self.processInputQueues[id]
+        del self.processCommandQueues[id]
+        del self.processes[id]
+        print "Deleted process {0}".format(id)
+
     def set_master(self, host, port):
         self.masterConn = (host, port)
 

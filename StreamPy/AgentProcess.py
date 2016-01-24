@@ -47,6 +47,7 @@ class AgentProcess():
 
         self.make_output_manager()
         self.make_input_manager()
+        self.node.remove_process(self.id)
 
     def runCommands(self):
         while True:
