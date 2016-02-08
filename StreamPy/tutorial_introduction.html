@@ -42,14 +42,8 @@ list that begins with [3, 5].  For example, at a later point in time
 the stream can be [3, 5], or [3, 5, 2], or [3, 5, 2, 6], but not [3,
 4] or [1, 5, 2].  </p>
 
-<p> Values in a stream may get out of order due to congestion in
-communication networks or other reasons. Once a value is in a stream,
-however, the value and its position in the stream do not change. An
-incorrect value, or a value that is out of order, is corrected by
-sending later correction values along the stream. </p>
-
-<p>For the time being, we restrict attention to Python streams. A
-stream is an instance of the class <b>Stream</b>. Values are
+<p>For the time being, we restrict attention to streams implemented in
+Python. A stream is an instance of the class <b>Stream</b>. Values are
 appended to a stream in exactly the same way as values are appended to
 a list, i.e., by using <i>append</i> to append a single value and
 <i>extend</i> to extend the list by a list of values.<p>
@@ -59,22 +53,18 @@ a list, i.e., by using <i>append</i> to append a single value and
 href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/Stream.py">Stream
 class</a> later.</p>
 
-<h1>Sources of streams</h1> A <b>source</b> is a function that appends
-values to a stream without reading other streams. <code> s.append(v)
+<h1>Appending values to streams</h1> <code> s.append(v)
 </code> appends <code>v</code> to a stream <code>s</code> and <code>
 s.extend(lst) </code> extends <code>s</code> by a list
 <code>lst</code>.  </p>
 
 <p> The following code appends j to stream <code>x</code> every 0.5
 seconds for j in <code>range(10)</code>.
-
 <div class="boxed">
-<pre> <code>
-for j in range(10):
+<pre> <code>for j in range(10):
     x.append(j)
-    time.sleep(0.5)
-  </code> </pre>
-</div>
+    time.sleep(0.5)</code> </pre></div>
+</p>
 
 <h2>Examples</h2>
 
@@ -96,10 +86,7 @@ values unbounded and the computation never stops.  </p>
 <p>The example illustrates that the statements for appending to a list
 and appending to a stream are identical. Appending values to a list
 forever causes memory overflow whereas appending values to a stream
-does not. Earlier values of a stream that are no longer accessed are
-stored in secondary storage or discarded so that the amount of main
-memory occupied by a stream is bounded. Stream implementation is
-discussed later.</p>
+does not. Stream implementation is discussed later.</p>
 
 <p>Note: <i>source_stream.py</i> executes forever because
 <code>number_of_values</code> is set to -1 in one of the cases. Use
@@ -108,102 +95,74 @@ the command line (Control-C) to stop execution in this case. Or change
 stops after the specified number of values.  </p>
 
 
-<h1>Encapsulators: From lists to streams</h1>
+<h1>Encapsulators: From familiar data structures to streams</h1>
 
-<p> Most programs operate on lists, arrays and other familiar data
-structures. StreamPy has a library of encapsulators, or "wrappers"
-that encapsulate programs that operate on such data structures to
-obtain programs that operate on streams. </p>
+<p> Most programs operate on numbers, strings, lists, arrays and other
+familiar data structures. StreamPy has a library of encapsulators, or
+"wrappers" that encapsulate programs that operate on such data
+structures to obtain programs that operate on streams. </p>
 
+<a name="element_wrapper"><h1>The element encapsulator</h1></a>
 
-<h1>Agents</h1>
-
-<p>An agent is a program that has input streams and (possibly zero)
-output streams. An agent waits for data to arrive on its input
-streams, processes the incoming data, and puts values on its output
-streams. An agent may have state or it may be stateless. We begin with
-a description of stateless agents and a simple wrapper - the element
-wrapper.</p>
-
-<p>We describe implementation of the <a
-href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/Agent.py">Agent
-class</a> later.</p>
-
-<a name="element_wrapper"><h1>The element wrapper</h1></a>
-
-<p>We begin by describing the required parameters of a wrapper
-function and  postpone discussion of optional parameters. The element
-wrapper function has the form:
-<div class="boxed">
-<pre><code>
-stream_agent(inputs, outputs, f_type='element',f)
-</code></pre>
-</div>
-where:
-<ul>
-  <li><code>inputs</code> is either a stream or a list of streams.</li>
-  <li><code>outputs</code> is either <code>None</code> a stream or a list of
-  streams.</li>
-  <li><code>f_type</code> is the string 'element' to indicate that the
-  wrapper is an element wrapper. Different wrappers are specified by
-  different values of <code>f_type</code>.</li>
-  <li>For the element wrapper, <code>f</code> is a function that maps
-  elements of input streams to elements of output streams.</li>
-</ul>
-
-<h4>Inputs to function <code>f</code></h4>
-<ul>
-  <li> If <code>inputs</code> is a single stream then the input to <code>f</code>
-  is a single element of <code>inputs</code>.</li>
-  <li> If <code>inputs</code> is a list of streams then the input to <code>f</code>
-  is a list with one element from each stream in <code>inputs</code>.</li>
-</ul>
-
-<h4>Outputs of function <code>f</code></h4>
-<ul>
-  <li> If <code>outputs</code> is a single stream then <code>f</code> returns a
-  single element of <code>outputs</code>.</li> 
-  <li> If <code>outputs</code> is a list of streams then <code>f</code> returns a
-  list with one element for each stream in <code>outputs</code>.</li> If
-  <code>outputs</code> is <code>None</code> then <code>f</code> returns <code>None</code>.
-</ul>
-
-<p>
-Function <code>f</code> specifies the j-th outputs for each output stream as
-a function of the j-th elements of all the input streams, for all
-j. The operation of an agent is as follows. For step j of the agent,
-where j = 0, 1, 2,.., the agent waits until it reads the j-th elements
-of each of its input streams and then applies <code>f</code> to compute the
-j-th output to each of its output streams.
-</p>
-
-<p>
-On each step of the agent, the agent may place a single element, or no
-element, or multiple elements on an output stream. So, the length of
-an agent's output stream may be smaller than, equal to, or greater
-than the lengths of its input stream. We begin with the case where the
-agent places a single element on each output stream at each step.
-</p>
-
-<h2>ef: Alternative form of the element wrapper</h2>
-<p>
-An alternative form of the element wrapper is:
+<p>The element encapsulator function (<i>ef</i>: <i>e</i> for
+encapsulator, <i>f</i> for function) has the form: 
 <div class="boxed">
 <code>
 ef(inputs, outputs, f, **kwargs)
 </code>
 </div>
-where <code>**kwargs</code> is a set of keyword parameters that are
-passed to function <code>f</code>.
+where:
+<ul>
+  <li><code>inputs</code> is either a stream or a list of streams.</li>
+  <li><code>outputs</code> is either <code>None</code>, a stream, or a list of
+  streams.</li>
+  <li><code>f</code> is a function that maps elements of input streams
+  to elements of output streams.</li>
+  <li><code>**kwargs</code> is a set of keyword parameters of function
+  <code>f</code>.</li> 
+</ul>
+
+<h4>Inputs and arguments of function <code>f</code></h4>
+<p>Function <code>f</code> has one or more arguments. The first
+element of <code>f</code> must satisfy the following requirement:
+<ul>
+  
+  <li> If <code>inputs</code> is a single stream then the first
+  argument of <code>f</code> is a single element of the stream
+  <code>inputs</code>.</li>
+  
+  <li> If <code>inputs</code> is a list of streams then the first
+  argument of <code>f</code> is a list with one element from each
+  stream in <code>inputs</code>.</li>
+  
+</ul>
+
+<h4>Outputs and the return value of function <code>f</code></h4>
+<p>
+<ul>
+  
+  <li> If <code>outputs</code> is a single stream then <code>f</code>
+  returns a single element of the stream <code>outputs</code>.</li>
+  
+  <li> If <code>outputs</code> is a list of streams then
+  <code>f</code> returns a list with one element for each stream in
+  <code>outputs</code>.</li>
+  
+  <li>If <code>outputs</code> is <code>None</code> then <code>f</code>
+  does not return any value or returns <code>None</code>.
+  
+</ul>
+<code>f</code> may have more than one argument. Arguments other than
+the first one are passed as keyword arguments to <code>ef</code>.
 </p>
 
-<p> Note: We use <code>ef</code> for a function that creates an agent,
-where the wrapped function <code>f</code> is an <b>e</b><i>lement</i>
-function. Similarly, we use <code>lf</code>, <code>wf</code>,
-<code>twf</code> when the wrapped function <code>f</code> is a
-<b>l</b><i>ist</i>, <b>w</b><i>indows</i>, or <b>t</b><i>imed</i>
-<b>w</b><i>indows</i> function, respectively.</p>
-
+<p> Function <code>f</code> specifies the j-th outputs for each
+output stream as a function of the j-th elements of the input streams,
+for all j. The execution of <code>ef</code> creates an agent which
+operates in the following way. For step j of the agent, where j = 0,
+1, 2,.., the agent waits until it reads the j-th elements of each of
+its input streams and then applies <code>f</code> to compute the j-th
+output to each of its output streams.  </p>
 
 <!------------------------------------------------------------>
 <!------------------------------------------------------------>
@@ -212,7 +171,6 @@ function. Similarly, we use <code>lf</code>, <code>wf</code>,
 
 <p>
 <i>Please execute, modify and re-execute the example .py files.</i>
-<br>
 In the examples, <code>np</code> represents
 <a href="http://www.numpy.org/">NumPy</a>. 
 </p>
@@ -226,21 +184,11 @@ streams. Write an agent that sets the <code>j</code>-th element of
 <code>x</code>, for all <code>j</code>. </p>
 
 <p>
-<div class="boxed">
-<b>Solution</b> see
+<b>Solution:</b> for details see
 <a href= "https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_sine.py"><i>tutorial_sine.py</i></a>:
-<pre><code>
-stream_agent(inputs=x, outputs=y, f_type='element', f=np.sin)
-</code></pre>
-or
-<pre><code>
-ef(x, y, np.sin)
-</code></pre>
-</div>
+<div class="boxed"><code>
+ef(x, y, np.sin)</code></div>
 </p>
-
-<p> In the following examples, we give only the <code>ef</code>
-version.  </p>
 
 <!------------------------------------------------------------>
 <!------------------------------------------------------------>
@@ -252,15 +200,13 @@ stream.</h3>
 is a stream. Write an agent that sets the <code>j</code>-th
 element of <code>y</code> to the sum of the <code>j</code>-th element of all streams in
 <code>x</code>. </p>
-<div class="boxed">
-<p><b>Solution</b> see <a
+
+<p><b>Solution</b> for details see <a
 href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_merge.py">
   <i>tutorial_merge.py</i></a>:
-<pre><code>
+<div class="boxed"><code>
 ef(x, y, sum)
-</code></pre>
-</div>
-</p>
+</code></div></p>
 
 
 <!------------------------------------------------------------>
@@ -285,16 +231,11 @@ Write an agent that sets the
 <code>math.exp</code> of the <code>j</code>-th element of <code>x</code> </p>
 
 <p>
-<div class="boxed">
-  <b>Solution</b> see <a
-href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_split.py">
-<i>tutorial_split.py</i></a>:
-<p>
-<pre><code>
+<b>Solution</b> for details see <a
+href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_split.py"><i>tutorial_split.py</i></a>
+<div class="boxed"><code>
 ef(x, [y, z], execute, g=math.sqrt, h=math.exp) 
-</code></pre>
-</div>
-</p>
+</code></div></p>
 
 
 
@@ -317,15 +258,12 @@ the <code>j</code>-th element of each stream in <code>x</code>.
 </p>
 
 <p>
-<div class="boxed">
-<b>Solution</b> see <a
+<b>Solution</b> for details see <a
 href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_many_to_many.py">
 <i>tutorial_many_to_many.py</i></a>:
-<p>
-<pre><code>
+<div class="boxed"><code>
 ef(x, [y, z], execute, g=max, h=min)
-</code></pre>
-</div>
+</code></div>
 </p>
 
 
@@ -353,11 +291,11 @@ and puts no value in <code>y</code> for other elements of
 <code>x</code>.
 
 <p>
-<div class="boxed">
 <b>Solution: see </b> <a
 href="https://github.com/StreamPy/StreamPy/blob/master/StreamPy/tutorial_filter_1.py">
-<i>tutorial_filter_1.py</i></a>
+<i>tutorial_filter_1.py</i></a>.
 We first define a function <code>filter_threshold</code>.
+<div class="boxed">
 <pre><code>
 def ft(v, threshold):
     return v if v > threshold else _no_value
@@ -402,16 +340,13 @@ for <code>j = 0, 1, 2, 3, ...</code> and <code>k < n = len(x)</code>.
 
 
 <p>
-<div class="boxed">
-<b>Solution: see </b>
+<b>Solution:</b> for details see 
 <a href=
 "https://github.com/StreamPy/StreamPy/blob/master/StreamPy/weave_streams.py">
 <i>weave_streams.py</i></a>
-
-<pre><code>
+<div class="boxed"><code>
 ef(x, y, _multivalue)
-</code></pre>
-</div>
+</code></div>
 </p>
 
 <h1>Agents with state</h1>
