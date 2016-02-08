@@ -6,6 +6,7 @@ PythonStreams.
 
 from Stream import Stream, StreamArray, StreamSeries, StreamTimed
 from collections import namedtuple
+import numpy as np
 #import math
 
 # EPSILON is a small number used to prevent division by 0
@@ -194,6 +195,7 @@ class Agent(object):
         # of stream s.
         self._in_lists = [InList(s.recent, s.start[self], s.stop)\
                           for s in self.in_streams]
+
         # Initially, the output lists of the agent are empty.
         # Values will be appended to these output lists during a
         # state transition.
