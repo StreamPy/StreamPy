@@ -1095,6 +1095,7 @@ def h(f_type, *args):
     elif f_type is 'element':
         return element_func(*args)
     elif f_type is 'window':
+        
         return window_func(*args)
     elif f_type is 'timed':
         return timed_func(*args)
@@ -1455,6 +1456,7 @@ def stream_agent(inputs, outputs, f_type, f,
     Returns
     -------
     None
+    
     """
     
     # Check types of parameters
