@@ -259,12 +259,10 @@ print_stream(extent_of_w)
 # Add values to stream w.
 w.extend([random.random() for _ in range(N)])
 
-
-<<<<<<< HEAD
 #----------
 #STATEFUL
 #----------
-=======
+
 #_____________________________________________________
 # EXAMPLE 5. LINEAR COMBINATION OF WINDOW ELEMENTS
 #_____________________________________________________
@@ -328,7 +326,6 @@ ww.extend([10, 5, 25, 20, 40, 5])
 #STATEFUL
 #-----------------------------------------------------
 #-----------------------------------------------------
->>>>>>> stream/master
 
 #_____________________________________________________
 # EXAMPLE 1. MEAN (INCREMENTAL) OF SLIDING WINDOW
