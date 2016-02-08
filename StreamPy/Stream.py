@@ -381,7 +381,8 @@ class Stream(object):
     def __init__(self, name="NoName", proc_name="UnknownProcess",
                  initial_value=[],
                  stream_size=DEFAULT_STREAM_SIZE,
-                 buffer_size=DEFAULT_BUFFER_SIZE_FOR_STREAM):
+                 buffer_size = DEFAULT_BUFFER_SIZE_FOR_STREAM):
+        self._buffer_size = buffer_size
         self.name = name
         # Name of the process in which this stream lives.
         self.proc_name = proc_name
@@ -389,8 +390,7 @@ class Stream(object):
         # associated with garbage collecting
         # elements in the list.
         # Pad recent with any padded value (e.g. zeroes).
-        self.recent = [0] * stream_size
-        self._buffer_size = buffer_size
+        self.recent = self._create_recent(stream_size)
         self._begin = 0
         # Initially, the stream has no entries, and so
         # offset and stop are both 0.
@@ -476,8 +476,6 @@ class Stream(object):
         # any NumPy arrays to lists before inserting them
         # into the stream. See StreamArray for dealing with
         # streams implemented as NumPy arrays.
-        if isinstance(value_list, np.ndarray):
-            value_list = value_list.tolist()
 
         if len(value_list) == 0:
             return
@@ -572,7 +570,7 @@ class Stream(object):
             new_size = len(self.recent) * 2
             self._buffer_size *= 2
         # 0 is the padding value.
-        self.new_recent = [0] * new_size
+        self.new_recent = self._create_recent(new_size)
 
         # Copy the values that readers can read, and ONLY those
         # values into new_recent. Readers do not read values in
@@ -595,7 +593,8 @@ class Stream(object):
         self.stop -= self._begin
         self._begin = 0
 
-    # def _create_recent(self, size): return [0] * size
+    def _create_recent(self, size):
+        return [0] * size
 
 
 ##########################################################
@@ -603,7 +602,8 @@ class StreamArray(Stream):
     def __init__(self, name=None):
         super(StreamArray, self).__init__(name)
 
-    def _create_recent(self, size): return np.zeros(size)
+    def _create_recent(self, size):
+        return np.zeros(size)
 
     def extend(self, a):
         """
