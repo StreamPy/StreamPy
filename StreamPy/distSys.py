@@ -21,7 +21,6 @@ def createProcesses(processes):
     for name in processes.keys():
         ids[name] = lastUsedId
         lastUsedId += 1
-    import pdb; pdb.set_trace()
 
     # Create processes
     for name in processes.keys():
@@ -46,3 +45,16 @@ def createProcesses(processes):
 
 def initializeSystem(processes, conns, host, port, debug=False):
     m = Master(processes, conns, port, host, debug)
+
+def runFile(filename):
+    data = loadFile(filename)
+    processes = createProcesses(data['processes'])
+    conns = [('localhost', 8000), ('localhost', 8001), ('localhost', 8002)] 
+    masterHost = 'localhost'
+    masterPort = 9030
+    initializeSystem(processes, conns, masterHost, masterPort)
+
+
+if __name__ == "__main__":
+    filename = sys.argv[1]
+    runFile(filename)

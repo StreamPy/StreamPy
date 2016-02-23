@@ -136,6 +136,7 @@ class AgentProcess():
             # This message_content is to be appended to the
             # stream with name stream_name.
             #print 'received message: ', message
+            # process_id, stream_name, message_content = message
             stream_name, message_content = message
             # Get the input_stream to which the message must
             # be appended.
