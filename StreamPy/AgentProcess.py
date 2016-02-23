@@ -23,6 +23,8 @@ class AgentProcess():
         self.func = func
         self.output_process_list = output_process_list
         self.process_conns = {}
+        self.receivedMessageIds = {}
+        self.sentMessageIds = {}
 
     def run(self):
         logging.info("Running process on {0}:{1}".format(self.host, self.port))
@@ -137,7 +139,13 @@ class AgentProcess():
             # stream with name stream_name.
             #print 'received message: ', message
             # process_id, stream_name, message_content = message
-            process_id, stream_name, message_content = message
+            message_id, process_id, stream_name, message_content = message
+            try:
+                if message_id < self.receivedMessageIds[process_id]:
+                    continue
+            except:
+                pass
+            self.receivedMessageIds[process_id] = message_id
             # Get the input_stream to which the message must
             # be appended.
             # print stream_name, self.id
@@ -234,13 +242,19 @@ class AgentProcess():
                 message_content = '_close'
             # The message placed in each of the receiver queues is
             # a tuple (name of the stream, content of the message).
-            message = json.dumps((self.id, output_stream_name, message_content))
 
             for process_id in receiver_process_list:
                 if process_id not in self.process_conns:
                     self.process_conns[process_id] = self.node.create_process_conn(process_id)
                 # print "Process {0} sending message {1} to process {2}".format(self.id, message, process_id)
+                if process_id not in self.sentMessageIds:
+                    message_id = 0
+                else:
+                    message_id = self.sentMessageIds[process_id] + 1
+                
+                message = json.dumps((message_id, self.id, output_stream_name, message_content))
                 self.process_conns[process_id].send(message + ";")
+                self.sentMessageIds[process_id] = message_id
                 # self.process_conns[process_id].close()
                 # del self.process_conns[process_id]
                 # print "Success!"
