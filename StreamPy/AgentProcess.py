@@ -137,7 +137,7 @@ class AgentProcess():
             # stream with name stream_name.
             #print 'received message: ', message
             # process_id, stream_name, message_content = message
-            stream_name, message_content = message
+            process_id, stream_name, message_content = message
             # Get the input_stream to which the message must
             # be appended.
             # print stream_name, self.id
@@ -234,7 +234,7 @@ class AgentProcess():
                 message_content = '_close'
             # The message placed in each of the receiver queues is
             # a tuple (name of the stream, content of the message).
-            message = json.dumps((output_stream_name, message_content))
+            message = json.dumps((self.id, output_stream_name, message_content))
 
             for process_id in receiver_process_list:
                 if process_id not in self.process_conns:
