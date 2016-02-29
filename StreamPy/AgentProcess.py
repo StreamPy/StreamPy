@@ -25,6 +25,9 @@ class AgentProcess():
         self.process_conns = {}
         self.receivedMessageIds = {}
         self.sentMessageIds = {}
+        self.numMessagesSent = {}
+        self.N = 10
+        self.snapshot = False
 
     def run(self):
         logging.info("Running process on {0}:{1}".format(self.host, self.port))
@@ -249,12 +252,16 @@ class AgentProcess():
                 # print "Process {0} sending message {1} to process {2}".format(self.id, message, process_id)
                 if process_id not in self.sentMessageIds:
                     message_id = 0
+                    self.numMessagesSent[process_id] = 0
                 else:
                     message_id = self.sentMessageIds[process_id] + 1
                 
                 message = json.dumps((message_id, self.id, output_stream_name, message_content))
                 self.process_conns[process_id].send(message + ";")
                 self.sentMessageIds[process_id] = message_id
+                self.numMessagesSent[process_id] += 1
+                if self.numMessagesSent[process_id] >= self.N:
+                    self.snapshot = True
                 # self.process_conns[process_id].close()
                 # del self.process_conns[process_id]
                 # print "Success!"
