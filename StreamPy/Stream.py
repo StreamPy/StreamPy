@@ -390,7 +390,8 @@ class Stream(object):
         # associated with garbage collecting
         # elements in the list.
         # Pad recent with any padded value (e.g. zeroes).
-        self.recent = self._create_recent(stream_size)
+        self.recent_dict = {}
+        self.recent = self._create_recent(0, stream_size - 1)
         self._begin = 0
         # Initially, the stream has no entries, and so
         # offset and stop are both 0.
@@ -480,6 +481,7 @@ class Stream(object):
         if len(value_list) == 0:
             return
 
+        close_flag = False
         if isinstance(value_list, list):
             if _close in value_list:
                 # Since _close is in value_list, first output
@@ -593,8 +595,10 @@ class Stream(object):
         self.stop -= self._begin
         self._begin = 0
 
-    def _create_recent(self, size):
-        return [0] * size
+    def _create_recent(self, start, end):
+        size = end - start + 1
+        self.recent_dict[(start, end)] = [0] * size
+        return self.recent_dict[(start, end)]
 
 
 ##########################################################
