@@ -33,6 +33,13 @@ class StreamCache:
                 start = key
         return start
 
+    def find_min_start_files(self):
+        start = None
+        for key in self.files:
+            if start is None or key <= start:
+                start = key
+        return start
+
     def find_min_start_except(self, start):
         min_start = None
         for key in self.start:
@@ -174,7 +181,49 @@ class StreamCache:
         return data
 
     def update_indices(self):
-        min_start = self.find_min_start()         
+        min_start = self.find_min_start()
+        min_start_files = self.find_min_start_files()
+
+        if min_start_files is not None and min_start is not None and min_start_files < min_start:
+            min_start = min_start_files
+        elif min_start is None:
+            min_start = 0
+
+        start_n = {}
+        for start in self.start.keys():
+            end, slice_id = self.start[start]
+            start_n[start - min_start] = (end - min_start, slice_id)
+        self.start = start_n
+
+        files_n = {}
+        for start in self.files.keys():
+            end = self.files[start]
+            files_n[start - min_start] = end - min_start
+            filename = "{0}_{1}.data".format(start, end)
+            new_filename = "{0}_{1}.data".format(start - min_start, end - min_start)
+            os.rename(filename, new_filename)
+
+        self.files = files_n
+
 
     def get_next_slice_id(self):
         return self.slice_ids.pop()
+
+    def __str__(self):
+        s = "Num slices: " + str(self.num_slices) + "\n"
+        s += "Max slices: " + str(self.max_slices) + "\n"
+        s += "Slices in memory:\n"
+        s += "Start\tEnd\tData\n"
+        for key in self.start:
+            end, slice_id = self.start[key]
+            data = self.recent_dict[slice_id]
+            s += str(key) + "\t" + str(end) + "\t" + str(data) + "\n"
+        
+        s += "Files:\n"
+        s += "Start\tEnd\n"
+        for key in self.files:
+            end = self.files[key]
+            s += str(key) + "\t" + str(end) + "\n"
+        
+        return s
+
