@@ -148,6 +148,10 @@ class StreamCache:
         self.num_slices -= 1
 
         if end >= begin:
+            num_values_evict = begin - min_start
+            if num_values_evict > 0:
+                del data[0:num_values_evict]
+                min_start = begin
             self.write_to_file(((min_start, end), data))
         return
 
@@ -162,6 +166,10 @@ class StreamCache:
         self.num_slices -= 1
 
         if end >= begin:
+            num_values_evict = begin - min_start
+            if num_values_evict > 0:
+                del data[0:num_values_evict]
+                min_start = begin
             self.write_to_file(((min_start, end), data))
         return
 
@@ -226,4 +234,3 @@ class StreamCache:
             s += str(key) + "\t" + str(end) + "\n"
         
         return s
-
