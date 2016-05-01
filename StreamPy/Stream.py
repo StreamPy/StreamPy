@@ -381,7 +381,8 @@ class Stream(object):
     def __init__(self, name="NoName", proc_name="UnknownProcess",
                  initial_value=[],
                  stream_size=DEFAULT_STREAM_SIZE,
-                 buffer_size = DEFAULT_BUFFER_SIZE_FOR_STREAM):
+                 buffer_size = DEFAULT_BUFFER_SIZE_FOR_STREAM,
+                 num_slices=10):
         self._buffer_size = buffer_size
         self.name = name
         # Name of the process in which this stream lives.
@@ -390,8 +391,7 @@ class Stream(object):
         # associated with garbage collecting
         # elements in the list.
         # Pad recent with any padded value (e.g. zeroes).
-        self.recent_dict = {}
-        self.recent = self._create_recent(0, stream_size - 1)
+        self.cache = StreamCache(self, num_slices)
         self._begin = 0
         # Initially, the stream has no entries, and so
         # offset and stop are both 0.
@@ -444,18 +444,12 @@ class Stream(object):
         """
         if self.closed:
             raise Exception("Cannot write to a closed stream.")
-        self.recent[self.stop] = value
+        self.cache.append(value)
         self.stop += 1
         # Inform subscribers that the stream has been
         # modified.
         for a in self.subscribers_set:
             a.next()
-
-        # Manage the list recent.
-        # Set up a new version of the list
-        # (if necessary) to prevent the list
-        # from getting too long.
-        self._set_up_new_recent()
 
     def extend(self, value_list):
         """
@@ -497,27 +491,34 @@ class Stream(object):
                 close_flag = False
 
         self.new_stop = self.stop + len(value_list)
-        self.recent[self.stop: self.new_stop] = value_list
+        self.cache.extend(value_list)
         self.stop = self.new_stop
         # Inform subscribers that the stream has been
         # modified.
         for a in self.subscribers_set:
             a.next()
 
-        # Manage the list recent in the same way as done
-        # for the append() method.
-        self._set_up_new_recent()
-
         # Close the stream if close_flag was set to True
         # because a _close value was added to the stream.
         if close_flag:
             self.close()
 
+    def read_slice(self, agent, start, stop):
+        f_start, f_end, data = self.cache.get_slice(start, stop) 
+        self.set_start(agent, start)
+        return f_start, f_end, data
+
+    def get_begin(self):
+        self._begin = (0 if self.start == {}
+                       else min(self.start.itervalues()))
+        return self._begin
+
     def set_name(self, name):
         self.name = name
 
     def print_recent(self):
-        print self.name, '=', self.recent[:self.stop]
+        print self.name, '='
+        print self.cache
 
     def close(self):
         """

@@ -193,8 +193,13 @@ class Agent(object):
         # s.start[self]. Therefore agent self will only access the slice
         #           s.recent[s.start[self]:s.stop]
         # of stream s.
-        self._in_lists = [InList(s.recent, s.start[self], s.stop)\
-                          for s in self.in_streams]
+
+        # self._in_lists = [InList(s.recent, s.start[self], s.stop)\
+                          # for s in self.in_streams]
+        self._in_lists = []
+        for s in self.in_streams:
+            start, end, data = s.read_slice(self, s.start[self], s.stop)
+            self.in_lists.append(InList(data[s.start[self] - start:], s.start[self], s.stop)
 
         # Initially, the output lists of the agent are empty.
         # Values will be appended to these output lists during a
