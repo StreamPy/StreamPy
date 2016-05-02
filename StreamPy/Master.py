@@ -39,7 +39,10 @@ class Master():
         conf = self.host + ", " + str(self.port)
         for conn in self.conns:
             url = "http://{0}:{1}/conf".format(conn[0], conn[1])
-            requests.post(url, data=conf)
+            try:
+                requests.post(url, data=conf)
+            except requests.exceptions.ConnectionError:
+                raise requests.exceptions.ConnectionError("Node server at {0}:{1} refused to connect".format(conn[0], conn[1]))
 
     def initializeProcesses(self):
         for process in self.processes:

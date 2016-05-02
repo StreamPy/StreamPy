@@ -1,22 +1,41 @@
-{"processes":{
-    "process_0": {
-        "input_stream_names":[],
-        "output_stream_names": ["random_ints_stream"],
-        "output_process_list": [["process_1"]],
-        "name": "process_0",
-        "function_name": "random_ints"
+{
+    "conns":{
+        "conn_0": {
+            "host": "131.215.159.186",
+            "port": 8002
+        },
+        "conn_1": {
+            "host": "10.42.0.91",
+            "port": "8000"
+        },
+        "conn_2": {
+            "host": "10.42.0.91",
+            "port": "8001"
+        }
     },
-    "process_1": {
-        "input_stream_names": ["random_ints_stream"],
-        "output_stream_names": ["func_stream"],
-        "function_name": "apply_func_agent",
-        "name": "process_1",
-        "output_process_list": [["process_2"]]
-    },
-    "process_2": {"input_stream_names": ["func_stream"],
-        "output_stream_names": [],
-        "output_process_list": [],
-        "name": "process_2",
-        "function_name": "print_agent"
+    "processes":{
+        "process_0": {
+            "input_stream_names":[],
+            "output_stream_names": ["random_ints_stream"],
+            "output_process_list": [["process_1"]],
+            "name": "process_0",
+            "function_name": "random_ints",
+            "conn": "conn_0"
+        },
+        "process_1": {
+            "input_stream_names": ["random_ints_stream"],
+            "output_stream_names": ["func_stream"],
+            "function_name": "apply_func_agent",
+            "name": "process_1",
+            "output_process_list": [["process_2"]],
+            "conn": "conn_1"
+        },
+        "process_2": {"input_stream_names": ["func_stream"],
+            "output_stream_names": [],
+            "output_process_list": [],
+            "name": "process_2",
+            "function_name": "print_agent",
+            "conn": "conn_2"
+        }
     }
-}}
+}
