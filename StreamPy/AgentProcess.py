@@ -130,6 +130,7 @@ class AgentProcess():
                 message = json.loads(message)
                 logging.info('make_input_manager, message = ' + str(message))
             except Exception, err:
+                print err
                 print "Error"
                 logging.error(err)
                 return
@@ -239,7 +240,7 @@ class AgentProcess():
                 if process_id not in self.process_conns:
                     self.process_conns[process_id] = self.node.create_process_conn(process_id)
                 # print "Process {0} sending message {1} to process {2}".format(self.id, message, process_id)
-                self.process_conns[process_id].send(message + ";")
+                self.process_conns[process_id].send(message)
                 # self.process_conns[process_id].close()
                 # del self.process_conns[process_id]
                 # print "Success!"

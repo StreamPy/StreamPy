@@ -79,7 +79,7 @@ class Node():
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             s.connect((host, port))
             print "Success!"
-            return s
+            return SocketWrapper(s)
 
     def initServer(self):
         run_server(self)
@@ -91,3 +91,11 @@ class QueueWrapper:
         self.queue.put(message)
     def close(self):
         pass
+
+class SocketWrapper:
+    def __init__(self, socket):
+        self.socket = socket
+    def send(self, message):
+        self.socket.send(message + ";")
+    def close(self):
+        self.socket.close()
