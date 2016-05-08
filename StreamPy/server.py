@@ -25,7 +25,6 @@ def create_server(host, port, queue, finished_execution):
             if not data:
                 break
             messages = data.split(";")
-            print messages
 
             for message in messages:
                 if len(message) > 0:

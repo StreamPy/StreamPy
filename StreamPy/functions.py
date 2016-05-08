@@ -33,7 +33,6 @@ def apply_func_agent(input_streams, output_streams):
         if v == _close:
             return _close
         else:
-            print "Apply func"
             return f(v)
 
     return stream_agent(

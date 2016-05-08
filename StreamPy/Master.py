@@ -27,10 +27,17 @@ class Master():
             self.processConns[process.id] = self.conns[i]
             i += 1
         self.initServer()
+
+        print "Initializing connections"
         self.initializeConnections()
+
+        print "Initializing processes"
         self.initializeProcesses()
+
         while len(self.processes) != len(self.processesReady):
             pass
+
+        print "Starting processes"
         self.startProcesses()
         while True:
             time.sleep(0.1)

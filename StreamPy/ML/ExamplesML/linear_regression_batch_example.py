@@ -7,7 +7,7 @@ if __name__ == '__main__':
 
 from Stream import Stream
 from Operators import stream_func
-from ML import Stream_LearntnuW,
+from ML import Stream_Learn
 import numpy as np
 from sklearn import linear_model
 

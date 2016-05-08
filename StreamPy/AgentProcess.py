@@ -25,7 +25,7 @@ class AgentProcess():
         self.process_conns = {}
 
     def run(self):
-        logging.info("Running process on {0}:{1}".format(self.host, self.port))
+        logging.info("Running process {1} on {1}:{2}".format(self.name, self.host, self.port))
         self.finished_execution = False
         self.wait = True
         create_server_thread(self.host, self.port, self.input_queue, self.finished_execution)

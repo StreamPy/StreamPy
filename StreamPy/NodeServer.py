@@ -38,7 +38,6 @@ def start():
 def run_server(n):
     global node
     node = n
-    #run(host='localhost', port=n.port, debug=True)
     server_thread = threading.Thread(target=run, kwargs=dict(host=n.host, port=n.port))
     server_thread.daemon = True
     server_thread.start()
