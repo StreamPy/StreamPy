@@ -1,6 +1,7 @@
 import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 
 from Stream import Stream, _close, _no_value
 from Operators import stream_agent
@@ -10,7 +11,7 @@ import json
 from ProcessServer import create_server_thread
 import logging
 
-logging.basicConfig(filename="make_process_log.log", filemode='w', level=logging.INFO)
+logging.basicConfig(filename="Logs/make_process_log.log", filemode='w', level=logging.INFO)
 
 class AgentProcess():
 

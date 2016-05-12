@@ -1,8 +1,8 @@
 import sys
 import os
 import json
-import functions
-from AgentProcess import AgentProcess
+from Functions import functions
+from Process import AgentProcess
 from Master import Master
 
 def loadFile(filename):

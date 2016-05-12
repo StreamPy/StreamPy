@@ -1,0 +1,33 @@
+INFO:root:Running process localhost on localhost:9002
+INFO:root:Server created. Listening on localhost:9002
+INFO:root:Server listening on localhost:9002
+INFO:requests.packages.urllib3.connectionpool:Starting new HTTP connection (1): localhost
+INFO:root:Server localhost:9000 connected with 127.0.0.1:59116 
+
+INFO:root:Server localhost:9000 received ["func_stream", 176] from 127.0.0.1:59116
+INFO:root:Server localhost:9000 received ["func_stream", 100] from 127.0.0.1:59116
+INFO:root:Server localhost:9000 received ["func_stream", 92] from 127.0.0.1:59116
+INFO:root:make_input_manager, message = [u'func_stream', 176]
+INFO:root:Server localhost:9000 received ["func_stream", 172] from 127.0.0.1:59116
+INFO:root:Server localhost:9000 received ["func_stream", 60] from 127.0.0.1:59116
+INFO:root:Server localhost:9000 received ["func_stream", 6] from 127.0.0.1:59116
+INFO:root:make_input_manager, message = [u'func_stream', 100]
+INFO:root:Server localhost:9000 received ["func_stream", 164] from 127.0.0.1:59116
+INFO:root:Server localhost:9000 received ["func_stream", 122] from 127.0.0.1:59116
+INFO:root:make_input_manager, message = [u'func_stream', 92]
+INFO:root:Server localhost:9000 received ["func_stream", 32] from 127.0.0.1:59116
+INFO:root:Server localhost:9000 received ["func_stream", 118] from 127.0.0.1:59116
+INFO:root:Server localhost:9000 received ["func_stream", "_close"] from 127.0.0.1:59116
+INFO:root:make_input_manager, message = [u'func_stream', 172]
+INFO:root:make_input_manager, message = [u'func_stream', 60]
+INFO:root:make_input_manager, message = [u'func_stream', 6]
+INFO:root:make_input_manager, message = [u'func_stream', 164]
+INFO:root:make_input_manager, message = [u'func_stream', 122]
+INFO:root:make_input_manager, message = [u'func_stream', 32]
+INFO:root:make_input_manager, message = [u'func_stream', 118]
+INFO:root:make_input_manager, message = [u'func_stream', u'_close']
+ger, message = [u'random_ints_stream', 82]
+INFO:root:make_input_manager, message = [u'random_ints_stream', 61]
+INFO:root:make_input_manager, message = [u'random_ints_stream', 16]
+INFO:root:make_input_manager, message = [u'random_ints_stream', 59]
+INFO:root:make_input_manager, message = [u'random_ints_stream', u'_close']
