@@ -1,14 +1,13 @@
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+
 from Stream import Stream, _close, _no_value
-from Operators import stream_agent, stream_agent
-import multiprocessing
+from Operators import stream_agent
 from multiprocessing import Process, Queue
 import threading
-from RemoteQueue import RemoteQueue
-import socket
-import thread
 import json
-import time
-from server import create_server_thread
+from ProcessServer import create_server_thread
 import logging
 
 logging.basicConfig(filename="make_process_log.log", filemode='w', level=logging.INFO)
