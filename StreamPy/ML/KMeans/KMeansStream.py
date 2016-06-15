@@ -65,6 +65,7 @@ class KMeansStream:
                     i = 0
                 model = Model()
             if model.centroids is not None and self.incremental:
+                import pdb; pdb.set_trace()
                 [centroids, index, i] = kmeans(x, model.k, model.centroids,
                                                draw=self.draw,
                                                output=self.output)

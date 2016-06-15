@@ -16,6 +16,7 @@ def all_func(x, y, model, state, window_state):
         state = Geomap.Geomap(llcrnrlat = 20, llcrnrlon = -126, urcrnrlat = 60, urcrnrlon = -65)
     state.clear()
     state.plot(x, kmeans.findClosestCentroids(x, model.centroids), s = 70)
+    import pdb; pdb.set_trace()
     # state.plot(model.centroids, color = 'Red', s = 50)
     return state
 

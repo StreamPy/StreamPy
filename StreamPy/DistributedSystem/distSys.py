@@ -1,17 +1,47 @@
 import sys
-import os
 import json
 from Functions import functions
 from Process import AgentProcess
 from Master import Master
 
+
 def loadFile(filename):
+    """Loads a file containing a representation of a graph.
+
+    Parameters
+    ----------
+    filename : String
+        The name of the file to load.
+
+    Returns
+    -------
+    data : dict
+        The dictionary containing the information in the file.
+
+    """
+
     f = open(filename)
     data = json.load(f)
     f.close()
     return data
 
+
 def loadConns(conns):
+    """Loads connections from a dictionary containing connection information.
+
+    Parameters
+    ----------
+    conns : dict
+        Dictionary with connection name as key and a dictionary containing
+        host and port as the value.
+
+    Returns
+    -------
+    conns_names : dict
+        Dictionary with connection name as key and (host, port) tuple as value.
+
+    """
+
     conns_names = {}
     for name in conns.keys():
         host = conns[name]['host']
@@ -21,6 +51,23 @@ def loadConns(conns):
 
 
 def createProcesses(processes, conns):
+    """Creates instances of AgentProcesses from a dictionary containing
+    process information and a dictionary containing connection information.
+
+    Parameters
+    ----------
+    processes : dict
+        Dictionary containing process information.
+    conns : dict
+        Dictionary containing connection information.
+
+    Returns
+    -------
+    tuple
+        Tuple containing a list of AgentProcess instances and a list of
+        connections the processes run on, in order.
+
+    """
     agentProcesses = []
     processConns = []
     ids = {}
@@ -61,11 +108,42 @@ def createProcesses(processes, conns):
 
     return agentProcesses, processConns
 
+
 def initializeSystem(processes, conns, host, port, debug=False):
+    """ Initializes and runs the graph by starting the Master.
+
+    Parameters
+    ----------
+    processes : list
+        List of AgentProcess instances to run.
+    conns : list
+        List of (host, port) tuples to run the processes on.
+    host : String
+        Host to run Master.
+    port : int
+        Port to run Master.
+    debug : Boolean, optional
+        Specifies whether to run in debug mode (the default is False).
+
+    """
+
     m = Master(processes, conns, port, host, debug)
 
 
 def run(filename, host, port):
+    """ Reads data from a file and runs the graph.
+
+    Parameters
+    ----------
+    filename : String
+        Name of file with graph information.
+    host : String
+        Host to run Master.
+    port : int
+        Port to run Master.
+
+    """
+
     data = loadFile(filename)
     conns = loadConns(data['conns'])
     processes, conns = createProcesses(data['processes'], conns)

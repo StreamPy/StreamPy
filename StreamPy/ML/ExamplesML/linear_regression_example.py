@@ -10,6 +10,7 @@ from Operators import stream_func
 from ML import Stream_Learn, LinearRegression
 from ML.LinearRegression import linear_regression
 import numpy as np
+import matplotlib.pyplot as plt
 # Parameters
 
 draw = True
@@ -28,6 +29,7 @@ def print_stream(y):
 def all_func(x, y, model, state, window_state):
     if draw and model:
         linear_regression.plot(x, y, model.w)
+        plt.pause(0.01)
 
 if __name__ == "__main__":
 
