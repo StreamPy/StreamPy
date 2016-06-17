@@ -1,8 +1,7 @@
 """ This module contains the Stream class. The
 Stream and Agent classes are the building blocks
 of PythonStreams.
-(12 October 2015. Mani. Fixed bug. Made _no_value
-and _close classes rather than object.)
+(Version 1.0 June 16, 2016. Created by: Mani Chandy)
 """
 
 from SystemParameters import DEFAULT_NUM_IN_MEMORY,\
