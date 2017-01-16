@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 
+TIME_SLEEP = 0.000000001
+
 
 class Geomap:
     """
@@ -84,7 +86,7 @@ class Geomap:
                                  fontsize=10,
                                  bbox={'facecolor': 'white', 'alpha': 0.5})
                 self.pt_sets.append(p)
-        plt.draw()
+        plt.pause(TIME_SLEEP)
 
     def clear(self):
         """

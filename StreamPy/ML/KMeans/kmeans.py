@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 
+TIME_SLEEP = 0.000000001
+
 
 def initialize(k, low, high):
     """Returns k random points with x and y coordinates in [low, high).
@@ -273,7 +275,7 @@ def plotKMeans(X, centroids, previous, index):
     for i in range(0, k):
         plt.plot((centroids[i, 0], previous[i, 0]), (centroids[i, 1],
                  previous[i, 1]), color='black')
-    plt.draw()
+    plt.pause(TIME_SLEEP)
 
 
 def init_plot(figsize=(15, 8)):

@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
+TIME_SLEEP = 0.000000001
+
 
 def train_sgd(X, y, alpha, w=None):
     """Trains a linear regression model using stochastic gradient descent.
@@ -111,7 +113,7 @@ def plot(X, y, w):
 
     plt.clf()
     plt.plot(X[:, 0], y_predict, 'r-', X[:, 0], y, 'o')
-    plt.draw()
+    plt.pause(TIME_SLEEP)
 
 
 def init_plot(figsize=(15, 8)):
